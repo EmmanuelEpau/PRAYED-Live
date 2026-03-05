@@ -1045,8 +1045,8 @@ function searchNearbyChurches(lat, lng) {
   var query = '[out:json][timeout:15];(' +
     'node["amenity"="place_of_worship"]["religion"="christian"]["denomination"~"catholic|roman_catholic"](around:16093,' + lat + ',' + lng + ');' +
     'way["amenity"="place_of_worship"]["religion"="christian"]["denomination"~"catholic|roman_catholic"](around:16093,' + lat + ',' + lng + ');' +
-    'node["amenity"="place_of_worship"]["name"~"Catholic|St\\.|Saint|Our Lady|Holy|Immaculate|Sacred Heart|Basilica|Cathedral",i](around:16093,' + lat + ',' + lng + ');' +
-    'way["amenity"="place_of_worship"]["name"~"Catholic|St\\.|Saint|Our Lady|Holy|Immaculate|Sacred Heart|Basilica|Cathedral",i](around:16093,' + lat + ',' + lng + ');' +
+    'node["amenity"="place_of_worship"]["denomination"~"catholic"](around:16093,' + lat + ',' + lng + ');' +
+    'way["amenity"="place_of_worship"]["denomination"~"catholic"](around:16093,' + lat + ',' + lng + ');' +
     ');out center;';
 
   fetch('https://overpass-api.de/api/interpreter', {
