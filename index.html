@@ -13,18 +13,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script>
-function loadGoogleMaps() {
-  var k = '';
-  if(!k || k === '') return;
-  var s = document.createElement('script');
-  s.src = 'https://maps.googleapis.com/maps/api/js?key='+k+'&libraries=places&callback=onGoogleMapsLoaded';
-  s.async = true;
-  s.defer = true;
-  document.head.appendChild(s);
-}
-function onGoogleMapsLoaded() { window.googleMapsReady = true; }
-</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -897,7 +885,7 @@ try {
 } catch(e) { console.warn('Firebase init failed:', e); }
 
 function syncToCloud() {
-  localStorage.setItem('prayedUser', JSON.stringify(userData));
+  localStorage.setItem('prayedLiveUser', JSON.stringify(userData));
   if (currentUser && db) {
     try {
       db.collection('users').doc(currentUser.uid).set(userData, {merge:true});
@@ -969,7 +957,7 @@ function onAuthSuccess(user) {
     db.collection('users').doc(user.uid).get().then(function(doc) {
       if(doc.exists) {
         userData = doc.data();
-        localStorage.setItem('prayedUser', JSON.stringify(userData));
+        localStorage.setItem('prayedLiveUser', JSON.stringify(userData));
         if(userData.completed) {
           document.getElementById('splash').style.display = 'none';
           document.getElementById('onboarding').style.display = 'none';
@@ -986,31 +974,39 @@ function onAuthSuccess(user) {
 
 // ===== WEATHER =====
 var weatherData = null;
-var weatherCache = null;
 
 function fetchWeather(lat, lng) {
-  var key = '';
-  if(!key || key === '') return;
   // Check cache (30 min)
-  var cached = localStorage.getItem('prayedWeather');
+  var cached = localStorage.getItem('prayedLiveWeather');
   if(cached) {
     try {
       var c = JSON.parse(cached);
       if(Date.now() - c.ts < 30*60*1000) { weatherData = c; updateWeatherDisplay(); return; }
     } catch(e) {}
   }
-  fetch('https://api.openweathermap.org/data/2.5/weather?lat='+lat+'&lon='+lng+'&appid='+key+'&units=imperial')
+  fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lng+'&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto')
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      if(data.main) {
+      if(data.current) {
+        var code = data.current.weather_code;
+        var emoji = '🌤️';
+        var desc = 'Clear';
+        if(code === 0) { emoji='☀️'; desc='Clear'; }
+        else if(code <= 3) { emoji='⛅'; desc='Partly cloudy'; }
+        else if(code <= 48) { emoji='🌫️'; desc='Foggy'; }
+        else if(code <= 55) { emoji='🌧️'; desc='Drizzle'; }
+        else if(code <= 65) { emoji='🌧️'; desc='Rain'; }
+        else if(code <= 77) { emoji='🌨️'; desc='Snow'; }
+        else if(code <= 82) { emoji='🌦️'; desc='Showers'; }
+        else if(code <= 99) { emoji='⛈️'; desc='Thunderstorm'; }
         weatherData = {
-          temp: Math.round(data.main.temp),
-          desc: data.weather[0].description,
-          icon: data.weather[0].icon,
-          city: data.name,
+          temp: Math.round(data.current.temperature_2m),
+          desc: desc,
+          emoji: emoji,
+          city: (userData && userData.city) || '',
           ts: Date.now()
         };
-        localStorage.setItem('prayedWeather', JSON.stringify(weatherData));
+        localStorage.setItem('prayedLiveWeather', JSON.stringify(weatherData));
         updateWeatherDisplay();
       }
     }).catch(function(e) { console.warn('Weather fetch failed:', e); });
@@ -1019,48 +1015,112 @@ function fetchWeather(lat, lng) {
 function updateWeatherDisplay() {
   var el = document.getElementById('weatherWidget');
   if(!el || !weatherData) return;
-  var icons = {'01d':'☀️','01n':'🌙','02d':'⛅','02n':'☁️','03d':'☁️','03n':'☁️','04d':'☁️','04n':'☁️','09d':'🌧️','09n':'🌧️','10d':'🌦️','10n':'🌧️','11d':'⛈️','11n':'⛈️','13d':'🌨️','13n':'🌨️','50d':'🌫️','50n':'🌫️'};
-  var emoji = icons[weatherData.icon] || '🌤️';
-  el.innerHTML = emoji + ' ' + weatherData.temp + '°F · ' + weatherData.city;
+  var loc = weatherData.city ? ' \u00b7 ' + weatherData.city : '';
+  el.innerHTML = weatherData.emoji + ' ' + weatherData.temp + '\u00b0F' + loc;
   el.style.display = 'block';
 }
 
-// ===== PLACES =====
+// ===== PLACES (Overpass API - OpenStreetMap, free, no key needed) =====
 var nearbyChurchesCache = null;
 
 function searchNearbyChurches(lat, lng) {
-  if(!window.google || !window.google.maps) return;
-  var loc = new google.maps.LatLng(lat, lng);
-  var div = document.createElement('div');
-  var service = new google.maps.places.PlacesService(div);
-  service.nearbySearch({
-    location: loc,
-    radius: 16093,
-    type: 'church',
-    keyword: 'catholic church'
-  }, function(results, status) {
-    if(status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
-      var catholicKeywords = /catholic|st\.\s|saint|our lady|holy|immaculate|sacred heart|basilica|cathedral|blessed|assumption|annunciation|nativity|guadalupe|fatima|lourdes|rosary|perpetual help/i;
-      nearbyChurchesCache = results.filter(function(p) {
-        var n = (p.name || '') + ' ' + (p.vicinity || '');
-        return catholicKeywords.test(n);
-      }).map(function(p) {
-        var d = google.maps.geometry ?
-          google.maps.geometry.spherical.computeDistanceBetween(loc, p.geometry.location) / 1609.34 : 0;
-        return {
-          name: p.name,
-          address: p.vicinity || '',
-          lat: p.geometry.location.lat(),
-          lng: p.geometry.location.lng(),
-          rating: p.rating || 0,
-          dist: d.toFixed(1),
-          open: p.opening_hours ? p.opening_hours.isOpen() : null,
-          placeId: p.place_id
-        };
-      }).sort(function(a,b) { return a.dist - b.dist; }).slice(0, 15);
-      if(currentScreen === 'home') renderHome();
-    }
+  // Check localStorage cache first (1-hour cache)
+  var cacheKey = 'prayedLiveChurches';
+  var cached = localStorage.getItem(cacheKey);
+  if(cached) {
+    try {
+      var c = JSON.parse(cached);
+      if(c.ts && (Date.now() - c.ts < 3600000) && c.lat && c.lng) {
+        var dd = haversineKm(lat, lng, c.lat, c.lng);
+        if(dd < 5) {
+          nearbyChurchesCache = c.data;
+          if(currentScreen === 'home') renderHome();
+          return;
+        }
+      }
+    } catch(e) {}
+  }
+
+  // Overpass API query for Catholic churches within 10 miles (16093m)
+  var query = '[out:json][timeout:15];(' +
+    'node["amenity"="place_of_worship"]["religion"="christian"]["denomination"~"catholic|roman_catholic"](around:16093,' + lat + ',' + lng + ');' +
+    'way["amenity"="place_of_worship"]["religion"="christian"]["denomination"~"catholic|roman_catholic"](around:16093,' + lat + ',' + lng + ');' +
+    'node["amenity"="place_of_worship"]["name"~"Catholic|St\\.|Saint|Our Lady|Holy|Immaculate|Sacred Heart|Basilica|Cathedral",i](around:16093,' + lat + ',' + lng + ');' +
+    'way["amenity"="place_of_worship"]["name"~"Catholic|St\\.|Saint|Our Lady|Holy|Immaculate|Sacred Heart|Basilica|Cathedral",i](around:16093,' + lat + ',' + lng + ');' +
+    ');out center;';
+
+  fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    body: 'data=' + encodeURIComponent(query),
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if(!data.elements || data.elements.length === 0) return;
+
+    // Deduplicate by name+proximity
+    var seen = {};
+    var churches = [];
+    data.elements.forEach(function(el) {
+      var eLat = el.lat || (el.center ? el.center.lat : null);
+      var eLng = el.lon || (el.center ? el.center.lon : null);
+      if(!eLat || !eLng) return;
+      var name = (el.tags && el.tags.name) ? el.tags.name : '';
+      if(!name) return;
+      var dedup = name.toLowerCase().replace(/[^a-z]/g,'');
+      if(seen[dedup]) return;
+      seen[dedup] = true;
+
+      var addr = '';
+      if(el.tags) {
+        var t = el.tags;
+        if(t['addr:housenumber'] && t['addr:street']) {
+          addr = t['addr:housenumber'] + ' ' + t['addr:street'];
+          if(t['addr:city']) addr += ', ' + t['addr:city'];
+        } else if(t['addr:street']) {
+          addr = t['addr:street'];
+          if(t['addr:city']) addr += ', ' + t['addr:city'];
+        } else if(t['addr:city']) {
+          addr = t['addr:city'];
+        }
+      }
+
+      var dist = haversineKm(lat, lng, eLat, eLng) * 0.621371;
+      churches.push({
+        name: name,
+        address: addr,
+        lat: eLat,
+        lng: eLng,
+        rating: 0,
+        dist: dist.toFixed(1),
+        open: null
+      });
+    });
+
+    nearbyChurchesCache = churches.sort(function(a,b) {
+      return parseFloat(a.dist) - parseFloat(b.dist);
+    }).slice(0, 15);
+
+    // Cache results
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify({
+        data: nearbyChurchesCache, lat: lat, lng: lng, ts: Date.now()
+      }));
+    } catch(e) {}
+
+    if(currentScreen === 'home') renderHome();
+  })
+  .catch(function(err) {
+    console.log('Overpass API error:', err);
   });
+}
+
+function haversineKm(lat1, lng1, lat2, lng2) {
+  var R = 6371;
+  var dLat = (lat2-lat1)*Math.PI/180;
+  var dLng = (lng2-lng1)*Math.PI/180;
+  var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
 function openGoogleMaps(lat, lng, name) {
@@ -1227,7 +1287,7 @@ function flagSVG(country) {
 // ===== INIT =====
 function initApp() {
   userData = null;
-  try { userData = JSON.parse(localStorage.getItem('prayedUser')); } catch(e) {}
+  try { userData = JSON.parse(localStorage.getItem('prayedLiveUser')); } catch(e) {}
   if (userData && userData.completed) {
     document.getElementById('splash').style.display = 'none';
     document.getElementById('onboarding').style.display = 'none';
@@ -1240,8 +1300,8 @@ function initApp() {
   } else {
     runSplashAnimation();
   }
-  // Load Google Maps
-  if(typeof loadGoogleMaps === 'function') loadGoogleMaps();
+  // Search nearby churches if we have cached coords
+  if(userData && userData.lat && userData.lng) { searchNearbyChurches(userData.lat, userData.lng); }
   // Firebase auth listener
   if(auth) {
     auth.onAuthStateChanged(function(user) {
@@ -1254,7 +1314,7 @@ function initApp() {
         db.collection('users').doc(user.uid).get().then(function(doc) {
           if(doc.exists && doc.data().completed) {
             userData = doc.data();
-            localStorage.setItem('prayedUser', JSON.stringify(userData));
+            localStorage.setItem('prayedLiveUser', JSON.stringify(userData));
             document.getElementById('splash').style.display = 'none';
             document.getElementById('onboarding').style.display = 'none';
             document.getElementById('app').style.display = 'block';
@@ -1451,7 +1511,7 @@ function detectGeolocation() {
       userData.lat = userLat;
       userData.lng = userLng;
       syncToCloud();
-      if(window.googleMapsReady) searchNearbyChurches(userLat, userLng);
+      searchNearbyChurches(userLat, userLng);
     }, function(err){
       var msg = 'Location access denied.';
       if(err.code === 2) msg = 'Location unavailable.';
@@ -1776,7 +1836,7 @@ function toggleDistanceUnit() {
 function signOut() {
   if(auth) { try { auth.signOut(); } catch(e) {} }
   currentUser = null;
-  localStorage.removeItem('prayedUser');
+  localStorage.removeItem('prayedLiveUser');
   location.reload();
 }
 
