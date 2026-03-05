@@ -6,6 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#2563EB">
+<meta name="apple-mobile-web-app-title" content="PRAYED">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22PRAYED%20-%20A%20World%20at%20Prayer%22%2C%22short_name%22%3A%22PRAYED%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%232563EB%22%2C%22theme_color%22%3A%22%232563EB%22%2C%22description%22%3A%22The%20Family%20That%20Prays%20Together%20Stays%20Together%22%2C%22icons%22%3A%5B%5D%7D">
 <title>PRAYED - A World at Prayer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1299,6 +1301,9 @@ function initApp() {
     document.getElementById('app').style.display = 'block';
     document.getElementById('bottomNav').style.display = 'flex';
     personalizeApp();
+    // Restore persisted habits
+    if(userData.habits) { habits = userData.habits; }
+    if(userData.extraHabits) { extraHabits = userData.extraHabits; }
     if(userData.lat && userData.lng) { fetchWeather(userData.lat, userData.lng); }
     showScreen('home');
     startCounters();
@@ -1729,7 +1734,7 @@ function showSubPage(name, title) {
   document.getElementById('spBody').innerHTML = getSubPageContent(name);
   document.getElementById('subPage').style.display = 'flex';
   document.getElementById('spBody').scrollTop = 0;
-  if(name === 'hc-community') { /* login gate shows first - channels load after hcLogin() */ }
+  if(name === 'hc-community') { if(currentUser) { setTimeout(function(){ hcLogin(); }, 100); } }
 }
 function closeSubPage() { document.getElementById('subPage').style.display = 'none'; }
 
@@ -2175,8 +2180,8 @@ function renderHabits() {
   document.getElementById('screenHabits').innerHTML = html;
 }
 
-function toggleHabit(i) { habits[i].done = !habits[i].done; renderHabits(); }
-function toggleExtraHabit(i) { extraHabits[i].done = !extraHabits[i].done; renderHabits(); }
+function toggleHabit(i) { habits[i].done = !habits[i].done; if(userData){ userData.habits = habits; syncToCloud(); } renderHabits(); }
+function toggleExtraHabit(i) { extraHabits[i].done = !extraHabits[i].done; if(userData){ userData.extraHabits = extraHabits; syncToCloud(); } renderHabits(); }
 
 // ===== RENDER PROFILE =====
 function renderProfile() {
@@ -2475,7 +2480,27 @@ function getSubPageContent(name) {
       '<div class="cd-tab" onclick="switchCircleTab(\'events\',this)">Events</div>' +
       '<div class="cd-tab" onclick="switchCircleTab(\'pray\',this)">Pray</div></div>';
     h += '<div class="cd-tab-content" id="circleTabContent">';
-    // Feed (default)
+    // Post input
+    if(currentUser) {
+      h += '<div style="padding:12px;background:var(--card-bg);border-radius:12px;margin-bottom:12px;box-shadow:var(--shadow)">' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+        '<div class="pw-av" style="background:var(--primary-blue);width:32px;height:32px;font-size:12px">'+(userData&&userData.initials?userData.initials:'ME')+'</div>' +
+        '<span style="font-size:13px;color:var(--text-light)">Share a prayer intention...</span></div>' +
+        '<textarea id="circlePostInput" placeholder="What\'s on your heart? Share a prayer intention, testimony, or encouragement..." style="width:100%;border:1px solid var(--light-gray);border-radius:10px;padding:10px;font-size:13px;resize:none;height:60px;font-family:inherit;background:var(--warm-bg);color:var(--text)"></textarea>' +
+        '<button onclick="postToCircle(\''+cid+'\')" style="margin-top:8px;padding:8px 20px;background:var(--primary-blue);color:#fff;border-radius:8px;font-size:13px;font-weight:600;float:right">' + svgIcons.heart + ' Post</button>' +
+        '<div style="clear:both"></div></div>';
+    }
+    // Show locally stored circle posts
+    var circleLocalKey = 'prayedCircle_'+cid;
+    var localPosts = [];
+    try { localPosts = JSON.parse(localStorage.getItem(circleLocalKey)) || []; } catch(e) {}
+    localPosts.forEach(function(w) {
+      h += '<div class="prayer-wall-item"><div class="pw-header"><div class="pw-av" style="background:'+(w.color||'var(--primary-blue)')+'">'+w.initials+'</div>' +
+        '<div class="pw-name">'+w.name+'</div><div class="pw-time">'+w.time+'</div></div>' +
+        '<div class="pw-text">'+w.text+'</div>' +
+        '<div class="pw-pray-btn">' + svgIcons.heart + ' '+(w.count||1)+' praying</div></div>';
+    });
+    // Feed (default/seed posts)
     wall.forEach(function(w) {
       h += '<div class="prayer-wall-item"><div class="pw-header"><div class="pw-av" style="background:'+w.color+'">'+w.initials+'</div>' +
         '<div class="pw-name">'+w.name+' '+flagSVG(w.flag)+'</div><div class="pw-time">'+w.time+'</div></div>' +
@@ -2511,6 +2536,43 @@ function switchCircleTab(tab, el) {
     // Reload feed
     showSubPage(document.getElementById('spTitle').textContent, document.getElementById('spTitle').textContent);
   }
+}
+
+function postToCircle(cid) {
+  var inp = document.getElementById('circlePostInput');
+  if(!inp || !inp.value.trim()) return;
+  var text = inp.value.trim();
+  inp.value = '';
+  var u = userData || {};
+  var initials = u.initials || 'ME';
+  var displayName = (u.firstName ? u.firstName + ' ' + (u.lastName||'') : 'User').trim();
+  var now = new Date();
+  var timeStr = 'Just now';
+  var postObj = {
+    name: displayName,
+    initials: initials,
+    color: 'var(--primary-blue)',
+    text: text,
+    time: timeStr,
+    count: 1,
+    ts: now.getTime()
+  };
+  // Store locally
+  var circleLocalKey = 'prayedCircle_'+cid;
+  var localPosts = [];
+  try { localPosts = JSON.parse(localStorage.getItem(circleLocalKey)) || []; } catch(e) {}
+  localPosts.unshift(postObj);
+  localStorage.setItem(circleLocalKey, JSON.stringify(localPosts.slice(0,20)));
+  // Write to Firestore
+  if(db && currentUser) {
+    try {
+      db.collection('circles').doc(cid).collection('posts').add(postObj)
+        .catch(function(e) { console.warn('Firestore circle post:', e); });
+    } catch(e) {}
+  }
+  // Re-render the circle detail page
+  var title = document.getElementById('spTitle').textContent;
+  showSubPage('circle-detail-'+cid, title);
 }
 
 // ===== HC COMMUNITY PLATFORM =====
@@ -2625,7 +2687,14 @@ function hcLogin() {
   if(main) { main.style.display = 'block'; setTimeout(function(){ var t = document.querySelector('.comm-tab.active'); if(t) switchCommTab('csc', t); }, 50); }
 }
 
+var activeChannelName = '';
+var activeChannelColor = '';
+var channelLocalMessages = {};
+
 function showHCChannel(name, loc, color) {
+  activeChannelName = name;
+  activeChannelColor = color;
+  var channelKey = name.toLowerCase().replace(/[^a-z0-9]/g,'-');
   var msgs = hcChatMessages['default'];
   var h = '<div style="padding:12px;background:'+color+';border-radius:12px;margin-bottom:12px;color:#fff">' +
     '<div style="font-size:15px;font-weight:700">'+name+'</div>' +
@@ -2634,19 +2703,97 @@ function showHCChannel(name, loc, color) {
     '<span class="lock-badge" style="color:#fff;background:rgba(255,255,255,0.2)">' + svgIcons.lock + ' Secure</span>' +
     '</div></div>';
   h += '<div class="sp-section"><h3 style="font-size:14px">Messages</h3></div>';
+  h += '<div id="hcMsgList">';
   msgs.forEach(function(m) {
-    h += '<div class="chat-msg"><div class="cm-av" style="background:'+m.color+'">'+m.initials+'</div>' +
-      '<div class="cm-body"><div class="cm-head"><span class="cm-name">'+m.name+'</span>' +
-      (m.role ? '<span class="cm-role">'+m.role+'</span>' : '') +
-      '<span class="cm-time">'+m.time+'</span></div>' +
-      '<div class="cm-text">'+m.text+'</div></div></div>';
+    h += renderChatMsg(m);
   });
-  h += '<div class="chat-input"><input placeholder="Message '+name+'..." disabled>' +
-    '<button disabled><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>' +
-    '<div style="text-align:center;padding:12px;font-size:11px;color:var(--text-light)">Sign in with your Holy Cross credentials to send messages</div>';
+  // Show locally stored messages for this channel
+  var localMsgs = channelLocalMessages[channelKey] || [];
+  localMsgs.forEach(function(m) {
+    h += renderChatMsg(m);
+  });
+  h += '</div>';
+  // Chat input - enabled if signed in
+  if(currentUser) {
+    h += '<div class="chat-input"><input id="hcMsgInput" placeholder="Message '+name.replace(/'/g,'')+'..." onkeydown="if(event.key===\'Enter\')sendHCMessage()">' +
+      '<button onclick="sendHCMessage()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>';
+  } else {
+    h += '<div class="chat-input"><input placeholder="Sign in to send messages..." disabled>' +
+      '<button disabled><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>' +
+      '<div style="text-align:center;padding:8px;font-size:11px;color:var(--text-light)"><a href="#" onclick="showAuthModal(\'signin\');return false" style="color:var(--primary-blue);font-weight:600">Sign in</a> to send messages</div>';
+  }
   document.getElementById('spTitle').textContent = name;
   document.getElementById('spBody').innerHTML = h;
   document.getElementById('subPage').style.display = 'flex';
+  // Load messages from Firestore if available
+  if(db && currentUser) {
+    try {
+      db.collection('channels').doc(channelKey).collection('messages')
+        .orderBy('ts','asc').limitToLast(50)
+        .onSnapshot(function(snap) {
+          var list = document.getElementById('hcMsgList');
+          if(!list) return;
+          // Clear and re-render all (seed + Firestore)
+          var newH = '';
+          msgs.forEach(function(m) { newH += renderChatMsg(m); });
+          snap.forEach(function(doc) {
+            var d = doc.data();
+            newH += renderChatMsg(d);
+          });
+          list.innerHTML = newH;
+          list.scrollTop = list.scrollHeight;
+        });
+    } catch(e) { console.warn('Firestore channel listen:', e); }
+  }
+  // Scroll to bottom
+  setTimeout(function(){ var list = document.getElementById('hcMsgList'); if(list) list.scrollTop = list.scrollHeight; }, 200);
+}
+
+function renderChatMsg(m) {
+  return '<div class="chat-msg"><div class="cm-av" style="background:'+(m.color||'var(--primary-blue)')+'">'+
+    (m.initials||'?')+'</div>' +
+    '<div class="cm-body"><div class="cm-head"><span class="cm-name">'+(m.name||'')+'</span>' +
+    (m.role ? '<span class="cm-role">'+m.role+'</span>' : '') +
+    '<span class="cm-time">'+(m.time||'')+'</span></div>' +
+    '<div class="cm-text">'+(m.text||'')+'</div></div></div>';
+}
+
+function sendHCMessage() {
+  var inp = document.getElementById('hcMsgInput');
+  if(!inp || !inp.value.trim()) return;
+  var text = inp.value.trim();
+  inp.value = '';
+  var u = userData || {};
+  var initials = (u.initials || (currentUser && currentUser.email ? currentUser.email.charAt(0).toUpperCase() : '?'));
+  var displayName = (u.firstName ? u.firstName + ' ' + (u.lastName||'') : (currentUser ? currentUser.email : 'User')).trim();
+  var now = new Date();
+  var timeStr = now.getHours() + ':' + (now.getMinutes()<10?'0':'') + now.getMinutes() + (now.getHours()>=12?' PM':' AM');
+  var msgObj = {
+    name: displayName,
+    initials: initials,
+    color: 'var(--primary-blue)',
+    text: text,
+    time: timeStr,
+    ts: now.getTime(),
+    uid: currentUser ? currentUser.uid : ''
+  };
+  // Add to local display immediately
+  var list = document.getElementById('hcMsgList');
+  if(list) {
+    list.innerHTML += renderChatMsg(msgObj);
+    list.scrollTop = list.scrollHeight;
+  }
+  // Store locally
+  var channelKey = activeChannelName.toLowerCase().replace(/[^a-z0-9]/g,'-');
+  if(!channelLocalMessages[channelKey]) channelLocalMessages[channelKey] = [];
+  channelLocalMessages[channelKey].push(msgObj);
+  // Write to Firestore
+  if(db && currentUser) {
+    try {
+      db.collection('channels').doc(channelKey).collection('messages').add(msgObj)
+        .catch(function(e) { console.warn('Firestore msg write:', e); });
+    } catch(e) { console.warn('Firestore msg:', e); }
+  }
 }
 
 function submitChallengeAnswer(el, correct) {
