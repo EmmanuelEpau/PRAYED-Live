@@ -1049,12 +1049,17 @@ function searchNearbyChurches(lat, lng) {
     'way["amenity"="place_of_worship"]["denomination"~"catholic"](around:16093,' + lat + ',' + lng + ');' +
     ');out center;';
 
-  fetch('https://overpass-api.de/api/interpreter', {
+  var endpoints = ['https://overpass.kumi.systems/api/interpreter','https://overpass-api.de/api/interpreter'];
+  var ep = endpoints[Math.floor(Math.random()*endpoints.length)];
+  fetch(ep, {
     method: 'POST',
     body: 'data=' + encodeURIComponent(query),
     headers: {'Content-Type': 'application/x-www-form-urlencoded'}
   })
-  .then(function(r) { return r.json(); })
+  .then(function(r) {
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
   .then(function(data) {
     if(!data.elements || data.elements.length === 0) return;
 
@@ -2667,4 +2672,4 @@ document.addEventListener('DOMContentLoaded', initApp);
 
 </script>
 </body>
-</html><!-- v3 -->
+</html>
