@@ -948,8 +948,17 @@ function showAuthModal(mode) {
     '<h2 style="font-size:22px;font-weight:700;color:var(--navy)">' + (isSignUp ? 'Create Account' : 'Welcome Back') + '</h2>' +
     '<p style="font-size:13px;color:var(--text-light);margin-top:4px">' + (isSignUp ? 'Join the PRAYED community' : 'Sign in to sync your prayer life') + '</p></div>' +
     '<input id="authEmail" type="email" placeholder="Email address" class="onb-input">' +
-    '<input id="authPass" type="password" placeholder="Password" class="onb-input">' +
-    (isSignUp ? '<input id="authPass2" type="password" placeholder="Confirm password" class="onb-input">' : '') +
+    '<input id="authPass" type="password" placeholder="Password" class="onb-input"' + (isSignUp ? ' oninput="checkPassStrength()"' : '') + '>' +
+    (isSignUp ? '<div id="passStrength" style="font-size:12px;margin:-8px 0 8px 4px;display:none">' +
+      '<div style="display:flex;gap:4px;margin-bottom:4px"><div id="psBar1" style="flex:1;height:3px;border-radius:2px;background:#E5E7EB"></div><div id="psBar2" style="flex:1;height:3px;border-radius:2px;background:#E5E7EB"></div><div id="psBar3" style="flex:1;height:3px;border-radius:2px;background:#E5E7EB"></div><div id="psBar4" style="flex:1;height:3px;border-radius:2px;background:#E5E7EB"></div></div>' +
+      '<div id="psText" style="color:var(--text-light)">Password requirements</div>' +
+      '<div style="margin-top:4px;color:var(--text-light);line-height:1.6">' +
+      '<div id="psLen">&#9675; At least 8 characters</div>' +
+      '<div id="psUpper">&#9675; One uppercase letter</div>' +
+      '<div id="psNum">&#9675; One number</div>' +
+      '<div id="psSpecial">&#9675; One special character</div>' +
+      '</div></div>' +
+      '<input id="authPass2" type="password" placeholder="Confirm password" class="onb-input">' : '') +
     '<div id="authError" style="color:#E85D4A;font-size:13px;margin-bottom:12px;display:none"></div>' +
     '<button onclick="emailAuth(\'' + mode + '\')" style="width:100%;padding:14px;background:var(--primary-blue);color:#fff;border-radius:12px;font-size:15px;font-weight:600;margin-bottom:12px">' + (isSignUp ? 'Create Account' : 'Sign In') + '</button>' +
     '<div style="text-align:center;color:var(--text-light);font-size:13px;margin:12px 0">or</div>' +
@@ -969,11 +978,37 @@ function showAuthError(msg) {
   if(e) { e.textContent = msg; e.style.display = 'block'; }
 }
 
+function checkPassStrength() {
+  var p = document.getElementById('authPass');
+  if(!p) return;
+  var v = p.value;
+  var box = document.getElementById('passStrength');
+  if(box) box.style.display = v.length > 0 ? 'block' : 'none';
+  var checks = {len: v.length >= 8, upper: /[A-Z]/.test(v), num: /[0-9]/.test(v), special: /[^A-Za-z0-9]/.test(v)};
+  var pass = [checks.len, checks.upper, checks.num, checks.special].filter(Boolean).length;
+  var colors = ['#E85D4A','#F59E0B','#F59E0B','#10B981'];
+  var labels = ['Weak','Fair','Good','Strong'];
+  var bars = ['psBar1','psBar2','psBar3','psBar4'];
+  for(var i=0;i<4;i++) {
+    var b = document.getElementById(bars[i]);
+    if(b) b.style.background = i < pass ? colors[Math.max(0,pass-1)] : '#E5E7EB';
+  }
+  var txt = document.getElementById('psText');
+  if(txt && pass > 0) { txt.textContent = labels[pass-1]; txt.style.color = colors[pass-1]; }
+  else if(txt) { txt.textContent = 'Password requirements'; txt.style.color = 'var(--text-light)'; }
+  var mark = function(id,ok) { var el = document.getElementById(id); if(el) el.innerHTML = (ok ? '&#9679;' : '&#9675;') + ' ' + el.textContent.substring(2); el.style.color = ok ? '#10B981' : 'var(--text-light)'; };
+  mark('psLen', checks.len);
+  mark('psUpper', checks.upper);
+  mark('psNum', checks.num);
+  mark('psSpecial', checks.special);
+}
+
 function emailAuth(mode) {
   var email = document.getElementById('authEmail').value.trim();
   var pass = document.getElementById('authPass').value;
   if(!email || !pass) { showAuthError('Please fill in all fields'); return; }
   if(mode === 'signup') {
+    if(pass.length < 8 || !/[A-Z]/.test(pass) || !/[0-9]/.test(pass) || !/[^A-Za-z0-9]/.test(pass)) { showAuthError('Password must be 8+ chars with uppercase, number & special character'); return; }
     var pass2 = document.getElementById('authPass2');
     if(pass2 && pass !== pass2.value) { showAuthError('Passwords do not match'); return; }
     auth.createUserWithEmailAndPassword(email, pass)
@@ -2678,7 +2713,7 @@ function switchCircleTab(tab, el) {
     ch += '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px"><div style="font-size:28px;margin-bottom:8px">💬</div>Welcome to the group chat!<br>Start a conversation with your prayer circle.</div>';
     ch += '</div>';
     if(currentUser) {
-      ch += '<div class="chat-input" style="margin-top:8px"><input id="circleMsgInput" placeholder="Message '+circleName.replace(/'/g,'')+'..." onkeydown="if(event.key===\'Enter\')sendCircleChat()">' +
+      ch += '<div class="chat-input" style="margin-top:8px"><input id="circleMsgInput" maxlength="500" placeholder="Message '+circleName.replace(/'/g,'')+'..." onkeydown="if(event.key===\'Enter\')sendCircleChat()">' +
         '<button onclick="sendCircleChat()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>';
     } else {
       ch += '<div class="chat-input" style="margin-top:8px"><input placeholder="Sign in to chat..." disabled>' +
@@ -2859,7 +2894,7 @@ function loadCircleChat(channelKey) {
           if(!msgList) return;
           var newH = '';
           snap.forEach(function(doc) {
-            newH += renderChatMsg(doc.data());
+            newH += renderChatMsg(doc.data(), channelKey, doc.id);
           });
           if(newH) {
             msgList.innerHTML = newH;
@@ -2871,10 +2906,14 @@ function loadCircleChat(channelKey) {
   setTimeout(function(){ if(list) list.scrollTop = list.scrollHeight; }, 200);
 }
 
+var lastMsgTime = 0;
 function sendCircleChat() {
+  var now = Date.now();
+  if(now - lastMsgTime < 2000) { showToast('Please wait a moment before sending again'); return; }
+  lastMsgTime = now;
   var inp = document.getElementById('circleMsgInput');
   if(!inp || !inp.value.trim()) return;
-  var text = inp.value.trim();
+  var text = inp.value.trim().substring(0, 500);
   inp.value = '';
   var u = userData || {};
   var initials = (u.initials || (currentUser && currentUser.email ? currentUser.email.charAt(0).toUpperCase() : '?'));
@@ -3160,7 +3199,7 @@ function showHCChannel(name, loc, color) {
   h += '</div>';
   // Chat input - enabled if signed in
   if(currentUser) {
-    h += '<div class="chat-input"><input id="hcMsgInput" placeholder="Message '+name.replace(/'/g,'')+'..." onkeydown="if(event.key===\'Enter\')sendHCMessage()">' +
+    h += '<div class="chat-input"><input id="hcMsgInput" maxlength="500" placeholder="Message '+name.replace(/'/g,'')+'..." onkeydown="if(event.key===\'Enter\')sendHCMessage()">' +
       '<button onclick="sendHCMessage()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>';
   } else {
     h += '<div class="chat-input"><input placeholder="Sign in to send messages..." disabled>' +
@@ -3183,7 +3222,7 @@ function showHCChannel(name, loc, color) {
           msgs.forEach(function(m) { newH += renderChatMsg(m); });
           snap.forEach(function(doc) {
             var d = doc.data();
-            newH += renderChatMsg(d);
+            newH += renderChatMsg(d, channelKey, doc.id);
           });
           list.innerHTML = newH;
           list.scrollTop = list.scrollHeight;
@@ -3194,18 +3233,19 @@ function showHCChannel(name, loc, color) {
   setTimeout(function(){ var list = document.getElementById('hcMsgList'); if(list) list.scrollTop = list.scrollHeight; }, 200);
 }
 
-function renderChatMsg(m) {
+function renderChatMsg(m, channelKey, docId) {
   var isMe = currentUser && m.uid && m.uid === currentUser.uid;
   var safeText = escapeHtml(m.text);
   var safeName = escapeHtml(m.name);
   var safeInitials = escapeHtml(m.initials);
   var safeTime = escapeHtml(m.time);
   var safeRole = m.role ? escapeHtml(m.role) : '';
+  var delBtn = (isMe && channelKey && docId) ? '<span class="cm-delete" onclick="deleteMessage(\''+channelKey+'\',\''+docId+'\',this)" title="Delete" style="cursor:pointer;opacity:0.4;font-size:11px;margin-left:6px">&#10005;</span>' : '';
   if (isMe) {
     return '<div class="chat-msg chat-msg-me">' +
       '<div class="cm-bubble cm-bubble-me">' +
       '<div class="cm-text">'+safeText+'</div>' +
-      '<div class="cm-time-inline">'+safeTime+'</div>' +
+      '<div class="cm-time-inline">'+safeTime+delBtn+'</div>' +
       '</div></div>';
   }
   return '<div class="chat-msg chat-msg-other">' +
@@ -3218,10 +3258,26 @@ function renderChatMsg(m) {
     '</div></div>';
 }
 
+function deleteMessage(channelKey, docId, el) {
+  if(!confirm('Delete this message?')) return;
+  if(db && currentUser) {
+    db.collection('channels').doc(channelKey).collection('messages').doc(docId).delete()
+      .then(function() {
+        var msgDiv = el.closest('.chat-msg');
+        if(msgDiv) msgDiv.remove();
+        showToast('Message deleted');
+      })
+      .catch(function(e) { showToast('Could not delete message'); console.warn('Delete msg:', e); });
+  }
+}
+
 function sendHCMessage() {
+  var now = Date.now();
+  if(now - lastMsgTime < 2000) { showToast('Please wait a moment before sending again'); return; }
+  lastMsgTime = now;
   var inp = document.getElementById('hcMsgInput');
   if(!inp || !inp.value.trim()) return;
-  var text = inp.value.trim();
+  var text = inp.value.trim().substring(0, 500);
   inp.value = '';
   var u = userData || {};
   var initials = (u.initials || (currentUser && currentUser.email ? currentUser.email.charAt(0).toUpperCase() : '?'));
