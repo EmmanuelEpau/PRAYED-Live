@@ -921,6 +921,7 @@ try {
 } catch(e) { console.warn('Firebase init failed:', e); }
 
 function syncToCloud() {
+  if(currentUser && userData && !userData.authUid) { userData.authUid = currentUser.uid; }
   localStorage.setItem('prayedLiveUser', JSON.stringify(userData));
   if (currentUser && db) {
     try {
@@ -968,7 +969,13 @@ function emailAuth(mode) {
     var pass2 = document.getElementById('authPass2');
     if(pass2 && pass !== pass2.value) { showAuthError('Passwords do not match'); return; }
     auth.createUserWithEmailAndPassword(email, pass)
-      .then(function(cred) { onAuthSuccess(cred.user); })
+      .then(function(cred) {
+        // Send email verification
+        if(cred.user && cred.user.sendEmailVerification) {
+          cred.user.sendEmailVerification().catch(function(e){ console.warn('Verification email:', e); });
+        }
+        onAuthSuccess(cred.user);
+      })
       .catch(function(err) { showAuthError(err.message); });
   } else {
     auth.signInWithEmailAndPassword(email, pass)
@@ -987,12 +994,19 @@ function googleSignIn() {
 function onAuthSuccess(user) {
   currentUser = user;
   closeAuthModal();
+  // Check if existing localStorage data belongs to a different user
+  if(userData && userData.authUid && userData.authUid !== user.uid) {
+    userData = null;
+    localStorage.removeItem('prayedLiveUser');
+  }
   if(userData && userData.completed) {
+    if(!userData.authUid) { userData.authUid = user.uid; localStorage.setItem('prayedLiveUser', JSON.stringify(userData)); }
     syncToCloud();
   } else {
     db.collection('users').doc(user.uid).get().then(function(doc) {
       if(doc.exists) {
         userData = doc.data();
+        userData.authUid = user.uid;
         localStorage.setItem('prayedLiveUser', JSON.stringify(userData));
         if(userData.completed) {
           document.getElementById('splash').style.display = 'none';
@@ -1191,6 +1205,12 @@ var extraHabits = [
 var familyCount = 4328;
 var countryCount = 12;
 
+// Security: HTML escaping to prevent XSS attacks
+function escapeHtml(str) {
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 var parishes = [
   {name:"Basilica of the Sacred Heart",city:"South Bend, IN",lat:41.6637,lng:-86.2420},
   {name:"St. Mary's Cathedral",city:"San Francisco, CA",lat:37.7749,lng:-122.4194},
@@ -1351,13 +1371,25 @@ function initApp() {
     auth.onAuthStateChanged(function(user) {
       currentUser = user;
       if(user && userData && userData.completed) {
-        // Silent sync
-        syncToCloud();
-      } else if(user && !userData) {
+        // Check if localStorage data belongs to this user - prevent data mismatch
+        if(userData.authUid && userData.authUid !== user.uid) {
+          // Different user signed in - clear stale data and load from Firestore
+          console.warn('User mismatch: localStorage uid=' + userData.authUid + ' but auth uid=' + user.uid);
+          userData = null;
+          localStorage.removeItem('prayedLiveUser');
+        } else {
+          // Tag userData with auth uid for future checks
+          if(!userData.authUid) { userData.authUid = user.uid; localStorage.setItem('prayedLiveUser', JSON.stringify(userData)); }
+          syncToCloud();
+          return;
+        }
+      }
+      if(user && !userData) {
         // Try loading from Firestore
         db.collection('users').doc(user.uid).get().then(function(doc) {
           if(doc.exists && doc.data().completed) {
             userData = doc.data();
+            userData.authUid = user.uid;
             localStorage.setItem('prayedLiveUser', JSON.stringify(userData));
             document.getElementById('splash').style.display = 'none';
             document.getElementById('onboarding').style.display = 'none';
@@ -2531,9 +2563,9 @@ function getSubPageContent(name) {
     var localPosts = [];
     try { localPosts = JSON.parse(localStorage.getItem(circleLocalKey)) || []; } catch(e) {}
     localPosts.forEach(function(w) {
-      h += '<div class="prayer-wall-item"><div class="pw-header"><div class="pw-av" style="background:'+(w.color||'var(--primary-blue)')+'">'+w.initials+'</div>' +
-        '<div class="pw-name">'+w.name+'</div><div class="pw-time">'+w.time+'</div></div>' +
-        '<div class="pw-text">'+w.text+'</div>' +
+      h += '<div class="prayer-wall-item"><div class="pw-header"><div class="pw-av" style="background:'+(w.color||'var(--primary-blue)')+'">'+escapeHtml(w.initials)+'</div>' +
+        '<div class="pw-name">'+escapeHtml(w.name)+'</div><div class="pw-time">'+escapeHtml(w.time)+'</div></div>' +
+        '<div class="pw-text">'+escapeHtml(w.text)+'</div>' +
         '<div class="pw-pray-btn">' + svgIcons.heart + ' '+(w.count||1)+' praying</div></div>';
     });
     // Feed (default/seed posts)
@@ -2991,20 +3023,25 @@ function showHCChannel(name, loc, color) {
 
 function renderChatMsg(m) {
   var isMe = currentUser && m.uid && m.uid === currentUser.uid;
+  var safeText = escapeHtml(m.text);
+  var safeName = escapeHtml(m.name);
+  var safeInitials = escapeHtml(m.initials);
+  var safeTime = escapeHtml(m.time);
+  var safeRole = m.role ? escapeHtml(m.role) : '';
   if (isMe) {
     return '<div class="chat-msg chat-msg-me">' +
       '<div class="cm-bubble cm-bubble-me">' +
-      '<div class="cm-text">'+(m.text||'')+'</div>' +
-      '<div class="cm-time-inline">'+(m.time||'')+'</div>' +
+      '<div class="cm-text">'+safeText+'</div>' +
+      '<div class="cm-time-inline">'+safeTime+'</div>' +
       '</div></div>';
   }
   return '<div class="chat-msg chat-msg-other">' +
     '<div class="cm-av" style="background:'+(m.color||'var(--primary-blue)')+'">'+
-    (m.initials||'?')+'</div>' +
+    safeInitials+'</div>' +
     '<div class="cm-bubble cm-bubble-other">' +
-    '<div class="cm-name-bubble">'+(m.name||'')+(m.role ? '<span class="cm-role-bubble">'+m.role+'</span>' : '')+'</div>' +
-    '<div class="cm-text">'+(m.text||'')+'</div>' +
-    '<div class="cm-time-inline">'+(m.time||'')+'</div>' +
+    '<div class="cm-name-bubble">'+safeName+(safeRole ? '<span class="cm-role-bubble">'+safeRole+'</span>' : '')+'</div>' +
+    '<div class="cm-text">'+safeText+'</div>' +
+    '<div class="cm-time-inline">'+safeTime+'</div>' +
     '</div></div>';
 }
 
