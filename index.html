@@ -647,6 +647,9 @@ font-size:13px;background:var(--card-bg);color:var(--text);outline:none}
 .chat-input button{width:36px;height:36px;border-radius:50%;background:var(--primary-blue);
 display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .chat-input button svg{width:18px;height:18px;fill:#fff}
+.video-call-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:linear-gradient(135deg,#059669,#0D9488);color:#fff;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;border:none;box-shadow:0 2px 8px rgba(5,150,105,0.3)}
+.video-call-btn:active{opacity:0.9;transform:scale(0.97)}
+.circle-chat-area{max-height:50vh;overflow-y:auto;padding:4px;scroll-behavior:smooth}
 .lock-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--gold);
 background:rgba(198,138,46,0.1);padding:2px 8px;border-radius:8px;font-weight:600}
 .lock-badge svg{width:12px;height:12px;fill:var(--gold)}
@@ -2470,12 +2473,14 @@ function getSubPageContent(name) {
   // Handle circle detail pages
   if (name.startsWith('circle-detail-')) {
     var cid = name.replace('circle-detail-', '');
+    activeCircleId = cid;
     var wall = circleWalls[cid] || circleWalls['daily-rosary'];
     var h = '<img class="sp-hero" src="'+imgMap['event_photo2']+'" alt="Circle">' +
       '<div class="cd-header"><div><h2>' + (document.getElementById('spTitle').textContent||'Circle') + '</h2><div class="cd-count">'+generateRandomCount(50,300)+' members</div></div>' +
-      '<div class="cd-actions"><button class="cd-btn joined">Joined</button><button class="cd-btn invite">Invite</button></div></div>' +
+      '<div class="cd-actions"><button class="cd-btn joined">Joined</button><button class="cd-btn invite">Invite</button><button class="video-call-btn" onclick="startGroupCall(\''+cid+'\')">📹 Pray</button></div></div>' +
       '<p style="padding:0 16px;font-size:13px;color:var(--text-light);margin-bottom:12px">A community of faith united in prayer. Share your intentions, pray together, and grow in holiness.</p>' +
       '<div class="cd-tabs"><div class="cd-tab active" onclick="switchCircleTab(\'feed\',this)">Feed</div>' +
+      '<div class="cd-tab" onclick="switchCircleTab(\'chat\',this)">💬 Chat</div>' +
       '<div class="cd-tab" onclick="switchCircleTab(\'members\',this)">Members</div>' +
       '<div class="cd-tab" onclick="switchCircleTab(\'events\',this)">Events</div>' +
       '<div class="cd-tab" onclick="switchCircleTab(\'pray\',this)">Pray</div></div>';
@@ -2532,6 +2537,28 @@ function switchCircleTab(tab, el) {
       '<p style="font-size:13px;color:var(--text-light);margin-top:4px">20 minutes</p>' +
       '<div class="live-count" style="justify-content:center;margin-top:8px"><span class="live-dot"></span> '+generateRandomCount(5,30)+' praying now</div>' +
       '<button class="sp-btn primary" style="margin-top:12px" onclick="showVideoPlayer(\'Group Rosary\',\'rk7Acpd5Lqw\')"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z"/></svg> Join Now</button></div>';
+  } else if (tab === 'chat') {
+    var cid = activeCircleId || 'daily-rosary';
+    var circleChannelKey = 'circle-' + cid;
+    var circleName = (document.getElementById('spTitle') ? document.getElementById('spTitle').textContent : 'Circle');
+    var ch = '';
+    ch += '<div style="padding:14px;text-align:center;background:linear-gradient(135deg,#059669,#0D9488);border-radius:12px;margin-bottom:12px;color:#fff">' +
+      '<div style="font-size:15px;font-weight:700;margin-bottom:6px">🙏 Group Prayer Call</div>' +
+      '<button onclick="startGroupCall(\''+cid+'\') " style="padding:10px 24px;background:#fff;color:#059669;border-radius:24px;font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:none;box-shadow:0 2px 12px rgba(0,0,0,0.15)">📹 Start Video Call</button>' +
+      '<div style="font-size:11px;opacity:0.85;margin-top:6px">Free · No download · Up to 75 people</div></div>';
+    ch += '<div id="circleMsgList" class="circle-chat-area">';
+    ch += '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px"><div style="font-size:28px;margin-bottom:8px">💬</div>Welcome to the group chat!<br>Start a conversation with your prayer circle.</div>';
+    ch += '</div>';
+    if(currentUser) {
+      ch += '<div class="chat-input" style="margin-top:8px"><input id="circleMsgInput" placeholder="Message '+circleName.replace(/'/g,'')+'..." onkeydown="if(event.key===\'Enter\')sendCircleChat()">' +
+        '<button onclick="sendCircleChat()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>';
+    } else {
+      ch += '<div class="chat-input" style="margin-top:8px"><input placeholder="Sign in to chat..." disabled>' +
+        '<button disabled><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>' +
+        '<div style="text-align:center;padding:8px;font-size:12px;color:var(--text-light)"><a href="#" onclick="showAuthModal(\'signin\');return false" style="color:var(--primary-blue);font-weight:600">Sign in</a> to start chatting</div>';
+    }
+    tc.innerHTML = ch;
+    loadCircleChat(circleChannelKey);
   } else {
     // Reload feed
     showSubPage(document.getElementById('spTitle').textContent, document.getElementById('spTitle').textContent);
@@ -2573,6 +2600,89 @@ function postToCircle(cid) {
   // Re-render the circle detail page
   var title = document.getElementById('spTitle').textContent;
   showSubPage('circle-detail-'+cid, title);
+}
+
+// ===== CIRCLE GROUP CHAT + VIDEO CALLS =====
+var activeCircleId = '';
+
+function loadCircleChat(channelKey) {
+  var list = document.getElementById('circleMsgList');
+  if(!list) return;
+  var localMsgs = channelLocalMessages[channelKey] || [];
+  var h = '';
+  if(localMsgs.length > 0) {
+    localMsgs.forEach(function(m) { h += renderChatMsg(m); });
+  }
+  list.innerHTML = h || '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:13px"><div style="font-size:28px;margin-bottom:8px">💬</div>Welcome to the group chat!<br>Start a conversation with your prayer circle.</div>';
+  if(db && currentUser) {
+    try {
+      db.collection('channels').doc(channelKey).collection('messages')
+        .orderBy('ts','asc').limitToLast(50)
+        .onSnapshot(function(snap) {
+          var msgList = document.getElementById('circleMsgList');
+          if(!msgList) return;
+          var newH = '';
+          snap.forEach(function(doc) {
+            newH += renderChatMsg(doc.data());
+          });
+          if(newH) {
+            msgList.innerHTML = newH;
+            msgList.scrollTop = msgList.scrollHeight;
+          }
+        });
+    } catch(e) { console.warn('Circle chat listen:', e); }
+  }
+  setTimeout(function(){ if(list) list.scrollTop = list.scrollHeight; }, 200);
+}
+
+function sendCircleChat() {
+  var inp = document.getElementById('circleMsgInput');
+  if(!inp || !inp.value.trim()) return;
+  var text = inp.value.trim();
+  inp.value = '';
+  var u = userData || {};
+  var initials = (u.initials || (currentUser && currentUser.email ? currentUser.email.charAt(0).toUpperCase() : '?'));
+  var displayName = (u.firstName ? u.firstName + ' ' + (u.lastName||'') : (currentUser ? currentUser.email : 'User')).trim();
+  var now = new Date();
+  var h = now.getHours();
+  var ampm = h >= 12 ? 'PM' : 'AM';
+  var h12 = h % 12 || 12;
+  var timeStr = h12 + ':' + (now.getMinutes()<10?'0':'') + now.getMinutes() + ' ' + ampm;
+  var msgObj = {
+    name: displayName,
+    initials: initials,
+    color: 'var(--primary-blue)',
+    text: text,
+    time: timeStr,
+    ts: now.getTime(),
+    uid: currentUser ? currentUser.uid : ''
+  };
+  var list = document.getElementById('circleMsgList');
+  if(list) {
+    // Remove welcome message if present
+    if(list.querySelector('div[style*="text-align:center"]')) {
+      list.innerHTML = '';
+    }
+    list.innerHTML += renderChatMsg(msgObj);
+    list.scrollTop = list.scrollHeight;
+  }
+  var channelKey = 'circle-' + activeCircleId;
+  if(!channelLocalMessages[channelKey]) channelLocalMessages[channelKey] = [];
+  channelLocalMessages[channelKey].push(msgObj);
+  if(db && currentUser) {
+    try {
+      db.collection('channels').doc(channelKey).collection('messages').add(msgObj)
+        .catch(function(e) { console.warn('Circle chat write:', e); });
+    } catch(e) { console.warn('Circle chat:', e); }
+  }
+}
+
+function startGroupCall(roomId) {
+  var roomName = 'PRAYED-' + roomId.replace(/[^a-zA-Z0-9-]/g, '-');
+  var u = userData || {};
+  var displayName = (u.firstName ? u.firstName + ' ' + (u.lastName||'') : 'Guest').trim();
+  var jitsiUrl = 'https://meet.jit.si/' + encodeURIComponent(roomName) + '#userInfo.displayName="' + encodeURIComponent(displayName) + '"';
+  window.open(jitsiUrl, '_blank');
 }
 
 // ===== HC COMMUNITY PLATFORM =====
@@ -2697,8 +2807,10 @@ function showHCChannel(name, loc, color) {
   var channelKey = name.toLowerCase().replace(/[^a-z0-9]/g,'-');
   var msgs = hcChatMessages['default'];
   var h = '<div style="padding:12px;background:'+color+';border-radius:12px;margin-bottom:12px;color:#fff">' +
-    '<div style="font-size:15px;font-weight:700">'+name+'</div>' +
-    '<div style="font-size:12px;opacity:0.8;margin-top:2px">'+loc+'</div>' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
+    '<div><div style="font-size:15px;font-weight:700">'+name+'</div>' +
+    '<div style="font-size:12px;opacity:0.8;margin-top:2px">'+loc+'</div></div>' +
+    '<button onclick="startGroupCall(\'hc-'+channelKey+'\') " style="padding:6px 14px;background:rgba(255,255,255,0.25);color:#fff;border-radius:16px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:4px;cursor:pointer;border:none;backdrop-filter:blur(4px)">📹 Call</button></div>' +
     '<div style="display:flex;gap:12px;margin-top:8px">' +
     '<span class="lock-badge" style="color:#fff;background:rgba(255,255,255,0.2)">' + svgIcons.lock + ' Secure</span>' +
     '</div></div>';
