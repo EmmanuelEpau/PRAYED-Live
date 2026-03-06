@@ -15,6 +15,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://meet.jit.si/external_api.js" async></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -291,6 +292,17 @@ z-index:8000;background:#000;display:none;flex-direction:column}
 #videoOverlay .vo-frame{flex:1;display:flex;align-items:center;justify-content:center}
 #videoOverlay iframe{width:100%;aspect-ratio:16/9;border:none}
 #videoOverlay .vo-footer{padding:12px;text-align:center;color:rgba(255,255,255,0.6);font-size:12px}
+
+/* Video Call Overlay (Jitsi In-App) */
+#videoCallOverlay{position:fixed;top:0;left:0;right:0;bottom:0;max-width:500px;margin:0 auto;
+z-index:8500;background:#000;display:none;flex-direction:column}
+#videoCallOverlay .vc-header{display:flex;align-items:center;gap:8px;padding:10px 16px;color:#fff;
+background:rgba(0,0,0,0.9);z-index:1;flex-shrink:0}
+#videoCallOverlay .vc-header svg{width:24px;height:24px;fill:#fff;cursor:pointer;flex-shrink:0}
+#videoCallOverlay .vc-header span{font-size:15px;font-weight:600;flex:1}
+#videoCallOverlay .vc-status{font-size:11px;color:#4ade80;flex-shrink:0}
+#jitsiContainer{flex:1;width:100%;background:#1a1a1a;overflow:hidden}
+#jitsiContainer iframe{width:100%!important;height:100%!important;border:none!important}
 
 #browserOverlay{position:fixed;top:0;left:0;right:0;bottom:0;max-width:500px;margin:0 auto;
 z-index:8000;background:var(--warm-bg);display:none;flex-direction:column}
@@ -630,15 +642,24 @@ align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:18p
 .channel-card .ch-badge{font-size:10px;background:var(--primary-blue);color:#fff;padding:2px 6px;border-radius:8px;font-weight:600}
 .channel-card .ch-online{font-size:10px;color:var(--teal);display:flex;align-items:center;gap:3px}
 .channel-card .ch-online::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal)}
-.chat-msg{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--light-gray)}
-.chat-msg .cm-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
-justify-content:center;color:#fff;font-size:11px;font-weight:600;flex-shrink:0}
-.chat-msg .cm-body{flex:1;min-width:0}
-.chat-msg .cm-head{display:flex;align-items:baseline;gap:6px}
-.chat-msg .cm-name{font-size:13px;font-weight:600;color:var(--navy)}
-.chat-msg .cm-role{font-size:10px;color:var(--primary-blue);background:rgba(37,99,235,0.1);padding:1px 5px;border-radius:4px}
-.chat-msg .cm-time{font-size:10px;color:var(--gray);margin-left:auto}
-.chat-msg .cm-text{font-size:13px;color:var(--text);margin-top:4px;line-height:1.4}
+/* Chat Messages - WhatsApp Style */
+.chat-msg{display:flex;padding:3px 12px}
+.chat-msg-me{justify-content:flex-end}
+.chat-msg-other{justify-content:flex-start;gap:8px}
+.chat-msg-other .cm-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;
+justify-content:center;color:#fff;font-size:10px;font-weight:600;flex-shrink:0;align-self:flex-end}
+.cm-bubble{max-width:78%;padding:8px 12px;border-radius:16px;position:relative}
+.cm-bubble-me{background:var(--primary-blue);color:#fff;border-bottom-right-radius:4px}
+.cm-bubble-other{background:var(--card-bg);color:var(--text);border-bottom-left-radius:4px;
+box-shadow:0 1px 2px rgba(0,0,0,0.06)}
+.cm-name-bubble{font-size:11px;font-weight:600;color:var(--teal);margin-bottom:2px}
+.cm-role-bubble{font-size:9px;color:var(--primary-blue);background:rgba(37,99,235,0.1);
+padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle}
+.cm-bubble .cm-text{font-size:13px;line-height:1.4}
+.cm-bubble-me .cm-text{color:#fff}
+.cm-bubble-other .cm-text{color:var(--text)}
+.cm-time-inline{font-size:9px;opacity:0.6;text-align:right;margin-top:2px}
+.cm-bubble-me .cm-time-inline{color:rgba(255,255,255,0.7)}
 .chat-input{display:flex;gap:8px;padding:12px 16px;background:var(--card-bg);border-top:1px solid var(--light-gray);
 position:sticky;bottom:0}
 .chat-input input{flex:1;padding:10px 14px;border:2px solid var(--light-gray);border-radius:20px;
@@ -786,6 +807,16 @@ border-radius:var(--radius);margin:0 16px 12px;color:#fff}
     </div>
   </div>
   <div class="vo-footer">From Family Rosary &mdash; Holy Cross Family Ministries</div>
+</div>
+
+<!-- VIDEO CALL OVERLAY (Jitsi In-App) -->
+<div id="videoCallOverlay">
+  <div class="vc-header">
+    <svg viewBox="0 0 24 24" onclick="closeVideoCall()"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+    <span id="vcTitle">Prayer Call</span>
+    <div class="vc-status" id="vcStatus"></div>
+  </div>
+  <div id="jitsiContainer"></div>
 </div>
 
 <!-- BROWSER OVERLAY -->
@@ -2677,12 +2708,109 @@ function sendCircleChat() {
   }
 }
 
+var jitsiApi = null;
+
 function startGroupCall(roomId) {
   var roomName = 'PRAYED-' + roomId.replace(/[^a-zA-Z0-9-]/g, '-');
   var u = userData || {};
   var displayName = (u.firstName ? u.firstName + ' ' + (u.lastName||'') : 'Guest').trim();
-  var jitsiUrl = 'https://meet.jit.si/' + encodeURIComponent(roomName) + '#userInfo.displayName="' + encodeURIComponent(displayName) + '"';
-  window.open(jitsiUrl, '_blank');
+
+  // Show overlay
+  document.getElementById('videoCallOverlay').style.display = 'flex';
+  document.getElementById('vcTitle').textContent = 'Prayer Call';
+  document.getElementById('vcStatus').textContent = 'Connecting...';
+
+  // Clean up previous instance
+  if (jitsiApi) {
+    try { jitsiApi.dispose(); } catch(e) {}
+    jitsiApi = null;
+  }
+  document.getElementById('jitsiContainer').innerHTML = '';
+
+  // Check if API loaded
+  if (typeof JitsiMeetExternalAPI === 'undefined') {
+    document.getElementById('jitsiContainer').innerHTML =
+      '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#fff;padding:20px;text-align:center">' +
+      '<div style="font-size:48px;margin-bottom:16px">📹</div>' +
+      '<p style="font-size:15px;margin-bottom:12px">Loading video call...</p>' +
+      '<p style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:20px">If the call doesn\'t load, your browser may be blocking it.</p>' +
+      '<a href="https://meet.jit.si/'+roomName+'" target="_blank" style="padding:12px 24px;background:#059669;color:#fff;border-radius:12px;font-weight:600;text-decoration:none">Open in Browser</a></div>';
+    // Retry after script loads
+    setTimeout(function() {
+      if (typeof JitsiMeetExternalAPI !== 'undefined') {
+        initJitsi(roomName, displayName);
+      }
+    }, 3000);
+    return;
+  }
+
+  initJitsi(roomName, displayName);
+}
+
+function initJitsi(roomName, displayName) {
+  try {
+    document.getElementById('jitsiContainer').innerHTML = '';
+    jitsiApi = new JitsiMeetExternalAPI('meet.jit.si', {
+      roomName: roomName,
+      width: '100%',
+      height: '100%',
+      parentNode: document.getElementById('jitsiContainer'),
+      userInfo: { displayName: displayName },
+      configOverwrite: {
+        startWithAudioMuted: true,
+        startWithVideoMuted: false,
+        disableDeepLinking: true,
+        prejoinPageEnabled: false,
+        disableThirdPartyRequests: true
+      },
+      interfaceConfigOverwrite: {
+        SHOW_JITSI_WATERMARK: false,
+        SHOW_WATERMARK_FOR_GUESTS: false,
+        SHOW_BRAND_WATERMARK: false,
+        TOOLBAR_BUTTONS: ['microphone','camera','chat','raisehand','hangup','fullscreen','tileview','participants-pane'],
+        MOBILE_APP_PROMO: false,
+        HIDE_DEEP_LINKING_LOGO: true
+      }
+    });
+
+    jitsiApi.addEventListener('videoConferenceJoined', function() {
+      document.getElementById('vcStatus').textContent = 'Connected';
+    });
+
+    jitsiApi.addEventListener('readyToClose', function() {
+      closeVideoCall();
+    });
+
+    jitsiApi.addEventListener('participantJoined', function() {
+      try {
+        var count = jitsiApi.getNumberOfParticipants();
+        if(count > 0) document.getElementById('vcStatus').textContent = count + ' in call';
+      } catch(e) {}
+    });
+
+    jitsiApi.addEventListener('participantLeft', function() {
+      try {
+        var count = jitsiApi.getNumberOfParticipants();
+        document.getElementById('vcStatus').textContent = count > 0 ? count + ' in call' : 'Connected';
+      } catch(e) {}
+    });
+
+  } catch(e) {
+    console.warn('Jitsi init failed:', e);
+    document.getElementById('jitsiContainer').innerHTML =
+      '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#fff;padding:20px;text-align:center">' +
+      '<p style="font-size:15px;margin-bottom:12px">Could not start video call.</p>' +
+      '<a href="https://meet.jit.si/'+roomName+'" target="_blank" style="padding:12px 24px;background:#059669;color:#fff;border-radius:12px;font-weight:600;text-decoration:none">Open in Browser</a></div>';
+  }
+}
+
+function closeVideoCall() {
+  if (jitsiApi) {
+    try { jitsiApi.dispose(); } catch(e) {}
+    jitsiApi = null;
+  }
+  document.getElementById('jitsiContainer').innerHTML = '';
+  document.getElementById('videoCallOverlay').style.display = 'none';
 }
 
 // ===== HC COMMUNITY PLATFORM =====
@@ -2862,12 +2990,22 @@ function showHCChannel(name, loc, color) {
 }
 
 function renderChatMsg(m) {
-  return '<div class="chat-msg"><div class="cm-av" style="background:'+(m.color||'var(--primary-blue)')+'">'+
+  var isMe = currentUser && m.uid && m.uid === currentUser.uid;
+  if (isMe) {
+    return '<div class="chat-msg chat-msg-me">' +
+      '<div class="cm-bubble cm-bubble-me">' +
+      '<div class="cm-text">'+(m.text||'')+'</div>' +
+      '<div class="cm-time-inline">'+(m.time||'')+'</div>' +
+      '</div></div>';
+  }
+  return '<div class="chat-msg chat-msg-other">' +
+    '<div class="cm-av" style="background:'+(m.color||'var(--primary-blue)')+'">'+
     (m.initials||'?')+'</div>' +
-    '<div class="cm-body"><div class="cm-head"><span class="cm-name">'+(m.name||'')+'</span>' +
-    (m.role ? '<span class="cm-role">'+m.role+'</span>' : '') +
-    '<span class="cm-time">'+(m.time||'')+'</span></div>' +
-    '<div class="cm-text">'+(m.text||'')+'</div></div></div>';
+    '<div class="cm-bubble cm-bubble-other">' +
+    '<div class="cm-name-bubble">'+(m.name||'')+(m.role ? '<span class="cm-role-bubble">'+m.role+'</span>' : '')+'</div>' +
+    '<div class="cm-text">'+(m.text||'')+'</div>' +
+    '<div class="cm-time-inline">'+(m.time||'')+'</div>' +
+    '</div></div>';
 }
 
 function sendHCMessage() {
