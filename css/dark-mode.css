@@ -1,0 +1,55 @@
+/* ============================================
+   PRAYED Design System - Dark Mode Overrides
+   ============================================ */
+
+/* === Dark Mode Variable Overrides === */
+body.dark-mode {
+  --warm-bg: #1A1A2E;
+  --navy: #E5E7EB;
+  --light-gray: #2A2A3E;
+  --dark-gray: #9CA3AF;
+  --card-bg: #2A2A3E;
+  --text: #E5E7EB;
+  --text-light: #9CA3AF;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  background-color: #1A1A2E;
+  color: #E5E7EB;
+}
+
+/* === Dark Mode Bible Reader Overrides === */
+body.dark-mode .bible-verse-wrap {
+  color: var(--text);
+}
+
+body.dark-mode .bible-chapter-title {
+  color: var(--text);
+}
+
+body.dark-mode .bible-section-heading {
+  color: var(--text);
+}
+
+body.dark-mode .votd-card .votd-text {
+  color: var(--text);
+}
+
+/* --- Dark Mode Highlight Colors (reduced opacity) --- */
+body.dark-mode .bible-hl-yellow {
+  background: rgba(255,220,100,0.25);
+}
+
+body.dark-mode .bible-hl-green {
+  background: rgba(100,220,100,0.18);
+}
+
+body.dark-mode .bible-hl-blue {
+  background: rgba(100,180,255,0.18);
+}
+
+body.dark-mode .bible-hl-pink {
+  background: rgba(255,140,180,0.18);
+}
+
+body.dark-mode .bible-hl-orange {
+  background: rgba(255,180,100,0.2);
+}
