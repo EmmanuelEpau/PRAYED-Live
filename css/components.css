@@ -4,16 +4,23 @@
 
 /* === Cards === */
 .card {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-lg);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.15s;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .card:active {
-  transform: scale(0.97);
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }
 
 /* === App Header === */
@@ -287,12 +294,13 @@
   right: 0;
   max-width: 500px;
   margin: 0 auto;
-  height: 56px;
-  background: var(--card-bg);
+  height: 64px;
+  background: var(--color-surface, #FFFFFF);
   display: flex;
-  border-top: 1px solid var(--light-gray);
+  border-top: 1px solid rgba(0,0,0,0.06);
   z-index: 100;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 -1px 12px rgba(0,0,0,0.04);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .nav-tab {
@@ -310,23 +318,28 @@
 .nav-tab svg {
   width: 24px;
   height: 24px;
-  fill: var(--gray);
-  transition: fill 0.2s;
+  stroke: var(--color-text-muted, #8A8A8A);
+  fill: none;
+  transition: all 0.2s ease;
 }
 
 .nav-tab span {
   font-size: 10px;
   font-weight: 500;
-  color: var(--gray);
+  color: var(--color-text-muted, #8A8A8A);
+  letter-spacing: 0.02em;
   transition: color 0.2s;
 }
 
 .nav-tab.active svg {
-  fill: var(--primary-blue);
+  stroke: var(--color-primary, #1B3A5C);
+  stroke-width: 2;
+  fill: none;
 }
 
 .nav-tab.active span {
-  color: var(--primary-blue);
+  color: var(--color-primary, #1B3A5C);
+  font-weight: 600;
 }
 
 .nav-tab.active::before {
@@ -336,14 +349,15 @@
   left: 25%;
   right: 25%;
   height: 2px;
-  background: var(--primary-blue);
+  background: var(--color-primary, #1B3A5C);
   border-radius: 0 0 2px 2px;
 }
+
 
 /* === Audio Player (Mini Bar) === */
 #audioBar {
   position: fixed;
-  bottom: 56px;
+  bottom: 64px;
   left: 0;
   right: 0;
   max-width: 500px;
@@ -1646,4 +1660,546 @@
   color: var(--text-light);
   margin-top: 6px;
   line-height: 1.4;
+}
+
+/* ============================================
+   HOME SCREEN - Premium Components
+   ============================================ */
+
+/* === Family Prayer Room Card === */
+.family-room-card {
+  margin: 8px 16px 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), 0 0 24px rgba(27,58,92,0.2);
+  color: #fff;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.family-room-card:active {
+  transform: scale(0.98);
+}
+
+.family-room-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.family-room-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.family-room-card__title svg {
+  stroke: var(--color-accent);
+}
+
+.family-room-card__title h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  font-family: var(--font-display);
+}
+
+.streak-badge {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent-light);
+  white-space: nowrap;
+}
+
+.family-room-card__members {
+  display: flex;
+  gap: -4px;
+  margin-bottom: 12px;
+}
+
+.member-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border: 2px solid rgba(255,255,255,0.3);
+  margin-right: -6px;
+  position: relative;
+}
+
+.member-avatar.online::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #4ADE80;
+  border: 2px solid var(--color-primary);
+}
+
+.family-room-card__status {
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.family-room-card__join {
+  width: 100%;
+  padding: 14px;
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(198,138,46,0.35);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  letter-spacing: 0.02em;
+}
+
+.family-room-card__join:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(198,138,46,0.25);
+}
+
+.family-room-card__last {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 12px;
+  text-align: center;
+}
+
+/* === Habit Chips Row === */
+.habits-quick-row {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.habits-quick-row::-webkit-scrollbar {
+  display: none;
+}
+
+.habit-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  border: 2px solid transparent;
+  min-height: 44px;
+}
+
+.habit-chip:active {
+  transform: scale(0.95);
+}
+
+.habit-chip.done {
+  border-color: var(--color-success);
+  background: rgba(13,148,136,0.05);
+}
+
+.habit-chip__check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.habit-chip.done .habit-chip__check {
+  background: var(--color-success);
+  color: #fff;
+}
+
+.habit-chip span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.habit-chip.done span {
+  color: var(--color-success);
+}
+
+.habits-quick-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px 12px;
+}
+
+.habits-quick-meta span {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.habits-quick-meta button {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  padding: 4px 0;
+}
+
+/* === Prayer Cards (Primary - Large) === */
+.prayer-cards-primary {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 0 16px 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.prayer-cards-primary::-webkit-scrollbar {
+  display: none;
+}
+
+.prayer-card-lg {
+  flex: 0 0 260px;
+  scroll-snap-align: start;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  height: 180px;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.prayer-card-lg:active {
+  transform: scale(0.97);
+}
+
+.prayer-card-lg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.prayer-card-lg__overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 16px 16px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
+  color: #fff;
+}
+
+.prayer-card-lg__overlay h3 {
+  font-size: 17px;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.prayer-card-lg__overlay p {
+  font-size: 12px;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* === Prayer Cards (Secondary - Grid) === */
+.prayer-grid-secondary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 8px 16px 4px;
+}
+
+.prayer-card-sm {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+  height: 100px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.prayer-card-sm:active {
+  transform: scale(0.97);
+}
+
+.prayer-card-sm img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.prayer-card-sm__overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  color: #fff;
+}
+
+.prayer-card-sm__overlay h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* === Lent Banner (Updated) === */
+.lent-banner {
+  margin: 12px 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, #7C3AED, #4F46E5);
+  border-radius: var(--radius-lg);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform var(--transition-fast);
+}
+
+.lent-banner:active {
+  transform: scale(0.98);
+}
+
+.lent-banner__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lent-banner__text h3 {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.lent-banner__text p {
+  font-size: 12px;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* === Section Title (Updated) === */
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary);
+  padding: 16px 16px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.section-title svg {
+  flex-shrink: 0;
+}
+
+/* === Verse of the Day Card (Updated) === */
+.votd-card {
+  margin: 8px 16px 16px;
+  padding: 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  border-left: 3px solid var(--color-accent);
+  transition: box-shadow var(--transition-fast);
+}
+
+.votd-card:active {
+  box-shadow: var(--shadow-md);
+}
+
+.votd-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.votd-text {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-style: italic;
+  color: var(--color-text);
+  line-height: var(--line-height-relaxed);
+}
+
+.votd-ref {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-top: 8px;
+}
+
+.votd-action {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* === Quote Card (Updated) === */
+.quote-card {
+  margin: 0 16px 16px;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast);
+}
+
+.quote-card:active {
+  box-shadow: var(--shadow-md);
+}
+
+.quote-card svg {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 8px;
+}
+
+.quote-card blockquote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--color-primary);
+  line-height: var(--line-height-normal);
+}
+
+.quote-card cite {
+  display: block;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-top: 10px;
+  font-style: normal;
+}
+
+/* === World Section (Updated) === */
+.world-section {
+  margin: 0 16px 24px;
+  padding: 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-align: center;
+}
+
+.world-section h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.world-section p {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-top: 6px;
+  line-height: var(--line-height-normal);
+}
+
+/* === Activity Feed (Updated) === */
+.activity-feed {
+  margin: 0 0 8px;
+}
+
+.activity-feed .feed-item {
+  border-bottom: 1px solid var(--color-surface-muted);
+}
+
+.activity-feed .feed-item:last-child {
+  border-bottom: none;
+}
+
+/* === Prayer Grid (Legacy - for Pray screen) === */
+.prayer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  padding: 0 16px;
+}
+
+.prayer-grid-card {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 1;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.prayer-grid-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.prayer-grid-card .overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  color: #fff;
+}
+
+.prayer-grid-card .overlay h3 {
+  font-size: 12px;
+  font-weight: 600;
 }
