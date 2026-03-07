@@ -1,58 +1,85 @@
 // ===== RENDER CIRCLES =====
 function renderCircles() {
   var html = '<div class="app-header"><div class="header-left"><div class="greeting">Circles<small>Your prayer communities</small></div></div></div>';
-  html += '<div class="section-title">My Circles</div>';
+
+  // --- My Circles ---
+  html += '<div class="section-title" style="padding:12px 16px 8px">My Circles</div>';
   html += '<div class="circles-scroll">';
-  circles.forEach(function(c){
-    html += '<div class="circle-item" onclick="showSubPage(\'circle-detail-'+c.id+'\',\''+c.name+'\')">' +
-      '<div class="circle-av" style="background:'+c.color+'">'+c.name.charAt(0)+'</div>' +
-      '<div class="ci-name">'+c.name+'</div><div class="ci-count">'+c.members+' members</div></div>';
+  circles.forEach(function(c) {
+    // Determine type label based on circle properties
+    var typeLabel = 'Family';
+    if (c.icon === 'globe') typeLabel = 'Prayer Intention';
+    else if (c.icon === 'church') typeLabel = 'Parish';
+    html += '<div class="circle-item" onclick="showSubPage(\'circle-detail-' + c.id + '\',\'' + c.name + '\')">' +
+      '<div class="circle-av" style="background:' + c.color + '">' + c.name.charAt(0) + '</div>' +
+      '<div class="ci-name">' + c.name + '</div><div class="ci-count">' + c.members + ' members</div>' +
+      '<div style="font-size:10px;color:var(--text-light);margin-top:2px">' + typeLabel + '</div></div>';
   });
   html += '<div class="circle-item" onclick="showSubPage(\'create-circle\',\'Create Circle\')"><div class="create-circle">' + svgIcons.plus + '</div><div class="ci-name">Create</div></div>';
   html += '</div>';
-  // Near Me - dynamic from actual nearby churches
-  html += '<div class="browse-section"><h3>\u26ea Near Me</h3>';
-  if(nearbyChurchesCache && nearbyChurchesCache.length > 0) {
-    nearbyChurchesCache.slice(0,5).forEach(function(ch) {
-      var cid = ch.name.toLowerCase().replace(/[^a-z0-9]/g,'-').substring(0,30);
-      html += '<div class="browse-card" onclick="showSubPage(\'circle-detail-'+cid+'\',\''+ch.name.replace(/'/g,"\\'")+'\')' + '">' +
-        '<div class="bc-icon" style="background:var(--primary-blue)">' + svgIcons.church + '</div>' +
-        '<div class="bc-info"><div class="bc-name">' + ch.name + '</div><div class="bc-meta">' + ch.address + ' \u2014 ' + ch.dist + ' mi</div>' +
-        '<div class="bc-members">members praying</div></div></div>';
+
+  // --- Catholic Churches Near You ---
+  html += '<div class="browse-section"><h3 style="color:var(--color-primary, #1B3A5C)">Catholic Churches Near You</h3>';
+  if (nearbyChurchesCache && nearbyChurchesCache.length > 0) {
+    nearbyChurchesCache.slice(0, 5).forEach(function(ch) {
+      var cid = ch.name.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30);
+      html += '<div class="browse-card" onclick="showSubPage(\'circle-detail-' + cid + '\',\'' + ch.name.replace(/'/g, "\\'") + '\')">' +
+        '<div class="bc-icon" style="background:var(--color-primary, #1B3A5C)">' + svgIcons.church + '</div>' +
+        '<div class="bc-info"><div class="bc-name">' + ch.name + '<span style="display:inline-block;margin-left:8px;font-size:10px;font-weight:500;color:var(--color-primary, #1B3A5C);background:var(--color-surface, #F3F1EC);padding:2px 6px;border-radius:4px">Parish</span></div>' +
+        '<div class="bc-meta">' + ch.address + ' \u2014 ' + ch.dist + ' mi</div></div></div>';
     });
   } else {
-    // Fallback to default near me
-    browseCircles['near'].forEach(function(c) {
-      var iconHtml = c.img ? '<img src="'+c.img+'" alt="'+c.name+'" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0">' : '<div class="bc-icon" style="background:'+c.color+'">' + (svgIcons[c.icon]||svgIcons.globe) + '</div>';
-      html += '<div class="browse-card" onclick="showSubPage(\'circle-detail-'+c.id+'\',\''+c.name+'\')">' +
-        iconHtml +
-        '<div class="bc-info"><div class="bc-name">'+c.name+'</div><div class="bc-meta">'+c.meta+'</div>' +
-        '<div class="bc-members">'+c.members+'</div></div></div>';
-    });
+    // No data available - prompt user to enable location
+    html += '<div style="padding:16px;text-align:center;color:var(--text-light);font-size:13px">' +
+      '<div style="margin-bottom:6px">' + svgIcons.church + '</div>' +
+      'No churches found nearby \u2014 enable location to find local parishes</div>';
   }
   html += '</div>';
-  // Other browse sections
-  var otherSections = {
-    'Prayer Intentions': browseCircles['intentions'],
-    'Families': browseCircles['families'],
-    'Global': browseCircles['global']
+
+  // --- Circle type legend ---
+  html += '<div style="padding:4px 16px 12px;display:flex;flex-wrap:wrap;gap:8px">';
+  var typeLabels = [
+    {label:'Family', desc:'private', color:'#7C3AED'},
+    {label:'Parish', desc:'public', color:'var(--color-primary, #1B3A5C)'},
+    {label:'Prayer Intention', desc:'global', color:'#0D9488'},
+    {label:'Holy Cross', desc:'verified', color:'#C68A2E'}
+  ];
+  typeLabels.forEach(function(t) {
+    html += '<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-light)">' +
+      '<span style="width:8px;height:8px;border-radius:50%;background:' + t.color + ';display:inline-block"></span>' +
+      t.label + ' <span style="opacity:0.7">(' + t.desc + ')</span></div>';
+  });
+  html += '</div>';
+
+  // --- Browse sections: Prayer Intentions, Families, Global ---
+  var sectionTypes = {
+    'Prayer Intentions': {data: browseCircles['intentions'], type: 'Prayer Intention'},
+    'Families': {data: browseCircles['families'], type: 'Family'},
+    'Global': {data: browseCircles['global'], type: 'Prayer Intention'}
   };
-  Object.keys(otherSections).forEach(function(sec){
-    html += '<div class="browse-section"><h3>'+sec+'</h3>';
-    otherSections[sec].forEach(function(c){
-      var iconHtml = c.img ? '<img src="'+c.img+'" alt="'+c.name+'" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0">' : '<div class="bc-icon" style="background:'+c.color+'">' + (svgIcons[c.icon]||svgIcons.globe) + '</div>';
-      html += '<div class="browse-card" onclick="showSubPage(\'circle-detail-'+c.id+'\',\''+c.name+'\')">' +
+  Object.keys(sectionTypes).forEach(function(sec) {
+    var section = sectionTypes[sec];
+    html += '<div class="browse-section"><h3 style="color:var(--color-primary, #1B3A5C)">' + sec + '</h3>';
+    section.data.forEach(function(c) {
+      var iconHtml = c.img
+        ? '<img src="' + c.img + '" alt="' + c.name + '" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0">'
+        : '<div class="bc-icon" style="background:' + c.color + '">' + (svgIcons[c.icon] || svgIcons.globe) + '</div>';
+      html += '<div class="browse-card" onclick="showSubPage(\'circle-detail-' + c.id + '\',\'' + c.name + '\')">' +
         iconHtml +
-        '<div class="bc-info"><div class="bc-name">'+c.name+'</div><div class="bc-meta">'+c.meta+'</div>' +
-        '<div class="bc-members">'+c.members+'</div></div></div>';
+        '<div class="bc-info"><div class="bc-name">' + c.name + '<span style="display:inline-block;margin-left:8px;font-size:10px;font-weight:500;color:var(--text-light);background:var(--color-surface, #F3F1EC);padding:2px 6px;border-radius:4px">' + section.type + '</span></div>' +
+        '<div class="bc-meta">' + c.meta + '</div>' +
+        '<div class="bc-members">' + c.members + '</div></div></div>';
     });
     html += '</div>';
   });
-  // Holy Cross Community Platform
+
+  // --- Holy Cross Community Platform ---
   html += '<div class="comm-header" onclick="showSubPage(\'hc-community\',\'Holy Cross Community\')" style="display:flex;align-items:center;gap:12px">' +
-    '<div style="flex:1"><h3><svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg> Holy Cross Community</h3>' +
+    '<div style="flex:1"><h3><svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg> Holy Cross Community' +
+    '<span style="display:inline-block;margin-left:8px;font-size:10px;font-weight:500;color:#C68A2E;background:rgba(198,138,46,0.15);padding:2px 6px;border-radius:4px">Verified</span></h3>' +
     '<p>Secure communication for CSC communities, HCFM staff &amp; Holy Cross institutions worldwide</p></div>' +
-    '<img src="'+imgMap['csc_anchor_gold']+'" alt="CSC" style="width:48px;height:48px;object-fit:contain;flex-shrink:0;opacity:0.9"></div>';
+    '<img src="' + imgMap['csc_anchor_gold'] + '" alt="CSC" style="width:48px;height:48px;object-fit:contain;flex-shrink:0;opacity:0.9"></div>';
+
   document.getElementById('screenCircles').innerHTML = html;
 }
 

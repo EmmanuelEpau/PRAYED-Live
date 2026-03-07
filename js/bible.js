@@ -19,6 +19,13 @@ try {
   if(savedVer) currentBibleVersion = savedVer;
 } catch(e) {}
 
+// Load highlights from Firestore on startup (after auth is ready)
+setTimeout(function() {
+  if(typeof loadHighlightsFromCloud === 'function') {
+    loadHighlightsFromCloud();
+  }
+}, 2000);
+
 function fetchBibleChapter(version, bookNum, chapter, callback) {
   var cacheKey = version + '_' + bookNum + '_' + chapter;
   if(bibleCache[cacheKey]) { callback(null, bibleCache[cacheKey]); return; }
@@ -287,6 +294,7 @@ function showVerseActions(verseNum) {
   if(currentHL) {
     html += '<div class="bible-hl-action" onclick="toggleBibleHighlight(' + verseNum + ',null)" title="Remove highlight"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div>';
   }
+  html += '<div class="bible-hl-action" onclick="shareVerseWithFamily(' + verseNum + ')" title="Share with Family"><svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></div>';
   html += '<div class="bible-hl-action" onclick="copyBibleVerse(' + verseNum + ')" title="Copy"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></div>';
   html += '<div class="bible-hl-action" onclick="hideVerseActions()" title="Close"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div>';
   bar.innerHTML = html;
@@ -310,6 +318,7 @@ function toggleBibleHighlight(verseNum, color) {
     bibleHighlights[hlKey][verseNum] = color;
   }
   try { localStorage.setItem('prayedBibleHL', JSON.stringify(bibleHighlights)); } catch(e) {}
+  syncHighlightsToCloud();
   var spans = document.querySelectorAll('.bible-verse-span[data-verse="' + verseNum + '"]');
   spans.forEach(function(s) {
     s.className = 'bible-verse-span';
@@ -341,6 +350,86 @@ function copyBibleVerse(verseNum) {
     document.body.removeChild(temp);
   }
   hideVerseActions();
+}
+
+function shareVerseWithFamily(verseNum) {
+  var span = document.querySelector('.bible-verse-span[data-verse="' + verseNum + '"]');
+  if(!span) return;
+  var book = bibleBooks[currentBibleBook];
+  var verseText = span.textContent.trim();
+  var shareText = book.name + ' ' + currentBibleChapter + ':' + verseNum + ' - \'' + verseText + '\' (' + currentBibleVersion + ')';
+  if(navigator.share) {
+    navigator.share({
+      title: 'Verse from PRAYED',
+      text: shareText
+    }).then(function() {
+      showToast('Verse shared!');
+    }).catch(function(err) {
+      if(err.name !== 'AbortError') {
+        fallbackCopyVerse(shareText);
+      }
+    });
+  } else {
+    fallbackCopyVerse(shareText);
+  }
+  hideVerseActions();
+}
+
+function fallbackCopyVerse(text) {
+  if(navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function() {
+      showToast('Verse copied to clipboard!');
+    }).catch(function() {
+      showToast('Could not copy verse');
+    });
+  } else {
+    var temp = document.createElement('textarea');
+    temp.value = text;
+    temp.style.position = 'fixed';
+    temp.style.opacity = '0';
+    document.body.appendChild(temp);
+    temp.select();
+    try { document.execCommand('copy'); showToast('Verse copied to clipboard!'); }
+    catch(e) { showToast('Could not copy verse'); }
+    document.body.removeChild(temp);
+  }
+}
+
+// ===== FIRESTORE HIGHLIGHT SYNC =====
+function syncHighlightsToCloud() {
+  if(currentUser && db) {
+    try {
+      db.collection('users').doc(currentUser.uid).collection('bibleHighlights').doc('highlights').set({
+        data: bibleHighlights,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge: true});
+    } catch(e) { console.warn('Highlight cloud sync failed:', e); }
+  }
+}
+
+function loadHighlightsFromCloud() {
+  if(currentUser && db) {
+    try {
+      db.collection('users').doc(currentUser.uid).collection('bibleHighlights').doc('highlights').get()
+        .then(function(doc) {
+          if(doc.exists && doc.data() && doc.data().data) {
+            var cloudHL = doc.data().data;
+            // Merge cloud highlights with local (cloud wins on conflict)
+            Object.keys(cloudHL).forEach(function(key) {
+              if(!bibleHighlights[key]) {
+                bibleHighlights[key] = cloudHL[key];
+              } else {
+                Object.keys(cloudHL[key]).forEach(function(vNum) {
+                  bibleHighlights[key][vNum] = cloudHL[key][vNum];
+                });
+              }
+            });
+            try { localStorage.setItem('prayedBibleHL', JSON.stringify(bibleHighlights)); } catch(e) {}
+          }
+        })
+        .catch(function(e) { console.warn('Could not load cloud highlights:', e); });
+    } catch(e) { console.warn('Highlight cloud load failed:', e); }
+  }
 }
 
 function getVerseOfTheDay() {

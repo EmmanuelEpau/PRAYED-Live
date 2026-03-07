@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/screens.css">
 <link rel="stylesheet" href="css/bible.css">
+<link rel="stylesheet" href="css/prayer-room.css">
 <link rel="stylesheet" href="css/dark-mode.css">
 </head>
 <body>
@@ -69,24 +70,120 @@
 <!-- BOTTOM NAV -->
 <div id="bottomNav" style="display:none">
   <div class="nav-tab active" onclick="showScreen('home')" data-tab="home">
-    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.14V20a1 1 0 001 1h4v-7h6v7h4a1 1 0 001-1V10.14"/><path d="M2.5 11L12 3l9.5 8"/></svg>
     <span>Home</span>
   </div>
   <div class="nav-tab" onclick="showScreen('pray')" data-tab="pray">
-    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-1.5 0-2.5 1.5-2.5 3.5 0 1.2.4 2.2 1 2.8L7 15c-.4.6-.5 1-.5 1.5 0 1.2.8 2 2 2.5l3.5 2 3.5-2c1.2-.5 2-1.3 2-2.5 0-.5-.1-.9-.5-1.5l-3.5-5.7c.6-.6 1-1.6 1-2.8C14.5 4.5 13.5 3 12 3z"/><line x1="12" y1="5" x2="12" y2="21"/></svg>
     <span>Pray</span>
   </div>
   <div class="nav-tab" onclick="showScreen('circles')" data-tab="circles">
-    <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="8" r="2.5"/><path d="M2 20v-1c0-2.5 3-4 7-4s7 1.5 7 4v1"/><path d="M16.5 12.5c2.5.3 5 1.5 5 3.5v1"/></svg>
     <span>Circles</span>
   </div>
   <div class="nav-tab" onclick="showScreen('bible')" data-tab="bible">
-    <svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-1-1 1V4zm9 16H6V4h1v9l3-3 3 3V4h5v16z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15z"/><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M9 2v7l2.5-2L14 9V2"/></svg>
     <span>Bible</span>
   </div>
   <div class="nav-tab" onclick="showScreen('profile')" data-tab="profile">
-    <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 21v-1a7 7 0 0114 0v1"/></svg>
     <span>Profile</span>
+  </div>
+</div>
+
+<!-- PRAYER ROOM OVERLAY -->
+<div id="prayerRoomOverlay">
+  <div class="pr-header">
+    <h2>Family Prayer Room</h2>
+    <button class="pr-close" onclick="closePrayerRoom()">
+      <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </button>
+  </div>
+
+  <!-- WAITING STATE -->
+  <div id="prWaiting">
+    <div class="pr-waiting-content">
+      <div class="pr-family-name" id="prFamilyName">Family Prayer Room</div>
+      <div class="pr-subtitle">Waiting for family to join...</div>
+      <div class="pr-participant-list" id="prParticipantList"></div>
+      <div id="prParticipantCount">0 people in room</div>
+
+      <div class="pr-prayer-select">
+        <h3>Choose a prayer</h3>
+        <button class="pr-prayer-option selected" onclick="selectPrayerOption(this,'rosary-joyful')">
+          <span class="pr-prayer-option-icon">&#128255;</span>
+          <span class="pr-prayer-option-name">Joyful Mysteries</span>
+          <span class="pr-prayer-option-duration">20 min</span>
+        </button>
+        <button class="pr-prayer-option" onclick="selectPrayerOption(this,'rosary-sorrowful')">
+          <span class="pr-prayer-option-icon">&#128255;</span>
+          <span class="pr-prayer-option-name">Sorrowful Mysteries</span>
+          <span class="pr-prayer-option-duration">20 min</span>
+        </button>
+        <button class="pr-prayer-option" onclick="selectPrayerOption(this,'rosary-glorious')">
+          <span class="pr-prayer-option-icon">&#128255;</span>
+          <span class="pr-prayer-option-name">Glorious Mysteries</span>
+          <span class="pr-prayer-option-duration">20 min</span>
+        </button>
+        <button class="pr-prayer-option" onclick="selectPrayerOption(this,'rosary-luminous')">
+          <span class="pr-prayer-option-icon">&#128255;</span>
+          <span class="pr-prayer-option-name">Luminous Mysteries</span>
+          <span class="pr-prayer-option-duration">20 min</span>
+        </button>
+        <button class="pr-prayer-option" onclick="selectPrayerOption(this,'our-father')">
+          <span class="pr-prayer-option-icon">&#9771;</span>
+          <span class="pr-prayer-option-name">Our Father</span>
+          <span class="pr-prayer-option-duration">2 min</span>
+        </button>
+      </div>
+
+      <button class="pr-start-btn" onclick="startFamilyPrayer(selectedPrayerForRoom || 'rosary-joyful')">
+        Start Prayer Together
+      </button>
+    </div>
+  </div>
+
+  <!-- ACTIVE STATE -->
+  <div id="prActive" style="display:none">
+    <div class="pr-active-content">
+      <div class="pr-ambient"></div>
+      <div class="pr-live-badge">PRAYING TOGETHER</div>
+      <div class="pr-active-prayer-name" id="prPrayerName">Joyful Mysteries</div>
+      <div class="pr-active-mystery" id="prMysteryName">First Mystery: The Annunciation</div>
+      <div class="pr-prayer-text" id="prPrayerText">
+        Hail Mary, full of grace, the Lord is with thee.<br>
+        Blessed art thou among women,<br>
+        and blessed is the fruit of thy womb, Jesus.
+      </div>
+      <div class="pr-progress">
+        <div class="pr-progress-bar"><div class="pr-progress-fill" id="prProgressFill" style="width:0%"></div></div>
+        <div class="pr-progress-time"><span id="prTimeElapsed">0:00</span><span id="prTimeDuration">20:00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPLETED STATE -->
+  <div id="prCompleted" style="display:none">
+    <div class="pr-completed-content">
+      <div class="pr-completion-glow">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </div>
+      <div class="pr-completed-title">Your family prayed together</div>
+      <div class="pr-completed-duration" id="prDuration">20 minutes</div>
+      <div class="pr-completed-date" id="prDate"></div>
+      <div class="pr-streak-badge" id="prStreak">15 day family streak</div>
+      <textarea class="pr-reflection-input" placeholder="Share a reflection with your family..."></textarea>
+      <button class="pr-schedule-btn">Schedule Next Prayer</button>
+      <button class="pr-close-btn" onclick="closePrayerRoom()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAP TO JOIN (autoplay blocked) -->
+<div id="prTapToJoin" onclick="tapToJoinPrayer()">
+  <div class="pr-tap-content">
+    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    <p>Tap to Join Prayer</p>
   </div>
 </div>
 
@@ -189,6 +286,7 @@
 
 <!-- JavaScript (order matters for global variable dependencies) -->
 <script src="js/imgmap-generated.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
 <script src="js/weather.js"></script>
 <script src="js/places.js"></script>
@@ -200,6 +298,7 @@
 <script src="js/circles.js"></script>
 <script src="js/bible.js"></script>
 <script src="js/profile.js"></script>
+<script src="js/prayer-room.js"></script>
 <script src="js/app.js"></script>
 
 </body>

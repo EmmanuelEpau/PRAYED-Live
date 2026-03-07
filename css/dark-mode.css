@@ -1,36 +1,120 @@
 /* ============================================
    PRAYED Design System - Dark Mode Overrides
+   ============================================
+
+   Primary dark mode colors are handled via CSS
+   variable overrides in variables.css under
+   body.dark-mode. This file contains additional
+   component-specific overrides that cannot be
+   handled through variables alone.
    ============================================ */
 
-/* === Dark Mode Variable Overrides === */
+/* === Dark Mode Legacy Variable Bridge === */
 body.dark-mode {
-  --warm-bg: #1A1A2E;
-  --navy: #E5E7EB;
-  --light-gray: #2A2A3E;
-  --dark-gray: #9CA3AF;
-  --card-bg: #2A2A3E;
-  --text: #E5E7EB;
-  --text-light: #9CA3AF;
-  --shadow: 0 2px 8px rgba(0,0,0,0.3);
-  background-color: #1A1A2E;
-  color: #E5E7EB;
+  /* Legacy aliases that map to the new design tokens in variables.css */
+  --navy: var(--color-text);
+  --coral: #EF6B5B;
+  --primary-blue: #5B9CFF;
+  --shadow: var(--shadow-sm);
+  --radius: var(--radius-lg);
+
+  /* Direct property overrides */
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* === Dark Mode Surface Overrides === */
+body.dark-mode .app-header {
+  background: var(--color-bg);
+}
+
+body.dark-mode .search-bar input {
+  background: var(--color-surface);
+  border-color: var(--color-surface-elevated);
+  color: var(--color-text);
+}
+
+body.dark-mode .search-bar input:focus {
+  border-color: var(--color-primary-light);
+}
+
+body.dark-mode .chat-input {
+  background: var(--color-surface);
+  border-top-color: var(--color-surface-elevated);
+}
+
+body.dark-mode .chat-input input {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-surface-elevated);
+  color: var(--color-text);
+}
+
+body.dark-mode .cm-bubble-other {
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+}
+
+body.dark-mode .trivia-option {
+  background: var(--color-surface);
+  border-color: var(--color-surface-elevated);
+  color: var(--color-text);
+}
+
+body.dark-mode .comm-tabs {
+  border-bottom-color: var(--color-surface-elevated);
+}
+
+body.dark-mode .notif-item {
+  border-bottom-color: var(--color-surface-elevated);
+}
+
+body.dark-mode .notif-btn {
+  background: var(--color-surface-elevated);
+}
+
+body.dark-mode .notif-btn svg {
+  fill: var(--color-text-secondary);
+}
+
+body.dark-mode .signout-btn {
+  background: var(--color-surface-elevated);
+}
+
+body.dark-mode .toggle-switch {
+  background: var(--color-surface-elevated);
+}
+
+body.dark-mode #audioBar {
+  background: linear-gradient(var(--color-surface-muted), var(--color-surface));
+}
+
+body.dark-mode #browserOverlay {
+  background: var(--color-bg);
+}
+
+body.dark-mode #browserOverlay .bo-header {
+  border-bottom-color: var(--color-surface-elevated);
+}
+
+body.dark-mode .timeline {
+  border-left-color: var(--color-surface-elevated);
 }
 
 /* === Dark Mode Bible Reader Overrides === */
 body.dark-mode .bible-verse-wrap {
-  color: var(--text);
+  color: var(--color-text);
 }
 
 body.dark-mode .bible-chapter-title {
-  color: var(--text);
+  color: var(--color-text);
 }
 
 body.dark-mode .bible-section-heading {
-  color: var(--text);
+  color: var(--color-text);
 }
 
 body.dark-mode .votd-card .votd-text {
-  color: var(--text);
+  color: var(--color-text);
 }
 
 /* --- Dark Mode Highlight Colors (reduced opacity) --- */
