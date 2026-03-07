@@ -1,0 +1,12 @@
+{
+  "name": "PRAYED - A World at Prayer",
+  "short_name": "PRAYED",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1B3A5C",
+  "theme_color": "#1B3A5C",
+  "description": "The Family That Prays Together Stays Together",
+  "orientation": "portrait",
+  "icons": [],
+  "categories": ["lifestyle", "social"]
+}
