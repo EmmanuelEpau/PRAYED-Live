@@ -194,6 +194,7 @@ function createPrayerRoom(familyId) {
     createdAt: firebase.database.ServerValue.TIMESTAMP,
     participants: {}
   }).then(function() {
+    logEvent('prayer_room_created', {prayerType: selectedPrayerForRoom});
     openPrayerRoomUI(roomId);
   }).catch(function(err) {
     console.warn('Could not create prayer room:', err);
@@ -231,6 +232,7 @@ function openPrayerRoomUI(roomId) {
   var userName = userData ? userData.firstName : 'Friend';
   var country = userData ? (userData.country || '') : '';
   activePrayerRoom.join(userName, country, '');
+  logEvent('prayer_room_joined', {familyId: roomId});
 
   // Show waiting state initially
   renderPrayerRoomState('waiting', {participants: {}});
@@ -268,6 +270,8 @@ function renderPrayerRoomState(state, room) {
       var mins = Math.round((room.duration || 0) / 60);
       durationEl.textContent = mins + ' minutes';
     }
+    var participantCount = room.participants ? Object.keys(room.participants).length : 0;
+    logEvent('family_prayer_completed', {duration: room.duration || 0, prayerType: room.prayerId || '', participants: participantCount});
   }
 }
 

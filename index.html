@@ -42,60 +42,64 @@
   </div>
   <h1 id="splashTitle">PRAYED</h1>
   <p class="tagline" id="splashTagline">The Family That Prays Together Stays Together</p>
-  <button class="get-started" id="splashBtn" onclick="onGetStarted()">Get Started</button>
+  <button class="get-started" id="splashBtn" onclick="onGetStarted()" aria-label="Get started with PRAYED">Get Started</button>
 </div>
 
-<!-- ONBOARDING -->
+<!-- ONBOARDING (5-Screen Flow) -->
 <div id="onboarding">
+  <div class="onb-progress" id="onbProgress"></div>
   <div class="onb-content" id="onbContent"></div>
-  <div class="onb-footer">
-    <div class="onb-dots" id="onbDots"></div>
-    <div style="display:flex;gap:8px">
-      <button class="onb-btn secondary" id="onbBack" onclick="onbBack()" style="display:none">Back</button>
-      <button class="onb-btn primary" id="onbNext" onclick="onbNext()">Next</button>
-    </div>
+  <div class="onb-footer" id="onbFooter">
+    <button class="onb-back-btn" id="onbBack" onclick="onbBack()" style="display:none">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+      Back
+    </button>
+    <button class="onb-next-btn" id="onbNext" onclick="onbNext()" disabled>Next</button>
   </div>
 </div>
 
 <!-- MAIN APP -->
-<div id="app">
+<main id="app">
   <div class="screen" id="screenHome"></div>
   <div class="screen" id="screenPray"></div>
   <div class="screen" id="screenCircles"></div>
   <div class="screen" id="screenBible"></div>
   <div class="screen" id="screenHabits" style="display:none"></div>
   <div class="screen" id="screenProfile"></div>
-</div>
+</main>
+
+<!-- PRAYER STATUS LIVE REGION -->
+<div aria-live="polite" id="prayerStatus" class="sr-only"></div>
 
 <!-- BOTTOM NAV -->
-<div id="bottomNav" style="display:none">
-  <div class="nav-tab active" onclick="showScreen('home')" data-tab="home">
+<nav id="bottomNav" aria-label="Main navigation" style="display:none">
+  <div class="nav-tab active" onclick="showScreen('home')" data-tab="home" role="button" aria-label="Home screen">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.14V20a1 1 0 001 1h4v-7h6v7h4a1 1 0 001-1V10.14"/><path d="M2.5 11L12 3l9.5 8"/></svg>
     <span>Home</span>
   </div>
-  <div class="nav-tab" onclick="showScreen('pray')" data-tab="pray">
+  <div class="nav-tab" onclick="showScreen('pray')" data-tab="pray" role="button" aria-label="Pray screen - find prayers and devotions">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-1.5 0-2.5 1.5-2.5 3.5 0 1.2.4 2.2 1 2.8L7 15c-.4.6-.5 1-.5 1.5 0 1.2.8 2 2 2.5l3.5 2 3.5-2c1.2-.5 2-1.3 2-2.5 0-.5-.1-.9-.5-1.5l-3.5-5.7c.6-.6 1-1.6 1-2.8C14.5 4.5 13.5 3 12 3z"/><line x1="12" y1="5" x2="12" y2="21"/></svg>
     <span>Pray</span>
   </div>
-  <div class="nav-tab" onclick="showScreen('circles')" data-tab="circles">
+  <div class="nav-tab" onclick="showScreen('circles')" data-tab="circles" role="button" aria-label="Circles screen - prayer communities">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="8" r="2.5"/><path d="M2 20v-1c0-2.5 3-4 7-4s7 1.5 7 4v1"/><path d="M16.5 12.5c2.5.3 5 1.5 5 3.5v1"/></svg>
     <span>Circles</span>
   </div>
-  <div class="nav-tab" onclick="showScreen('bible')" data-tab="bible">
+  <div class="nav-tab" onclick="showScreen('bible')" data-tab="bible" role="button" aria-label="Bible screen - read Scripture">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15z"/><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M9 2v7l2.5-2L14 9V2"/></svg>
     <span>Bible</span>
   </div>
-  <div class="nav-tab" onclick="showScreen('profile')" data-tab="profile">
+  <div class="nav-tab" onclick="showScreen('profile')" data-tab="profile" role="button" aria-label="Profile screen - your account and settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 21v-1a7 7 0 0114 0v1"/></svg>
     <span>Profile</span>
   </div>
-</div>
+</nav>
 
 <!-- PRAYER ROOM OVERLAY -->
 <div id="prayerRoomOverlay">
   <div class="pr-header">
     <h2>Family Prayer Room</h2>
-    <button class="pr-close" onclick="closePrayerRoom()">
+    <button class="pr-close" onclick="closePrayerRoom()" aria-label="Close prayer room">
       <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
     </button>
   </div>
@@ -137,7 +141,7 @@
         </button>
       </div>
 
-      <button class="pr-start-btn" onclick="startFamilyPrayer(selectedPrayerForRoom || 'rosary-joyful')">
+      <button class="pr-start-btn" onclick="startFamilyPrayer(selectedPrayerForRoom || 'rosary-joyful')" aria-label="Start family prayer together">
         Start Prayer Together
       </button>
     </div>
@@ -173,14 +177,14 @@
       <div class="pr-completed-date" id="prDate"></div>
       <div class="pr-streak-badge" id="prStreak">15 day family streak</div>
       <textarea class="pr-reflection-input" placeholder="Share a reflection with your family..."></textarea>
-      <button class="pr-schedule-btn">Schedule Next Prayer</button>
-      <button class="pr-close-btn" onclick="closePrayerRoom()">Close</button>
+      <button class="pr-schedule-btn" aria-label="Schedule next family prayer">Schedule Next Prayer</button>
+      <button class="pr-close-btn" onclick="closePrayerRoom()" aria-label="Close prayer room">Close</button>
     </div>
   </div>
 </div>
 
 <!-- TAP TO JOIN (autoplay blocked) -->
-<div id="prTapToJoin" onclick="tapToJoinPrayer()">
+<div id="prTapToJoin" onclick="tapToJoinPrayer()" role="button" aria-label="Tap to join prayer">
   <div class="pr-tap-content">
     <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
     <p>Tap to Join Prayer</p>
@@ -189,15 +193,15 @@
 
 <!-- AUDIO BAR -->
 <div id="audioBar">
-  <img class="ab-thumb" id="abThumb" src="" alt="">
+  <img class="ab-thumb" id="abThumb" src="" alt="" loading="lazy">
   <div class="ab-info">
     <div class="ab-title" id="abTitle"></div>
     <div class="ab-sub">Praying with you</div>
   </div>
-  <button class="ab-btn" onclick="togglePlay(event)">
+  <button class="ab-btn" onclick="togglePlay(event)" aria-label="Play or pause audio">
     <svg id="abPlayIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
   </button>
-  <button class="ab-btn ab-close" onclick="closePlayer(event)">
+  <button class="ab-btn ab-close" onclick="closePlayer(event)" aria-label="Close audio player">
     <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
   </button>
 </div>
@@ -210,7 +214,7 @@
     <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
     Back
   </div>
-  <img class="af-art" id="afArt" src="" alt="">
+  <img class="af-art" id="afArt" src="" alt="" loading="lazy">
   <div class="af-title" id="afTitle"></div>
   <div class="af-desc" id="afDesc">Join families around the world in prayer</div>
   <div class="af-progress">

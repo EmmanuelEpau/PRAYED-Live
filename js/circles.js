@@ -62,7 +62,7 @@ function renderCircles() {
     html += '<div class="browse-section"><h3 style="color:var(--color-primary, #1B3A5C)">' + sec + '</h3>';
     section.data.forEach(function(c) {
       var iconHtml = c.img
-        ? '<img src="' + c.img + '" alt="' + c.name + '" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0">'
+        ? '<img src="' + c.img + '" alt="' + c.name + '" loading="lazy" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0">'
         : '<div class="bc-icon" style="background:' + c.color + '">' + (svgIcons[c.icon] || svgIcons.globe) + '</div>';
       html += '<div class="browse-card" onclick="showSubPage(\'circle-detail-' + c.id + '\',\'' + c.name + '\')">' +
         iconHtml +
@@ -78,7 +78,7 @@ function renderCircles() {
     '<div style="flex:1"><h3><svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg> Holy Cross Community' +
     '<span style="display:inline-block;margin-left:8px;font-size:10px;font-weight:500;color:#C68A2E;background:rgba(198,138,46,0.15);padding:2px 6px;border-radius:4px">Verified</span></h3>' +
     '<p>Secure communication for CSC communities, HCFM staff &amp; Holy Cross institutions worldwide</p></div>' +
-    '<img src="' + imgMap['csc_anchor_gold'] + '" alt="CSC" style="width:48px;height:48px;object-fit:contain;flex-shrink:0;opacity:0.9"></div>';
+    '<img src="' + imgMap['csc_anchor_gold'] + '" alt="CSC" loading="lazy" style="width:48px;height:48px;object-fit:contain;flex-shrink:0;opacity:0.9"></div>';
 
   document.getElementById('screenCircles').innerHTML = html;
 }
@@ -87,7 +87,7 @@ function renderCircles() {
 function getSubPageContent(name) {
   // imgMap is defined globally
   var content = {
-    'rosary': '<img class="sp-hero" src="'+imgMap['rosary_stock']+'" alt="Rosary">' +
+    'rosary': '<img class="sp-hero" src="'+imgMap['rosary_stock']+'" alt="Rosary" loading="lazy">' +
       '<div class="sp-section"><h3>The Holy Rosary</h3><p>The Rosary is a powerful meditation on the life of Jesus through the eyes of His Mother Mary. For over 75 years, Family Rosary has helped families pray together. Join families around the world in this ancient prayer.</p></div>' +
       '<div class="sp-section"><h3>Today\'s Mystery</h3><p style="margin-bottom:8px">Based on the day of the week, pray today\'s mystery with families worldwide.</p>' +
       '<button class="sp-btn primary" onclick="showVideoPlayer(\'Todays Rosary\',\'rk7Acpd5Lqw\')"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z"/></svg> Pray Today\'s Rosary <span class="sp-btn-right"><span class="live-dot"></span> praying</span></button></div>' +
@@ -101,27 +101,27 @@ function getSubPageContent(name) {
       '<button class="sp-btn" onclick="showVideoPlayer(\'Rosary for Children\',\'3qBKhhp6c60\')"><svg viewBox="0 0 24 24" width="20" height="20" style="fill:var(--teal)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> Rosary for Children</button></div>' +
       '<div class="sp-section"><h3>The Five Steps</h3><div class="sp-prayer">1. Make the Sign of the Cross<br>2. Pray the Apostles\' Creed<br>3. Pray one Our Father<br>4. Pray three Hail Marys<br>5. Pray the Glory Be<br><br>For each decade: Announce the Mystery, pray one Our Father, ten Hail Marys, and one Glory Be.</div></div>',
 
-    'mass': '<img class="sp-hero" src="'+imgMap['mass_01']+'" alt="Mass">' +
+    'mass': '<img class="sp-hero" src="'+imgMap['mass_01']+'" alt="Mass" loading="lazy">' +
       '<div class="sp-section"><h3>Daily Mass</h3><p>The Eucharist is the source and summit of the Christian life. Join us for today\'s celebration of the Holy Sacrifice of the Mass.</p></div>' +
       '<button class="sp-btn primary" onclick="showVideoPlayer(\'Todays Mass\',\'v7ur426-ZDs\')"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z"/></svg> Watch Today\'s Mass</button>' +
       '<button class="sp-btn" onclick="showVideoPlayer(\'Nicene Creed\',\'tJcruoD852Q\')"><svg viewBox="0 0 24 24" width="20" height="20" style="fill:var(--navy)"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-1-1 1V4zm9 16H6V4h1v9l3-3 3 3V4h5v16z"/></svg> The Nicene Creed</button>' +
       '<button class="sp-btn" onclick="showVideoPlayer(\'Stations of the Cross\',\'CTPalK4yFx0\')"><svg viewBox="0 0 24 24" width="20" height="20" style="fill:var(--coral)"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Stations of the Cross</button>' +
       '<div class="sp-section"><h3>Today\'s Readings</h3><div class="sp-prayer"><span class="response">First Reading:</span> Isaiah 55:10-11<br>"For just as from the heavens the rain and snow come down and do not return there till they have watered the earth..."<br><br><span class="response">Responsorial Psalm:</span> Psalm 34<br>"The Lord is close to the brokenhearted."<br><br><span class="response">Gospel:</span> Matthew 6:7-15<br>"Your Father knows what you need before you ask him."</div></div>',
 
-    'adoration': '<img class="sp-hero" src="'+imgMap['stained_glass']+'" alt="Adoration">' +
+    'adoration': '<img class="sp-hero" src="'+imgMap['stained_glass']+'" alt="Adoration" loading="lazy">' +
       '<div class="sp-section"><h3>Eucharistic Adoration</h3><p>Spend time in the presence of the Blessed Sacrament. Let the peace of Christ fill your heart as you rest in His presence.</p></div>' +
       '<button class="sp-btn primary" onclick="showVideoPlayer(\'Holy Hour\',\'4j1gOLI0AI4\')"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z"/></svg> Begin Holy Hour</button>' +
       '<div class="sp-section"><h3>Guided Meditation</h3><div class="sp-prayer">Find a quiet place. Close your eyes. Breathe deeply.<br><br>Invite Jesus into your heart...<br><br>Rest in His presence. You do not need words. Simply be with Him.<br><br>"Be still, and know that I am God." \u2014 Psalm 46:10</div></div>' +
       '<div class="sp-section"><h3>Reflection Prompts</h3><div class="sp-prayer">What are you grateful for today?<br><br>What burdens do you carry?<br><br>What does God want you to hear right now?<br><br>How can you share His love with others today?</div></div>',
 
-    'family-prayers': '<img class="sp-hero" src="'+imgMap['family_table_prayer']+'" alt="Family Prayer">' +
+    'family-prayers': '<img class="sp-hero" src="'+imgMap['family_table_prayer']+'" alt="Family Prayer" loading="lazy">' +
       '<div class="sp-section"><h3>Family Prayer</h3><p>Whether you are just starting or deepening your practice, family prayer transforms homes. Begin where you are and grow together in faith.</p></div>' +
       '<div class="sp-section"><h3>Getting Started</h3><div class="sp-prayer">Begin with bedtime prayers. Even 30 seconds together changes everything. The goal is not perfection \u2014 it is presence.</div></div>' +
       '<div class="sp-section"><h3>Grace Before Meals</h3><div class="sp-prayer"><span class="response">Traditional:</span><br>"Bless us, O Lord, and these Thy gifts, which we are about to receive from Thy bounty, through Christ our Lord. Amen."<br><br><span class="response">Child-Friendly:</span><br>"Thank you, God, for this food. Thank you for our family. Help us to love each other well. Amen."</div></div>' +
       '<div class="sp-section"><h3>Bedtime Prayers</h3><div class="sp-prayer"><span class="response">Angel of God:</span><br>"Angel of God, my guardian dear, to whom God\'s love commits me here, ever this day be at my side, to light and guard, to rule and guide. Amen."</div></div>' +
       '<button class="sp-btn primary" onclick="showVideoPlayer(\'Family Rosary\',\'OEjIKD6McsY\')"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z"/></svg> Watch: Family Rosary Introduction</button>',
 
-    'reflections': '<img class="sp-hero" src="'+imgMap['prayer_stock1']+'" alt="Reflections">' +
+    'reflections': '<img class="sp-hero" src="'+imgMap['prayer_stock1']+'" alt="Reflections" loading="lazy">' +
       '<div class="sp-section"><h3>Daily Reflections</h3><p>Take a moment each day to reflect on God\'s Word and how it speaks to your life. Allow Scripture to transform your heart.</p></div>' +
       '<div class="sp-section"><h3>Today\'s Gospel Reflection</h3><div class="sp-prayer"><span class="response">Matthew 6:6</span><br>"But when you pray, go to your inner room, close the door, and pray to your Father in secret. And your Father who sees in secret will repay you."<br><br>In the quiet of our hearts, God speaks most clearly. Today, find a moment of silence. Step away from the noise. Let God meet you there.</div></div>' +
       '<button class="sp-btn" onclick="showVideoPlayer(\'Fr. Peyton on Prayer\',\'VWebKiHR95c\')"><svg viewBox="0 0 24 24" width="20" height="20" style="fill:var(--gold)"><path d="M8 5v14l11-7z"/></svg> Mother Teresa and Fr. Peyton</button>' +
@@ -139,7 +139,7 @@ function getSubPageContent(name) {
     'gospel-today': '<div class="sp-section"><h3>Today\'s Gospel</h3><div class="sp-prayer"><span class="response">Matthew 6:7-15</span><br><br>Jesus said to his disciples: "In praying, do not babble like the pagans, who think that they will be heard because of their many words. Do not be like them. Your Father knows what you need before you ask him.<br><br>This is how you are to pray:<br><br><em>Our Father who art in heaven,<br>hallowed be thy name,<br>thy Kingdom come,<br>thy will be done,<br>on earth as it is in heaven.<br>Give us this day our daily bread;<br>and forgive us our trespasses,<br>as we forgive those who trespass against us;<br>and lead us not into temptation,<br>but deliver us from evil.</em><br><br>If you forgive others their transgressions, your heavenly Father will forgive you."</div></div>' +
       '<div class="sp-section"><h3>Reflection</h3><p>Jesus teaches us that prayer is not about the quantity of words but the quality of our hearts. The Our Father is both a prayer and a pattern for all prayer \u2014 it begins with praise, moves to petition, and ends with trust.</p></div>',
 
-    'fr-peyton': '<img class="sp-hero" src="'+imgMap['peyton_portrait']+'" alt="Fr. Peyton">' +
+    'fr-peyton': '<img class="sp-hero" src="'+imgMap['peyton_portrait']+'" alt="Fr. Peyton" loading="lazy">' +
       '<div class="sp-section"><h3>Fr. Patrick Peyton, C.S.C.</h3><p>Father Patrick Peyton was born in 1909 in County Mayo, Ireland. After immigrating to the United States at age 17, he entered the Congregation of Holy Cross and was ordained a priest. Known as "The Rosary Priest," Fr. Peyton dedicated his life to promoting family prayer through the Rosary. He founded the Family Rosary Crusade and became a television pioneer with the Family Theater of the Air program. His unwavering conviction that "The family that prays together stays together" became the mission of Holy Cross Family Ministries. Fr. Peyton was declared Venerable in 1998 and is on the path to sainthood.</p></div>' +
       '<div class="sp-section"><h3>Timeline</h3><div class="timeline">' +
       '<div class="timeline-item"><div class="tl-year">1909</div><div class="tl-text">Born in Carracastle, County Mayo, Ireland</div></div>' +
@@ -244,7 +244,7 @@ function getSubPageContent(name) {
 
     'hc-community': '<div id="hcLoginGate">' +
       '<div style="text-align:center;padding:40px 20px 20px">' +
-      '<img src="'+imgMap['csc_anchor_navy']+'" alt="CSC" style="width:80px;height:80px;object-fit:contain;margin:0 auto 16px">' +
+      '<img src="'+imgMap['csc_anchor_navy']+'" alt="CSC" loading="lazy" style="width:80px;height:80px;object-fit:contain;margin:0 auto 16px">' +
       '<h2 style="font-size:22px;font-weight:700;color:var(--navy);margin-bottom:6px">Holy Cross Community</h2>' +
       '<p style="font-size:13px;color:var(--text-light);margin-bottom:24px">Secure platform for Congregation of Holy Cross members, HCFM staff &amp; Holy Cross institutions</p>' +
       '<div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px">' +
@@ -269,7 +269,7 @@ function getSubPageContent(name) {
       '<div class="comm-header" style="margin:0 0 12px;display:flex;align-items:center;gap:12px">' +
       '<div style="flex:1"><h3><svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg> Holy Cross Community</h3>' +
       '<p>Verified &amp; secure platform for Holy Cross communities worldwide</p></div>' +
-      '<img src="'+imgMap['csc_anchor_gold']+'" alt="CSC" style="width:48px;height:48px;object-fit:contain;flex-shrink:0;opacity:0.9"></div>' +
+      '<img src="'+imgMap['csc_anchor_gold']+'" alt="CSC" loading="lazy" style="width:48px;height:48px;object-fit:contain;flex-shrink:0;opacity:0.9"></div>' +
       '<div class="comm-tabs" id="commTabs">' +
       '<div class="comm-tab active" onclick="switchCommTab(\'csc\',this)">CSC Provinces</div>' +
       '<div class="comm-tab" onclick="switchCommTab(\'hcfm\',this)">HCFM</div>' +
@@ -286,7 +286,7 @@ function getSubPageContent(name) {
       '<textarea id="createCircleDesc" class="onb-input" style="height:80px;resize:none" placeholder="Describe your circle..."></textarea>' +
       '<button class="sp-btn primary" onclick="createCircle()"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Create Circle</button>',
 
-    'kids-rosary': '<img class="sp-hero" src="'+imgMap['children_rosary_2']+'" alt="Kids Rosary">' +
+    'kids-rosary': '<img class="sp-hero" src="'+imgMap['children_rosary_2']+'" alt="Kids Rosary" loading="lazy">' +
       '<div class="sp-section"><h3>Children\'s Rosary</h3><p>A beautiful, child-friendly version of the Rosary. Perfect for kids ages 5-12. Designed to engage young hearts in prayer.</p></div>' +
       '<div style="background:rgba(13,148,136,0.1);border-radius:12px;padding:12px;margin-bottom:16px;font-size:13px;color:var(--teal)">This is a safe, curated space for children ages 5-12.</div>' +
       '<button class="sp-btn primary" onclick="showVideoPlayer(\'Rosary for Children\',\'3qBKhhp6c60\')"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z"/></svg> Watch the Children\'s Rosary</button>' +
@@ -334,8 +334,11 @@ function getSubPageContent(name) {
   if (name.startsWith('circle-detail-')) {
     var cid = name.replace('circle-detail-', '');
     activeCircleId = cid;
+    var circleType = 'general';
+    circles.forEach(function(c) { if(c.id === cid) circleType = c.icon || 'general'; });
+    logEvent('circle_joined', {circleId: cid, circleType: circleType});
     var wall = circleWalls[cid] || circleWalls['daily-rosary'];
-    var h = '<img class="sp-hero" src="'+imgMap['event_photo2']+'" alt="Circle">' +
+    var h = '<img class="sp-hero" src="'+imgMap['event_photo2']+'" alt="Circle" loading="lazy">' +
       '<div class="cd-header"><div><h2>' + (document.getElementById('spTitle').textContent||'Circle') + '</h2><div class="cd-count"> members</div></div>' +
       '<div class="cd-actions"><button class="cd-btn joined">Joined</button><button class="cd-btn invite" onclick="inviteToCircle(\''+cid+'\')">Invite</button><button class="video-call-btn" onclick="startGroupCall(\''+cid+'\')">📹 Pray</button></div></div>' +
       '<p style="padding:0 16px;font-size:13px;color:var(--text-light);margin-bottom:12px">A community of faith united in prayer. Share your intentions, pray together, and grow in holiness.</p>' +
@@ -853,7 +856,7 @@ function switchCommTab(tab, el) {
     '<span style="font-size:11px;color:var(--text-light)">' + channels.length + ' channels</span></div>';
   channels.forEach(function(c) {
     var iconHtml = c.img ?
-      '<img src="'+c.img+'" alt="" style="width:44px;height:44px;border-radius:12px;object-fit:contain;flex-shrink:0;padding:4px;background:'+c.color+'20">' :
+      '<img src="'+c.img+'" alt="" loading="lazy" style="width:44px;height:44px;border-radius:12px;object-fit:contain;flex-shrink:0;padding:4px;background:'+c.color+'20">' :
       '<div class="ch-icon" style="background:'+c.color+'">'+c.name.charAt(0)+'</div>';
     h += '<div class="channel-card" onclick="showHCChannel(\''+c.name.replace(/'/g,"\\'")+'\',\''+c.loc.replace(/'/g,"\\'")+'\',\''+c.color+'\')">' +
       iconHtml +

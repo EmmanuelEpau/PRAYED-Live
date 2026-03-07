@@ -13,8 +13,8 @@ function renderPray() {
     {key:'child_praying', name:'Family Prayers', page:'family-prayers', sub:'Pray together'}
   ];
   primaryCats.forEach(function(c) {
-    html += '<div class="prayer-card-lg" onclick="showSubPage(\'' + c.page + '\',\'' + c.name + '\')">' +
-      '<img src="' + (imgMap[c.key] || '') + '" alt="' + c.name + '">' +
+    html += '<div class="prayer-card-lg" onclick="logEvent(\'solo_prayer_started\',{prayerCategory:\'' + c.name + '\'});showSubPage(\'' + c.page + '\',\'' + c.name + '\')">' +
+      '<img src="' + (imgMap[c.key] || '') + '" alt="' + c.name + '" loading="lazy">' +
       '<div class="prayer-card-lg__overlay"><h3>' + c.name + '</h3><p>' + c.sub + '</p></div></div>';
   });
   html += '</div>';
@@ -34,8 +34,8 @@ function renderPray() {
     {key:'prayer_stock3', name:'Night Prayer', page:'compline'}
   ];
   secondaryCats.forEach(function(c) {
-    html += '<div class="prayer-card-sm" onclick="showSubPage(\'' + c.page + '\',\'' + c.name + '\')">' +
-      '<img src="' + (imgMap[c.key] || '') + '" alt="' + c.name + '">' +
+    html += '<div class="prayer-card-sm" onclick="logEvent(\'solo_prayer_started\',{prayerCategory:\'' + c.name + '\'});showSubPage(\'' + c.page + '\',\'' + c.name + '\')">' +
+      '<img src="' + (imgMap[c.key] || '') + '" alt="' + c.name + '" loading="lazy">' +
       '<div class="prayer-card-sm__overlay"><h3>' + c.name + '</h3></div></div>';
   });
   html += '</div>';
