@@ -679,6 +679,110 @@ border-radius:var(--radius);margin:0 16px 12px;color:#fff}
 .comm-header h3{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
 .comm-header p{font-size:12px;opacity:0.8;margin-top:4px}
 
+/* Bible Reader - YouVersion Style */
+.bible-toolbar{position:sticky;top:0;z-index:10;background:var(--card-bg);padding:10px 16px;
+display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--light-gray)}
+.bible-toolbar-btn{display:flex;align-items:center;gap:4px;padding:8px 14px;background:var(--light-gray);
+border-radius:10px;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;border:none;font-family:inherit}
+.bible-toolbar-btn svg{width:16px;height:16px;fill:var(--text)}
+.bible-chapter-title{text-align:center;font-size:16px;font-weight:800;letter-spacing:2px;
+text-transform:uppercase;color:var(--navy);padding:24px 16px 8px}
+.bible-section-heading{font-size:18px;font-weight:700;color:var(--navy);padding:16px 20px 4px;line-height:1.3}
+.bible-verse-wrap{padding:0 20px 20px;line-height:1.75;font-size:17px;color:var(--text)}
+.bible-verse-num{font-size:11px;font-weight:700;color:#777A7B;vertical-align:super;
+margin-right:2px;cursor:pointer;user-select:none;line-height:0}
+.bible-verse-span{cursor:pointer;border-radius:3px;padding:1px 0;transition:background 0.2s}
+.bible-verse-span:active{background:rgba(37,99,235,0.1)}
+.bible-hl-yellow{background:rgba(255,220,100,0.45)}
+.bible-hl-green{background:rgba(100,220,100,0.35)}
+.bible-hl-blue{background:rgba(100,180,255,0.35)}
+.bible-hl-pink{background:rgba(255,140,180,0.35)}
+.bible-hl-orange{background:rgba(255,180,100,0.4)}
+.bible-picker-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9000;
+background:var(--warm-bg);max-width:500px;margin:0 auto;display:flex;flex-direction:column;
+animation:slideUp 0.25s ease-out}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.bible-picker-header{display:flex;align-items:center;justify-content:space-between;
+padding:16px 20px;border-bottom:1px solid var(--light-gray)}
+.bible-picker-header h3{font-size:18px;font-weight:700;color:var(--navy)}
+.bible-picker-close{width:36px;height:36px;border-radius:50%;background:var(--light-gray);
+display:flex;align-items:center;justify-content:center;cursor:pointer;border:none}
+.bible-picker-close svg{width:20px;height:20px;fill:var(--text)}
+.bible-picker-search{padding:12px 20px}
+.bible-picker-search input{width:100%;padding:10px 14px;border:2px solid var(--light-gray);
+border-radius:12px;font-size:14px;background:var(--card-bg);color:var(--text);outline:none;font-family:inherit}
+.bible-picker-search input:focus{border-color:var(--primary-blue)}
+.bible-picker-tabs{display:flex;padding:0 20px;gap:0;border-bottom:1px solid var(--light-gray)}
+.bible-picker-tab{flex:1;padding:10px;text-align:center;font-size:14px;font-weight:600;
+color:var(--text-light);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s}
+.bible-picker-tab.active{color:var(--primary-blue);border-bottom-color:var(--primary-blue)}
+.bible-picker-list{flex:1;overflow-y:auto;padding:8px 0}
+.bible-book-item{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;
+cursor:pointer;transition:background 0.15s}
+.bible-book-item:active{background:var(--light-gray)}
+.bible-book-item .bb-name{font-size:15px;font-weight:500;color:var(--text)}
+.bible-book-item .bb-chapters{font-size:12px;color:var(--text-light)}
+.bible-chapter-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
+padding:16px 20px;overflow-y:auto;flex:1}
+.bible-chapter-grid .cg-num{width:100%;aspect-ratio:1;border-radius:12px;
+display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;
+color:var(--text);background:var(--card-bg);box-shadow:var(--shadow);cursor:pointer;
+transition:all 0.15s;border:none;font-family:inherit}
+.bible-chapter-grid .cg-num:active{transform:scale(0.93);background:var(--primary-blue);color:#fff}
+.bible-chapter-grid .cg-num.current{background:var(--primary-blue);color:#fff}
+.bible-nav{display:flex;justify-content:space-between;align-items:center;padding:20px;gap:12px}
+.bible-nav-arrow{width:48px;height:48px;border-radius:50%;background:var(--card-bg);
+box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;
+cursor:pointer;border:none;transition:all 0.15s}
+.bible-nav-arrow:active{transform:scale(0.93);background:var(--primary-blue)}
+.bible-nav-arrow:active svg{fill:#fff}
+.bible-nav-arrow svg{width:24px;height:24px;fill:var(--text)}
+.bible-nav-label{font-size:13px;color:var(--text-light);text-align:center;font-weight:500}
+.bible-version-item{padding:14px 20px;display:flex;align-items:center;gap:12px;
+cursor:pointer;transition:background 0.15s}
+.bible-version-item:active{background:var(--light-gray)}
+.bible-version-item .bv-id{font-size:15px;font-weight:700;color:var(--navy);min-width:60px}
+.bible-version-item .bv-name{font-size:13px;color:var(--text-light);flex:1}
+.bible-version-item.active{background:rgba(37,99,235,0.08)}
+.bible-version-item.active .bv-id{color:var(--primary-blue)}
+.bible-hl-bar{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+background:var(--card-bg);border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.15);
+padding:10px 16px;display:flex;align-items:center;gap:10px;z-index:8000;
+animation:fadeUp 0.2s ease-out;max-width:460px}
+@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.bible-hl-color{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent;
+transition:all 0.15s;flex-shrink:0}
+.bible-hl-color:active{transform:scale(0.9)}
+.bible-hl-color.selected{border-color:var(--navy);transform:scale(1.1)}
+.bible-hl-action{width:32px;height:32px;border-radius:50%;background:var(--light-gray);
+cursor:pointer;display:flex;align-items:center;justify-content:center;border:none;flex-shrink:0}
+.bible-hl-action svg{width:16px;height:16px;fill:var(--text)}
+.bible-skeleton{padding:20px}
+.bible-skeleton .sk-line{height:16px;background:linear-gradient(90deg,var(--light-gray) 25%,
+rgba(255,255,255,0.3) 50%,var(--light-gray) 75%);background-size:200% 100%;
+border-radius:8px;margin-bottom:12px;animation:shimmer 1.5s infinite}
+.bible-skeleton .sk-line:nth-child(2n){width:90%}
+.bible-skeleton .sk-line:nth-child(3n){width:75%}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.votd-card{background:linear-gradient(135deg,rgba(37,99,235,0.06),rgba(198,138,46,0.08));
+border-radius:16px;padding:20px;margin:0 16px 16px;border-left:4px solid var(--gold);cursor:pointer}
+.votd-card .votd-label{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;
+letter-spacing:1.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.votd-card .votd-text{font-family:'Crimson Text',serif;font-size:19px;line-height:1.5;
+color:var(--navy);font-style:italic;margin-bottom:10px}
+.votd-card .votd-ref{font-size:13px;color:var(--text-light);font-weight:500}
+.votd-card .votd-action{display:inline-flex;align-items:center;gap:6px;margin-top:12px;
+font-size:13px;font-weight:600;color:var(--primary-blue)}
+body.dark-mode .bible-verse-wrap{color:var(--text)}
+body.dark-mode .bible-chapter-title{color:var(--text)}
+body.dark-mode .bible-section-heading{color:var(--text)}
+body.dark-mode .votd-card .votd-text{color:var(--text)}
+body.dark-mode .bible-hl-yellow{background:rgba(255,220,100,0.25)}
+body.dark-mode .bible-hl-green{background:rgba(100,220,100,0.18)}
+body.dark-mode .bible-hl-blue{background:rgba(100,180,255,0.18)}
+body.dark-mode .bible-hl-pink{background:rgba(255,140,180,0.18)}
+body.dark-mode .bible-hl-orange{background:rgba(255,180,100,0.2)}
+
 /* Utility */
 .text-center{text-align:center}
 .mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}
@@ -1388,6 +1492,91 @@ function flagSVG(country) {
   return flags[country] || flags['usa'];
 }
 
+// ===== BIBLE DATA =====
+var bibleBooks = [
+  {name:'Genesis',ch:50,num:1,t:'ot'},{name:'Exodus',ch:40,num:2,t:'ot'},
+  {name:'Leviticus',ch:27,num:3,t:'ot'},{name:'Numbers',ch:36,num:4,t:'ot'},
+  {name:'Deuteronomy',ch:34,num:5,t:'ot'},{name:'Joshua',ch:24,num:6,t:'ot'},
+  {name:'Judges',ch:21,num:7,t:'ot'},{name:'Ruth',ch:4,num:8,t:'ot'},
+  {name:'1 Samuel',ch:31,num:9,t:'ot'},{name:'2 Samuel',ch:24,num:10,t:'ot'},
+  {name:'1 Kings',ch:22,num:11,t:'ot'},{name:'2 Kings',ch:25,num:12,t:'ot'},
+  {name:'1 Chronicles',ch:29,num:13,t:'ot'},{name:'2 Chronicles',ch:36,num:14,t:'ot'},
+  {name:'Ezra',ch:10,num:15,t:'ot'},{name:'Nehemiah',ch:13,num:16,t:'ot'},
+  {name:'Esther',ch:10,num:17,t:'ot'},{name:'Job',ch:42,num:18,t:'ot'},
+  {name:'Psalms',ch:150,num:19,t:'ot'},{name:'Proverbs',ch:31,num:20,t:'ot'},
+  {name:'Ecclesiastes',ch:12,num:21,t:'ot'},{name:'Song of Solomon',ch:8,num:22,t:'ot'},
+  {name:'Isaiah',ch:66,num:23,t:'ot'},{name:'Jeremiah',ch:52,num:24,t:'ot'},
+  {name:'Lamentations',ch:5,num:25,t:'ot'},{name:'Ezekiel',ch:48,num:26,t:'ot'},
+  {name:'Daniel',ch:12,num:27,t:'ot'},{name:'Hosea',ch:14,num:28,t:'ot'},
+  {name:'Joel',ch:3,num:29,t:'ot'},{name:'Amos',ch:9,num:30,t:'ot'},
+  {name:'Obadiah',ch:1,num:31,t:'ot'},{name:'Jonah',ch:4,num:32,t:'ot'},
+  {name:'Micah',ch:7,num:33,t:'ot'},{name:'Nahum',ch:3,num:34,t:'ot'},
+  {name:'Habakkuk',ch:3,num:35,t:'ot'},{name:'Zephaniah',ch:3,num:36,t:'ot'},
+  {name:'Haggai',ch:2,num:37,t:'ot'},{name:'Zechariah',ch:14,num:38,t:'ot'},
+  {name:'Malachi',ch:4,num:39,t:'ot'},
+  {name:'Matthew',ch:28,num:40,t:'nt'},{name:'Mark',ch:16,num:41,t:'nt'},
+  {name:'Luke',ch:24,num:42,t:'nt'},{name:'John',ch:21,num:43,t:'nt'},
+  {name:'Acts',ch:28,num:44,t:'nt'},{name:'Romans',ch:16,num:45,t:'nt'},
+  {name:'1 Corinthians',ch:16,num:46,t:'nt'},{name:'2 Corinthians',ch:13,num:47,t:'nt'},
+  {name:'Galatians',ch:6,num:48,t:'nt'},{name:'Ephesians',ch:6,num:49,t:'nt'},
+  {name:'Philippians',ch:4,num:50,t:'nt'},{name:'Colossians',ch:4,num:51,t:'nt'},
+  {name:'1 Thessalonians',ch:5,num:52,t:'nt'},{name:'2 Thessalonians',ch:3,num:53,t:'nt'},
+  {name:'1 Timothy',ch:6,num:54,t:'nt'},{name:'2 Timothy',ch:4,num:55,t:'nt'},
+  {name:'Titus',ch:3,num:56,t:'nt'},{name:'Philemon',ch:1,num:57,t:'nt'},
+  {name:'Hebrews',ch:13,num:58,t:'nt'},{name:'James',ch:5,num:59,t:'nt'},
+  {name:'1 Peter',ch:5,num:60,t:'nt'},{name:'2 Peter',ch:3,num:61,t:'nt'},
+  {name:'1 John',ch:5,num:62,t:'nt'},{name:'2 John',ch:1,num:63,t:'nt'},
+  {name:'3 John',ch:1,num:64,t:'nt'},{name:'Jude',ch:1,num:65,t:'nt'},
+  {name:'Revelation',ch:22,num:66,t:'nt'}
+];
+var bibleVersions = [
+  {id:'KJV',name:'King James Version'},
+  {id:'WEB',name:'World English Bible'},
+  {id:'ASV',name:'American Standard Version'},
+  {id:'BBE',name:'Bible in Basic English'},
+  {id:'DRB',name:'Douay-Rheims (Catholic)'},
+  {id:'YLT',name:"Young's Literal Translation"},
+  {id:'CPDV',name:'Catholic Public Domain Version'}
+];
+var currentBibleBook = 0;
+var currentBibleChapter = 1;
+var currentBibleVersion = 'KJV';
+var bibleHighlights = {};
+var bibleCache = {};
+var selectedVerseNum = null;
+var votdVerses = [
+  {ref:'Psalm 23:1',text:'The Lord is my shepherd; I shall not want.',b:18,c:23},
+  {ref:'John 3:16',text:'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.',b:42,c:3},
+  {ref:'Philippians 4:13',text:'I can do all things through Christ which strengtheneth me.',b:49,c:4},
+  {ref:'Romans 8:28',text:'And we know that all things work together for good to them that love God, to them who are the called according to his purpose.',b:44,c:8},
+  {ref:'Jeremiah 29:11',text:'For I know the thoughts that I think toward you, saith the Lord, thoughts of peace, and not of evil, to give you an expected end.',b:23,c:29},
+  {ref:'Proverbs 3:5-6',text:'Trust in the Lord with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.',b:19,c:3},
+  {ref:'Isaiah 41:10',text:'Fear thou not; for I am with thee: be not dismayed; for I am thy God: I will strengthen thee; yea, I will help thee.',b:22,c:41},
+  {ref:'Matthew 11:28',text:'Come unto me, all ye that labour and are heavy laden, and I will give you rest.',b:39,c:11},
+  {ref:'Psalm 46:10',text:'Be still, and know that I am God: I will be exalted among the heathen, I will be exalted in the earth.',b:18,c:46},
+  {ref:'Joshua 1:9',text:'Be strong and of a good courage; be not afraid, neither be thou dismayed: for the Lord thy God is with thee whithersoever thou goest.',b:5,c:1},
+  {ref:'Romans 12:2',text:'Be not conformed to this world: but be ye transformed by the renewing of your mind.',b:44,c:12},
+  {ref:'Psalm 27:1',text:'The Lord is my light and my salvation; whom shall I fear? The Lord is the strength of my life; of whom shall I be afraid?',b:18,c:27},
+  {ref:'Ephesians 2:8-9',text:'For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: Not of works, lest any man should boast.',b:48,c:2},
+  {ref:'Psalm 119:105',text:'Thy word is a lamp unto my feet, and a light unto my path.',b:18,c:119},
+  {ref:'Matthew 6:33',text:'But seek ye first the kingdom of God, and his righteousness; and all these things shall be added unto you.',b:39,c:6},
+  {ref:'1 Corinthians 13:4-5',text:'Love is patient, love is kind. It does not envy, it does not boast, it is not proud. It does not dishonor others, it is not self-seeking.',b:45,c:13},
+  {ref:'Psalm 37:4',text:'Delight thyself also in the Lord; and he shall give thee the desires of thine heart.',b:18,c:37},
+  {ref:'2 Timothy 1:7',text:'For God hath not given us the spirit of fear; but of power, and of love, and of a sound mind.',b:54,c:1},
+  {ref:'Hebrews 11:1',text:'Now faith is the substance of things hoped for, the evidence of things not seen.',b:57,c:11},
+  {ref:'Psalm 91:1-2',text:'He that dwelleth in the secret place of the most High shall abide under the shadow of the Almighty. I will say of the Lord, He is my refuge and my fortress.',b:18,c:91},
+  {ref:'Galatians 5:22-23',text:'But the fruit of the Spirit is love, joy, peace, longsuffering, gentleness, goodness, faith, meekness, temperance.',b:47,c:5},
+  {ref:'1 Peter 5:7',text:'Casting all your care upon him; for he careth for you.',b:59,c:5},
+  {ref:'Matthew 5:16',text:'Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.',b:39,c:5},
+  {ref:'Psalm 34:8',text:'O taste and see that the Lord is good: blessed is the man that trusteth in him.',b:18,c:34},
+  {ref:'Isaiah 40:31',text:'But they that wait upon the Lord shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary.',b:22,c:40},
+  {ref:'Colossians 3:23',text:'And whatsoever ye do, do it heartily, as to the Lord, and not unto men.',b:50,c:3},
+  {ref:'Psalm 121:1-2',text:'I will lift up mine eyes unto the hills, from whence cometh my help. My help cometh from the Lord, which made heaven and earth.',b:18,c:121},
+  {ref:'John 14:6',text:'I am the way, the truth, and the life: no man cometh unto the Father, but by me.',b:42,c:14},
+  {ref:'Romans 15:13',text:'Now the God of hope fill you with all joy and peace in believing, that ye may abound in hope, through the power of the Holy Ghost.',b:44,c:15},
+  {ref:'Psalm 139:14',text:'I will praise thee; for I am fearfully and wonderfully made: marvellous are thy works.',b:18,c:139}
+];
+
 // ===== INIT =====
 function initApp() {
   userData = null;
@@ -1403,6 +1592,14 @@ function initApp() {
     if(userData.extraHabits) { extraHabits = userData.extraHabits; }
     // Load custom circles from localStorage
     try { var cc = JSON.parse(localStorage.getItem('prayedUserCircles')) || []; circles = circles.concat(cc); } catch(e) {}
+    // Load Bible state from localStorage
+    try { bibleHighlights = JSON.parse(localStorage.getItem('prayedBibleHL')) || {}; } catch(e) { bibleHighlights = {}; }
+    var savedVer = localStorage.getItem('prayedBibleVer');
+    if(savedVer) currentBibleVersion = savedVer;
+    var savedBook = localStorage.getItem('prayedBibleBook');
+    if(savedBook) currentBibleBook = parseInt(savedBook) || 0;
+    var savedCh = localStorage.getItem('prayedBibleCh');
+    if(savedCh) currentBibleChapter = parseInt(savedCh) || 1;
     if(userData.lat && userData.lng) { fetchWeather(userData.lat, userData.lng); }
     showScreen('home');
     startCounters();
@@ -2201,6 +2398,351 @@ document.addEventListener('visibilitychange', function() {
   }
 });
 
+// ===== BIBLE READER FUNCTIONS =====
+function fetchBibleChapter(version, bookNum, chapter, callback) {
+  var cacheKey = version + '_' + bookNum + '_' + chapter;
+  if(bibleCache[cacheKey]) { callback(null, bibleCache[cacheKey]); return; }
+  var url = 'https://bolls.life/get-text/' + version + '/' + bookNum + '/' + chapter + '/';
+  fetch(url).then(function(r) {
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }).then(function(data) {
+    if(!data || !Array.isArray(data) || data.length === 0) {
+      throw new Error('No verses returned');
+    }
+    // Clean verse text: strip HTML tags and Strong's concordance numbers (KJV)
+    data.forEach(function(v) {
+      if(v.text) {
+        v.text = v.text.replace(/<[^>]+>/g, '');
+        if(version === 'KJV') {
+          // Strip Strong's numbers: after letters, standalone between words, at start
+          v.text = v.text.replace(/([a-zA-Z'])\d+/g, '$1');
+          v.text = v.text.replace(/ \d{2,}/g, '');
+          v.text = v.text.replace(/^\d+\s*/, '');
+        }
+        v.text = v.text.replace(/\s+/g, ' ').trim();
+      }
+    });
+    bibleCache[cacheKey] = data;
+    callback(null, data);
+  }).catch(function(err) {
+    console.warn('Bible fetch error:', err);
+    callback(err, null);
+  });
+}
+
+function renderBibleText(verses) {
+  var book = bibleBooks[currentBibleBook];
+  var hlKey = currentBibleVersion + '_' + book.num + '_' + currentBibleChapter;
+  var highlights = bibleHighlights[hlKey] || {};
+  var html = '<div class="bible-verse-wrap">';
+  verses.forEach(function(v) {
+    var vNum = v.verse || v.pk;
+    var hlClass = highlights[vNum] ? ' bible-hl-' + highlights[vNum] : '';
+    html += '<span class="bible-verse-num" onclick="showVerseActions(' + vNum + ')">' + vNum + '</span>';
+    html += '<span class="bible-verse-span' + hlClass + '" data-verse="' + vNum + '" onclick="showVerseActions(' + vNum + ')">' + escapeHtml(v.text) + ' </span>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function loadBibleChapter() {
+  var book = bibleBooks[currentBibleBook];
+  var body = document.getElementById('bibleReaderBody');
+  if(!body) return;
+  // Show skeleton loading
+  body.innerHTML = '<div class="bible-chapter-title">' + book.name + ' ' + currentBibleChapter + '</div>' +
+    '<div class="bible-skeleton">' +
+    '<div class="sk-line"></div><div class="sk-line"></div><div class="sk-line"></div>' +
+    '<div class="sk-line"></div><div class="sk-line"></div><div class="sk-line"></div>' +
+    '<div class="sk-line"></div><div class="sk-line"></div></div>';
+  // Update toolbar
+  var bookBtn = document.getElementById('bibleBookBtn');
+  var verBtn = document.getElementById('bibleVerBtn');
+  if(bookBtn) bookBtn.textContent = book.name + ' ' + currentBibleChapter + ' \u25BE';
+  if(verBtn) verBtn.textContent = currentBibleVersion + ' \u25BE';
+  // Save state
+  localStorage.setItem('prayedBibleBook', currentBibleBook);
+  localStorage.setItem('prayedBibleCh', currentBibleChapter);
+  localStorage.setItem('prayedBibleVer', currentBibleVersion);
+  // Fetch
+  fetchBibleChapter(currentBibleVersion, book.num, currentBibleChapter, function(err, verses) {
+    if(err || !verses) {
+      body.innerHTML = '<div class="bible-chapter-title">' + book.name + ' ' + currentBibleChapter + '</div>' +
+        '<div style="padding:40px 20px;text-align:center;color:var(--text-light)">' +
+        '<p style="font-size:16px;margin-bottom:8px">Could not load this chapter.</p>' +
+        '<p style="font-size:13px">This translation may not be available. Try switching versions.</p>' +
+        '<button class="sp-btn primary" onclick="showVersionPicker()" style="margin-top:16px">Switch Version</button></div>';
+      return;
+    }
+    var html = '<div class="bible-chapter-title">' + book.name + ' ' + currentBibleChapter + '</div>';
+    html += renderBibleText(verses);
+    // Chapter navigation
+    html += '<div class="bible-nav">';
+    if(currentBibleChapter > 1 || currentBibleBook > 0) {
+      html += '<button class="bible-nav-arrow" onclick="prevBibleChapter()">' +
+        '<svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>';
+    } else {
+      html += '<div style="width:48px"></div>';
+    }
+    html += '<div class="bible-nav-label">' + book.name + ' ' + currentBibleChapter + '<br>' + currentBibleVersion + '</div>';
+    if(currentBibleChapter < book.ch || currentBibleBook < bibleBooks.length - 1) {
+      html += '<button class="bible-nav-arrow" onclick="nextBibleChapter()">' +
+        '<svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></button>';
+    } else {
+      html += '<div style="width:48px"></div>';
+    }
+    html += '</div>';
+    body.innerHTML = html;
+    body.scrollTop = 0;
+  });
+}
+
+function prevBibleChapter() {
+  hideVerseActions();
+  if(currentBibleChapter > 1) {
+    currentBibleChapter--;
+  } else if(currentBibleBook > 0) {
+    currentBibleBook--;
+    currentBibleChapter = bibleBooks[currentBibleBook].ch;
+  }
+  loadBibleChapter();
+}
+
+function nextBibleChapter() {
+  hideVerseActions();
+  var book = bibleBooks[currentBibleBook];
+  if(currentBibleChapter < book.ch) {
+    currentBibleChapter++;
+  } else if(currentBibleBook < bibleBooks.length - 1) {
+    currentBibleBook++;
+    currentBibleChapter = 1;
+  }
+  loadBibleChapter();
+}
+
+function showBookPicker() {
+  hideVerseActions();
+  var overlay = document.createElement('div');
+  overlay.className = 'bible-picker-overlay';
+  overlay.id = 'biblePickerOverlay';
+  var html = '<div class="bible-picker-header"><h3>Select Book</h3>' +
+    '<button class="bible-picker-close" onclick="closeBiblePicker()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div>';
+  html += '<div class="bible-picker-search"><input type="text" placeholder="Search books..." oninput="filterBibleBooks(this.value)"></div>';
+  html += '<div class="bible-picker-tabs">' +
+    '<div class="bible-picker-tab active" onclick="switchBookTab(\'ot\',this)">Old Testament</div>' +
+    '<div class="bible-picker-tab" onclick="switchBookTab(\'nt\',this)">New Testament</div></div>';
+  html += '<div class="bible-picker-list" id="bibleBookList">';
+  html += renderBookList('ot', '');
+  html += '</div>';
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+}
+
+function renderBookList(testament, filter) {
+  var html = '';
+  bibleBooks.forEach(function(b, i) {
+    if(b.t !== testament) return;
+    if(filter && b.name.toLowerCase().indexOf(filter.toLowerCase()) === -1) return;
+    var isCurrent = i === currentBibleBook;
+    html += '<div class="bible-book-item' + (isCurrent ? ' active' : '') + '" onclick="selectBibleBook(' + i + ')" style="' + (isCurrent ? 'background:rgba(37,99,235,0.08)' : '') + '">' +
+      '<span class="bb-name">' + b.name + '</span>' +
+      '<span class="bb-chapters">' + b.ch + ' chapters</span></div>';
+  });
+  return html;
+}
+
+var currentBookTab = 'ot';
+function switchBookTab(tab, el) {
+  currentBookTab = tab;
+  document.querySelectorAll('.bible-picker-tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  var list = document.getElementById('bibleBookList');
+  if(list) list.innerHTML = renderBookList(tab, '');
+}
+
+function filterBibleBooks(q) {
+  var list = document.getElementById('bibleBookList');
+  if(!list) return;
+  var html = '';
+  if(q) {
+    bibleBooks.forEach(function(b, i) {
+      if(b.name.toLowerCase().indexOf(q.toLowerCase()) === -1) return;
+      var isCurrent = i === currentBibleBook;
+      html += '<div class="bible-book-item' + (isCurrent ? ' active' : '') + '" onclick="selectBibleBook(' + i + ')" style="' + (isCurrent ? 'background:rgba(37,99,235,0.08)' : '') + '">' +
+        '<span class="bb-name">' + b.name + '</span>' +
+        '<span class="bb-chapters">' + b.ch + ' chapters</span></div>';
+    });
+  } else {
+    html = renderBookList(currentBookTab, '');
+  }
+  list.innerHTML = html;
+}
+
+function selectBibleBook(idx) {
+  var book = bibleBooks[idx];
+  // Show chapter grid
+  var list = document.getElementById('bibleBookList');
+  var header = document.querySelector('.bible-picker-header h3');
+  if(header) header.textContent = book.name;
+  // Hide search and tabs
+  var search = document.querySelector('.bible-picker-search');
+  var tabs = document.querySelector('.bible-picker-tabs');
+  if(search) search.style.display = 'none';
+  if(tabs) tabs.style.display = 'none';
+  var html = '<div class="bible-chapter-grid">';
+  for(var c = 1; c <= book.ch; c++) {
+    var isCurrent = idx === currentBibleBook && c === currentBibleChapter;
+    html += '<button class="cg-num' + (isCurrent ? ' current' : '') + '" onclick="selectBibleChapter(' + idx + ',' + c + ')">' + c + '</button>';
+  }
+  html += '</div>';
+  if(list) list.innerHTML = html;
+}
+
+function selectBibleChapter(bookIdx, chapter) {
+  currentBibleBook = bookIdx;
+  currentBibleChapter = chapter;
+  closeBiblePicker();
+  loadBibleChapter();
+}
+
+function showVersionPicker() {
+  hideVerseActions();
+  var overlay = document.createElement('div');
+  overlay.className = 'bible-picker-overlay';
+  overlay.id = 'biblePickerOverlay';
+  var html = '<div class="bible-picker-header"><h3>Select Version</h3>' +
+    '<button class="bible-picker-close" onclick="closeBiblePicker()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div>';
+  html += '<div class="bible-picker-search"><input type="text" placeholder="Search versions..." oninput="filterBibleVersions(this.value)"></div>';
+  html += '<div class="bible-picker-list" id="bibleVersionList">';
+  bibleVersions.forEach(function(v) {
+    var isActive = v.id === currentBibleVersion;
+    html += '<div class="bible-version-item' + (isActive ? ' active' : '') + '" onclick="selectBibleVersion(\''+v.id+'\')">' +
+      '<span class="bv-id">' + v.id + '</span>' +
+      '<span class="bv-name">' + v.name + '</span>' +
+      (isActive ? '<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:var(--primary-blue)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' : '') + '</div>';
+  });
+  html += '</div>';
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+}
+
+function filterBibleVersions(q) {
+  var list = document.getElementById('bibleVersionList');
+  if(!list) return;
+  var html = '';
+  bibleVersions.forEach(function(v) {
+    if(q && v.id.toLowerCase().indexOf(q.toLowerCase()) === -1 && v.name.toLowerCase().indexOf(q.toLowerCase()) === -1) return;
+    var isActive = v.id === currentBibleVersion;
+    html += '<div class="bible-version-item' + (isActive ? ' active' : '') + '" onclick="selectBibleVersion(\''+v.id+'\')">' +
+      '<span class="bv-id">' + v.id + '</span>' +
+      '<span class="bv-name">' + v.name + '</span>' +
+      (isActive ? '<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:var(--primary-blue)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' : '') + '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function selectBibleVersion(verId) {
+  currentBibleVersion = verId;
+  closeBiblePicker();
+  loadBibleChapter();
+}
+
+function closeBiblePicker() {
+  var overlay = document.getElementById('biblePickerOverlay');
+  if(overlay) overlay.remove();
+}
+
+function showVerseActions(verseNum) {
+  selectedVerseNum = verseNum;
+  // Remove any existing bar
+  hideVerseActions();
+  var book = bibleBooks[currentBibleBook];
+  var hlKey = currentBibleVersion + '_' + book.num + '_' + currentBibleChapter;
+  var currentHL = bibleHighlights[hlKey] && bibleHighlights[hlKey][verseNum] ? bibleHighlights[hlKey][verseNum] : null;
+  var colors = [
+    {name:'yellow',hex:'#FFE066'},
+    {name:'green',hex:'#7AE582'},
+    {name:'blue',hex:'#74B9FF'},
+    {name:'pink',hex:'#FD79A8'},
+    {name:'orange',hex:'#FDCB6E'}
+  ];
+  var bar = document.createElement('div');
+  bar.className = 'bible-hl-bar';
+  bar.id = 'bibleHLBar';
+  var html = '';
+  colors.forEach(function(c) {
+    html += '<div class="bible-hl-color' + (currentHL === c.name ? ' selected' : '') + '" style="background:' + c.hex + '" onclick="toggleBibleHighlight(' + verseNum + ',\''+c.name+'\')"></div>';
+  });
+  // Remove highlight button
+  if(currentHL) {
+    html += '<div class="bible-hl-action" onclick="toggleBibleHighlight(' + verseNum + ',null)" title="Remove highlight"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div>';
+  }
+  // Copy button
+  html += '<div class="bible-hl-action" onclick="copyBibleVerse(' + verseNum + ')" title="Copy"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></div>';
+  // Close
+  html += '<div class="bible-hl-action" onclick="hideVerseActions()" title="Close"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div>';
+  bar.innerHTML = html;
+  document.body.appendChild(bar);
+}
+
+function hideVerseActions() {
+  var bar = document.getElementById('bibleHLBar');
+  if(bar) bar.remove();
+  selectedVerseNum = null;
+}
+
+function toggleBibleHighlight(verseNum, color) {
+  var book = bibleBooks[currentBibleBook];
+  var hlKey = currentBibleVersion + '_' + book.num + '_' + currentBibleChapter;
+  if(!bibleHighlights[hlKey]) bibleHighlights[hlKey] = {};
+  if(color === null || bibleHighlights[hlKey][verseNum] === color) {
+    delete bibleHighlights[hlKey][verseNum];
+    if(Object.keys(bibleHighlights[hlKey]).length === 0) delete bibleHighlights[hlKey];
+  } else {
+    bibleHighlights[hlKey][verseNum] = color;
+  }
+  // Save to localStorage
+  try { localStorage.setItem('prayedBibleHL', JSON.stringify(bibleHighlights)); } catch(e) {}
+  // Re-render the verse spans
+  var spans = document.querySelectorAll('.bible-verse-span[data-verse="' + verseNum + '"]');
+  spans.forEach(function(s) {
+    s.className = 'bible-verse-span';
+    var hl = bibleHighlights[hlKey] && bibleHighlights[hlKey][verseNum];
+    if(hl) s.classList.add('bible-hl-' + hl);
+  });
+  hideVerseActions();
+  showToast(color ? 'Verse ' + verseNum + ' highlighted' : 'Highlight removed');
+}
+
+function copyBibleVerse(verseNum) {
+  var span = document.querySelector('.bible-verse-span[data-verse="' + verseNum + '"]');
+  if(!span) return;
+  var book = bibleBooks[currentBibleBook];
+  var text = span.textContent.trim();
+  var ref = book.name + ' ' + currentBibleChapter + ':' + verseNum + ' (' + currentBibleVersion + ')';
+  var fullText = '"' + text + '" \u2014 ' + ref;
+  if(navigator.clipboard) {
+    navigator.clipboard.writeText(fullText).then(function() { showToast('Verse copied!'); }).catch(function() { showToast('Could not copy'); });
+  } else {
+    var temp = document.createElement('textarea');
+    temp.value = fullText;
+    temp.style.position = 'fixed';
+    temp.style.opacity = '0';
+    document.body.appendChild(temp);
+    temp.select();
+    try { document.execCommand('copy'); showToast('Verse copied!'); }
+    catch(e) { showToast('Could not copy'); }
+    document.body.removeChild(temp);
+  }
+  hideVerseActions();
+}
+
+function getVerseOfTheDay() {
+  var dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  return votdVerses[dayOfYear % votdVerses.length];
+}
+
 // ===== RENDER HOME =====
 function renderHome() {
   personalizeApp();
@@ -2269,6 +2811,13 @@ function renderHome() {
     svgIcons.star +
     '<blockquote class="crimson">"The family that prays together stays together."</blockquote>' +
     '<cite>\u2014 Fr. Patrick Peyton &middot; Matthew 18:20</cite></div>';
+  // Verse of the Day
+  var votd = getVerseOfTheDay();
+  html += '<div class="votd-card" onclick="openVotdChapter()">' +
+    '<div class="votd-label"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:var(--gold)"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-1-1 1V4zm9 16H6V4h1v9l3-3 3 3V4h5v16z"/></svg> Verse of the Day</div>' +
+    '<div class="votd-text">\u201c' + escapeHtml(votd.text) + '\u201d</div>' +
+    '<div class="votd-ref">\u2014 ' + votd.ref + ' (' + currentBibleVersion + ')</div>' +
+    '<div class="votd-action"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:var(--primary-blue)"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg> Read Full Chapter</div></div>';
   // Today's Prayers Grid
   html += '<div class="section-title">Today\'s Prayers</div>';
   html += '<div class="prayer-grid">';
@@ -2363,7 +2912,7 @@ function renderPray() {
     {key:'church_interior',name:'Stations of the Cross',page:'stations'},
     {key:'prayer_stock3',name:'Novenas',page:'novenas'},
     {key:'prayer_stock2',name:'Litanies',page:'litanies'},
-    {key:'prayer_stock1',name:'Bible Reading',page:'bible-reader'},
+    {key:'prayer_stock1',name:'\u2728 Bible',page:'bible-reader'},
     {key:'mass_02',name:'Night Prayer',page:'compline'}
   ];
   extraCats.forEach(function(c){
@@ -2952,21 +3501,7 @@ function getSubPageContent(name) {
 
     'suggested-habits': showSuggestedHabits(),
 
-    'bible-reader': '<div class="sp-section"><h3>Bible Reading</h3><p>Read God\'s Word in multiple translations. Select a version and explore Scripture.</p></div>' +
-      '<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">' +
-      '<button class="sp-btn" onclick="loadBiblePassage(\'KJV\')" style="flex:1;min-width:80px;text-align:center;font-size:12px;padding:10px 8px">KJV</button>' +
-      '<button class="sp-btn" onclick="loadBiblePassage(\'NIV\')" style="flex:1;min-width:80px;text-align:center;font-size:12px;padding:10px 8px">NIV</button>' +
-      '<button class="sp-btn" onclick="loadBiblePassage(\'NRSVCE\')" style="flex:1;min-width:80px;text-align:center;font-size:12px;padding:10px 8px">NRSVCE</button>' +
-      '<button class="sp-btn" onclick="loadBiblePassage(\'DRA\')" style="flex:1;min-width:80px;text-align:center;font-size:12px;padding:10px 8px">Douay-Rheims</button></div>' +
-      '<div class="sp-section"><h3>Popular Passages</h3></div>' +
-      '<button class="sp-btn" onclick="showBibleVerse(\'Psalm 23\',\'The Lord is my shepherd; I shall not want. He makes me lie down in green pastures. He leads me beside still waters. He restores my soul. He leads me in paths of righteousness for His name\\\\u2019s sake. Even though I walk through the valley of the shadow of death, I will fear no evil, for You are with me; Your rod and Your staff, they comfort me.\')"><svg viewBox="0 0 24 24" width="20" height="20" style="fill:var(--gold)"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg> Psalm 23 - The Lord Is My Shepherd</button>' +
-      '<button class="sp-btn" onclick="showBibleVerse(\'John 3:16\',\'For God so loved the world that He gave His only begotten Son, that whoever believes in Him should not perish but have everlasting life.\')"><svg viewBox="0 0 24 24" width="20" height="20" style="fill:var(--coral)"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> John 3:16 - God So Loved the World</button>' +
-      '<button class="sp-btn" onclick="showBibleVerse(\'Philippians 4:13\',\'I can do all things through Christ who strengthens me.\')"><svg viewBox="0 0 24 24" width="20" height="20" style="fill:var(--teal)"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2l-2.81 6.63L2 9.24l5.46 4.73L5.82 21z"/></svg> Philippians 4:13 - I Can Do All Things</button>' +
-      '<button class="sp-btn" onclick="showBibleVerse(\'Matthew 11:28-30\',\'Come to Me, all you who labor and are heavy laden, and I will give you rest. Take My yoke upon you and learn from Me, for I am gentle and lowly in heart, and you will find rest for your souls. For My yoke is easy and My burden is light.\')"><svg viewBox="0 0 24 24" width="20" height="20" style="fill:var(--primary-blue)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg> Matthew 11:28-30 - Come to Me</button>' +
-      '<button class="sp-btn" onclick="showBibleVerse(\'Romans 8:28\',\'And we know that all things work together for good to those who love God, to those who are called according to His purpose.\')"><svg viewBox="0 0 24 24" width="20" height="20" style="fill:var(--navy)"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg> Romans 8:28 - All Things Work Together</button>' +
-      '<div id="bibleVerseDisplay"></div>' +
-      '<div class="sp-section"><h3>Daily Reading</h3><p>Follow the Church\'s daily lectionary readings to grow in faith every day.</p></div>' +
-      '<button class="sp-btn primary" onclick="showSubPage(\'gospel-today\',\'Today\\\\u2019s Gospel\')"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-1-1 1V4zm9 16H6V4h1v9l3-3 3 3V4h5v16z"/></svg> Today\'s Gospel Reading</button>',
+    'bible-reader': renderBibleReaderPage(),
 
     'saints-for-kids': '<div class="sp-section"><h3>Saints for Kids</h3><p>Meet the saints who lived extraordinary lives of faith, courage, and love.</p></div>' +
       '<div class="story-card"><div class="sc-body"><h4>St. Nicholas</h4><p>The Giver Saint. Nicholas was a bishop who secretly gave gifts to the poor. He once dropped bags of gold coins down a chimney to help a family in need.</p></div></div>' +
@@ -3707,26 +4242,34 @@ function requestNotifPermission() {
 }
 
 // ===== BIBLE READER =====
-function showBibleVerse(ref, text) {
-  var el = document.getElementById('bibleVerseDisplay');
-  if(!el) return;
-  el.innerHTML = '<div style="margin-top:16px;padding:20px;background:linear-gradient(135deg,rgba(37,99,235,0.05),rgba(198,138,46,0.05));border-radius:16px;border-left:4px solid var(--gold)">' +
-    '<div style="font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">' + escapeHtml(ref) + '</div>' +
-    '<div class="crimson" style="font-size:18px;line-height:1.6;color:var(--navy);font-style:italic">"' + escapeHtml(text) + '"</div></div>';
-  el.scrollIntoView({behavior:'smooth', block:'center'});
+function renderBibleReaderPage() {
+  var book = bibleBooks[currentBibleBook];
+  var html = '<div class="bible-toolbar">' +
+    '<button class="bible-toolbar-btn" id="bibleBookBtn" onclick="showBookPicker()">' + book.name + ' ' + currentBibleChapter + ' \u25BE</button>' +
+    '<button class="bible-toolbar-btn" id="bibleVerBtn" onclick="showVersionPicker()">' + currentBibleVersion + ' \u25BE</button>' +
+    '<div style="flex:1"></div>' +
+    '<button class="bible-toolbar-btn" onclick="showSubPage(\'gospel-today\',\'Today\u2019s Gospel\')" style="padding:8px 10px" title="Today\u2019s Gospel">' +
+    '<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:var(--text)"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-1-1 1V4zm9 16H6V4h1v9l3-3 3 3V4h5v16z"/></svg></button></div>';
+  html += '<div id="bibleReaderBody">' +
+    '<div class="bible-chapter-title">' + book.name + ' ' + currentBibleChapter + '</div>' +
+    '<div class="bible-skeleton"><div class="sk-line"></div><div class="sk-line"></div><div class="sk-line"></div>' +
+    '<div class="sk-line"></div><div class="sk-line"></div><div class="sk-line"></div></div></div>';
+  // Trigger load after DOM renders
+  setTimeout(function() { loadBibleChapter(); }, 100);
+  return html;
 }
 
-function loadBiblePassage(version) {
-  showToast('Loading ' + version + ' Bible...');
-  // Open Bible Gateway for the selected version
-  var urls = {
-    'KJV': 'https://www.biblegateway.com/versions/King-James-Version-KJV-Bible/',
-    'NIV': 'https://www.biblegateway.com/versions/New-International-Version-NIV-Bible/',
-    'NRSVCE': 'https://www.biblegateway.com/versions/New-Revised-Standard-Version-Catholic-Edition-NRSVCE-Bible/',
-    'DRA': 'https://www.biblegateway.com/versions/Douay-Rheims-1899-American-Edition-DRA-Bible/'
-  };
-  var url = urls[version] || urls['KJV'];
-  showInAppBrowser(version + ' Bible', url);
+function openVotdChapter() {
+  var votd = getVerseOfTheDay();
+  // Find the book index from votd.b
+  for(var i = 0; i < bibleBooks.length; i++) {
+    if(bibleBooks[i].num === votd.b) {
+      currentBibleBook = i;
+      break;
+    }
+  }
+  currentBibleChapter = votd.c;
+  showSubPage('bible-reader', 'Bible');
 }
 
 // ===== SUGGESTED HABITS =====
