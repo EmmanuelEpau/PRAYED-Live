@@ -83,7 +83,7 @@ function renderHome() {
   html += '<div class="prayer-cards-primary">';
   primaryPrayers.forEach(function(c) {
     html += '<div class="prayer-card-lg" onclick="showSubPage(\''+c.page+'\',\''+c.name+'\')">' +
-      '<img src="'+(imgMap[c.key]||'')+'" alt="'+c.name+'">' +
+      '<img src="'+(imgMap[c.key]||'')+'" alt="'+c.name+'" loading="lazy">' +
       '<div class="prayer-card-lg__overlay"><h3>'+c.name+'</h3><p>'+c.desc+'</p></div></div>';
   });
   html += '</div>';
@@ -98,7 +98,7 @@ function renderHome() {
   html += '<div class="prayer-grid-secondary">';
   secondaryPrayers.forEach(function(c) {
     html += '<div class="prayer-card-sm" onclick="showSubPage(\''+c.page+'\',\''+c.name+'\')">' +
-      '<img src="'+(imgMap[c.key]||'')+'" alt="'+c.name+'">' +
+      '<img src="'+(imgMap[c.key]||'')+'" alt="'+c.name+'" loading="lazy">' +
       '<div class="prayer-card-sm__overlay"><h3>'+c.name+'</h3></div></div>';
   });
   html += '</div>';
@@ -211,7 +211,8 @@ function onGetStarted() {
   setTimeout(function(){
     s.style.display = 'none';
     document.getElementById('onboarding').style.display = 'flex';
-    userData = {onbStep:0, firstName:'', lastName:'', email:'', country:'', state:'', city:'', parish:'', frequency:'', userType:[], interests:[], morningTime:'07:00', eveningTime:'20:00', familyData:{}, ambassadorData:{}};
+    onbStep = 0;
+    userData = {firstName:'', lastName:'', email:'', country:'', state:'', city:'', userType:'', language:'', prayerTimes:[], interests:[], morningTime:'07:00', eveningTime:'20:00', habits:habits};
     renderOnboardingStep();
   }, 500);
 }

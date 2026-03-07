@@ -88,6 +88,9 @@ function loadBibleChapter() {
   localStorage.setItem('prayedBibleCh', currentBibleChapter);
   localStorage.setItem('prayedBibleVer', currentBibleVersion);
   fetchBibleChapter(currentBibleVersion, book.num, currentBibleChapter, function(err, verses) {
+    if(!err && verses) {
+      logEvent('bible_chapter_read', {book: book.name, chapter: currentBibleChapter, version: currentBibleVersion});
+    }
     if(err || !verses) {
       body.innerHTML = '<div class="bible-chapter-title">' + book.name + ' ' + currentBibleChapter + '</div>' +
         '<div style="padding:40px 20px;text-align:center;color:var(--text-light)">' +

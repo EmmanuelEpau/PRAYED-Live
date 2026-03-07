@@ -165,7 +165,17 @@ function renderHabits() {
   document.getElementById('screenHabits').innerHTML = html;
 }
 
-function toggleHabit(i) { habits[i].done = !habits[i].done; if(userData){ userData.habits = habits; syncToCloud(); } renderHabits(); }
+function toggleHabit(i) {
+  habits[i].done = !habits[i].done;
+  if(habits[i].done) {
+    var streakDay = 0;
+    try { streakDay = parseInt(localStorage.getItem('prayedStreak')) || 0; } catch(e) {}
+    logEvent('habit_completed', {habitName: habits[i].name, streakDay: streakDay});
+    logEvent('personal_streak_day', {streakLength: streakDay});
+  }
+  if(userData){ userData.habits = habits; syncToCloud(); }
+  renderHabits();
+}
 function toggleExtraHabit(i) { extraHabits[i].done = !extraHabits[i].done; if(userData){ userData.extraHabits = extraHabits; syncToCloud(); } renderHabits(); }
 function quickToggleHabit(i) { habits[i].done = !habits[i].done; if(userData){ userData.habits = habits; syncToCloud(); } showToast(habits[i].done ? habits[i].name + ' completed! \u2713' : habits[i].name + ' unmarked'); renderHome(); }
 

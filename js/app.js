@@ -1,6 +1,21 @@
 // ===== APP ENTRY POINT =====
 // initApp is called on DOMContentLoaded
 
+// Track which screens have been rendered for lazy loading
+var renderedScreens = {};
+
+function ensureScreenRendered(screen) {
+  if(renderedScreens[screen]) return;
+  renderedScreens[screen] = true;
+  switch(screen) {
+    case 'home': renderHome(); break;
+    case 'pray': renderPray(); break;
+    case 'circles': renderCircles(); break;
+    case 'bible': renderBible(); break;
+    case 'profile': renderProfile(); break;
+  }
+}
+
 function initApp() {
   // Load saved user data
   try {
@@ -70,12 +85,9 @@ function initApp() {
     else if(hour < 17) userData.greeting = 'Good Afternoon';
     else userData.greeting = 'Good Evening';
 
-    // Render all screens
+    // Only render the home screen on init (other screens rendered lazily on first visit)
     renderHome();
-    renderPray();
-    renderCircles();
-    renderBible();
-    renderProfile();
+    renderedScreens['home'] = true;
 
     // Show the home screen
     showScreen('home');
@@ -90,9 +102,9 @@ function initApp() {
         if(typeof searchNearbyChurches === 'function') {
           searchNearbyChurches(userLat, userLng, function(churches) {
             nearbyChurchesCache = churches;
-            // Re-render screens that show churches
+            // Re-render only screens that have already been rendered and show churches
             renderHome();
-            renderCircles();
+            if(renderedScreens['circles']) renderCircles();
           });
         }
       }, function(err) {

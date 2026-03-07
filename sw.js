@@ -1,7 +1,7 @@
 // ===== PRAYED Service Worker =====
 // Offline-first architecture: cache-first for static, network-first for API
 
-const CACHE_NAME = 'prayed-v1';
+const CACHE_NAME = 'prayed-v2';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -26,7 +26,11 @@ const STATIC_ASSETS = [
   './js/bible.js',
   './js/profile.js',
   './js/prayer-room.js',
-  './js/app.js'
+  './js/app.js',
+  './js/i18n.js',
+  './data/prayers/en.json',
+  './data/prayers/es.json',
+  './data/prayers/tl.json'
 ];
 
 // Image assets to cache on first load
@@ -167,20 +171,20 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
-  // Static assets (same-origin) - Cache first, network fallback
+  // Static assets (same-origin) - Network first, cache fallback
+  // This ensures users always get the latest version when online
   if (url.origin === self.location.origin) {
     event.respondWith(
-      caches.match(event.request).then(function(cached) {
-        if (cached) return cached;
-        return fetch(event.request).then(function(response) {
-          if (response.ok) {
-            var clone = response.clone();
-            caches.open(CACHE_NAME).then(function(cache) {
-              cache.put(event.request, clone);
-            });
-          }
-          return response;
-        });
+      fetch(event.request).then(function(response) {
+        if (response.ok) {
+          var clone = response.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, clone);
+          });
+        }
+        return response;
+      }).catch(function() {
+        return caches.match(event.request);
       })
     );
     return;

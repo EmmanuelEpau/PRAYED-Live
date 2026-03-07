@@ -16,6 +16,15 @@ try {
   auth = firebase.auth();
 } catch(e) { console.warn('Firebase init failed:', e); }
 
+// ===== ANALYTICS =====
+function logEvent(eventName, params) {
+  try {
+    if(typeof firebase !== 'undefined' && firebase.analytics) {
+      firebase.analytics().logEvent(eventName, params || {});
+    }
+  } catch(e) { /* analytics not critical */ }
+}
+
 function syncToCloud() {
   if(currentUser && userData && !userData.authUid) { userData.authUid = currentUser.uid; }
   localStorage.setItem('prayedLiveUser', JSON.stringify(userData));
@@ -29,7 +38,7 @@ function syncToCloud() {
 // ===== DATA =====
 var userData = null;
 var onbStep = 0;
-var totalSteps = 9;
+var totalSteps = 5;
 var currentScreen = 'home';
 var playerState = {playing:false, expanded:false, title:'', image:'', progress:30, duration:754};
 
