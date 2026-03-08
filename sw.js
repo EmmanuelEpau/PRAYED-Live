@@ -1,7 +1,7 @@
 // ===== PRAYED Service Worker =====
 // Offline-first architecture: cache-first for static, network-first for API
 
-const CACHE_NAME = 'prayed-v2';
+const CACHE_NAME = 'prayed-v3';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -31,6 +31,17 @@ const STATIC_ASSETS = [
   './data/prayers/en.json',
   './data/prayers/es.json',
   './data/prayers/tl.json'
+];
+
+// Audio assets (cached lazily on first use via cache-first fetch strategy)
+const AUDIO_ASSETS = [
+  './audio/rosary/prayers/sign-of-cross.mp3',
+  './audio/rosary/prayers/apostles-creed.mp3',
+  './audio/rosary/prayers/our-father.mp3',
+  './audio/rosary/prayers/hail-mary.mp3',
+  './audio/rosary/prayers/glory-be.mp3',
+  './audio/rosary/prayers/hail-holy-queen.mp3',
+  './audio/rosary/prayers/intro.mp3'
 ];
 
 // Image assets to cache on first load
@@ -154,6 +165,25 @@ self.addEventListener('fetch', function(event) {
 
   // Google Fonts - Cache first (they don't change)
   if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
+    event.respondWith(
+      caches.match(event.request).then(function(cached) {
+        if (cached) return cached;
+        return fetch(event.request).then(function(response) {
+          if (response.ok) {
+            var clone = response.clone();
+            caches.open(CACHE_NAME).then(function(cache) {
+              cache.put(event.request, clone);
+            });
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // Audio files - Cache first (large, static files)
+  if (url.pathname.includes('/audio/')) {
     event.respondWith(
       caches.match(event.request).then(function(cached) {
         if (cached) return cached;

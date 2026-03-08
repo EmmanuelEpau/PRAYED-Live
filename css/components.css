@@ -322,12 +322,26 @@
   min-height: 48px;
 }
 
-.nav-tab svg {
+/* Nav icon: outline (default) and filled (active) */
+.nav-tab .nav-icon {
   width: 24px;
   height: 24px;
   stroke: var(--color-text-muted, #8A8A8A);
   fill: none;
   transition: all 0.2s ease;
+  display: block;
+}
+.nav-tab .nav-icon-filled {
+  width: 24px;
+  height: 24px;
+  fill: var(--color-primary, #1B3A5C);
+  display: none;
+  transition: all 0.2s ease;
+}
+
+.nav-tab svg {
+  width: 24px;
+  height: 24px;
 }
 
 .nav-tab span {
@@ -338,11 +352,21 @@
   transition: color 0.2s;
 }
 
-.nav-tab.active svg {
-  stroke: var(--color-primary, #1B3A5C);
-  stroke-width: 2;
-  fill: none;
+/* Pray tab uses fill-based SVG (not stroke), needs overrides */
+.nav-tab[data-tab="pray"] .nav-icon {
+  fill: var(--color-text-muted, #8A8A8A);
+  stroke: none;
+  width: 26px;
+  height: 26px;
 }
+.nav-tab[data-tab="pray"] .nav-icon-filled {
+  width: 26px;
+  height: 26px;
+}
+
+/* Active state: show filled icon, hide outline */
+.nav-tab.active .nav-icon { display: none; }
+.nav-tab.active .nav-icon-filled { display: block; }
 
 .nav-tab.active span {
   color: var(--color-primary, #1B3A5C);
@@ -355,9 +379,14 @@
   top: 0;
   left: 25%;
   right: 25%;
-  height: 2px;
+  height: 2.5px;
   background: var(--color-primary, #1B3A5C);
-  border-radius: 0 0 2px 2px;
+  border-radius: 0 0 3px 3px;
+}
+
+/* Tap feedback */
+.nav-tab:active {
+  transform: scale(0.92);
 }
 
 
@@ -1683,24 +1712,79 @@
    ============================================ */
 
 /* === Family Prayer Room Card === */
+/* Prayer Room Card — Premium Glassmorphism */
 .family-room-card {
   margin: 8px 16px 16px;
-  padding: 20px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  padding: 0;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg), 0 0 24px rgba(27,58,92,0.2);
   color: #fff;
   cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 8px 32px rgba(27,58,92,0.25), 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .family-room-card:active {
-  transform: scale(0.98);
+  transform: scale(0.975);
+}
+
+/* Animated gradient background */
+.frc-bg-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0F2744 0%, #1B3A5C 30%, #234B73 60%, #1B3A5C 100%);
+  background-size: 300% 300%;
+  animation: frcGradient 8s ease infinite;
+  z-index: 0;
+}
+
+.frc-bg-glow::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -30%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(198,138,46,0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: frcOrb 6s ease-in-out infinite;
+}
+
+.frc-bg-glow::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -20%;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: frcOrb 8s ease-in-out infinite reverse;
+}
+
+@keyframes frcGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes frcOrb {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(20px, 15px) scale(1.15); }
+}
+
+.frc-content {
+  position: relative;
+  z-index: 1;
+  padding: 22px 20px 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 100%);
+  backdrop-filter: blur(2px);
 }
 
 .family-room-card__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 16px;
 }
@@ -1708,50 +1792,82 @@
 .family-room-card__title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-.family-room-card__title svg {
-  stroke: var(--color-accent);
+.frc-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent-light, #E8C97A);
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .family-room-card__title h3 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: #fff;
   font-family: var(--font-display);
+  line-height: 1.2;
+}
+
+.frc-subtitle {
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  margin-top: 2px;
+  display: block;
 }
 
 .streak-badge {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.12);
   backdrop-filter: blur(8px);
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-accent-light);
+  color: var(--color-accent-light, #E8C97A);
   white-space: nowrap;
+  border: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
 }
 
 .family-room-card__members {
   display: flex;
-  gap: -4px;
   margin-bottom: 12px;
 }
 
 .member-avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-size: 13px;
-  font-weight: 600;
-  border: 2px solid rgba(255,255,255,0.3);
-  margin-right: -6px;
+  font-weight: 700;
+  border: 2.5px solid rgba(255,255,255,0.25);
+  margin-right: -8px;
   position: relative;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.member-avatar:hover {
+  transform: translateY(-2px);
+  z-index: 2;
+}
+
+.member-avatar.online {
+  border-color: rgba(74,222,128,0.5);
 }
 
 .member-avatar.online::after {
@@ -1759,26 +1875,28 @@
   position: absolute;
   bottom: -1px;
   right: -1px;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #4ADE80;
-  border: 2px solid var(--color-primary);
+  border: 2.5px solid #1B3A5C;
+  box-shadow: 0 0 6px rgba(74,222,128,0.5);
 }
 
 .family-room-card__status {
   font-size: 13px;
-  color: rgba(255,255,255,0.85);
-  margin-bottom: 16px;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 18px;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
+/* CTA button with gold glow */
 .family-room-card__join {
   width: 100%;
-  padding: 14px;
-  background: var(--color-accent);
+  padding: 15px;
+  background: linear-gradient(135deg, #D4922F 0%, #C68A2E 50%, #E8A838 100%);
   border: none;
   border-radius: var(--radius-md);
   color: #fff;
@@ -1786,21 +1904,33 @@
   font-weight: 700;
   font-family: var(--font-body);
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(198,138,46,0.35);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: 0 4px 16px rgba(198,138,46,0.4), 0 0 20px rgba(198,138,46,0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  animation: frcBtnGlow 3s ease-in-out infinite;
+}
+
+@keyframes frcBtnGlow {
+  0%, 100% { box-shadow: 0 4px 16px rgba(198,138,46,0.4), 0 0 20px rgba(198,138,46,0.15); }
+  50% { box-shadow: 0 4px 20px rgba(198,138,46,0.55), 0 0 30px rgba(198,138,46,0.25); }
 }
 
 .family-room-card__join:active {
   transform: scale(0.97);
-  box-shadow: 0 2px 8px rgba(198,138,46,0.25);
+  box-shadow: 0 2px 8px rgba(198,138,46,0.3);
+  animation: none;
 }
 
 .family-room-card__last {
   font-size: 12px;
-  color: rgba(255,255,255,0.6);
-  margin-top: 12px;
+  color: rgba(255,255,255,0.45);
+  margin-top: 14px;
   text-align: center;
+  letter-spacing: 0.02em;
 }
 
 /* === Habit Chips Row === */

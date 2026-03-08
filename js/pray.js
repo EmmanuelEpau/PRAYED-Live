@@ -1,7 +1,7 @@
 // ===== RENDER PRAY =====
 function renderPray() {
-  var html = '<div class="pray-header"><h2>Pray</h2><p>Find prayers for every moment</p></div>';
-  html += '<div class="search-bar">' + svgIcons.search + '<input placeholder="Search prayers, reflections, courses..." oninput="searchPrayers(this.value)"></div>';
+  var html = '<div class="pray-header"><h2>' + t('ui.pray') + '</h2><p>' + t('ui.find_prayers') + '</p></div>';
+  html += '<div class="search-bar">' + svgIcons.search + '<input placeholder="' + t('ui.search_prayers') + '" oninput="searchPrayers(this.value)"></div>';
   html += '<div id="prayResults"></div>';
 
   // --- PRIMARY ROW (large cards): Rosary, Mass, Family Prayers ---
@@ -22,7 +22,7 @@ function renderPray() {
   // --- Pray with Family button ---
   html += '<div style="padding:0 16px 16px">' +
     '<button onclick="openPrayerRoomUI()" style="width:100%;padding:14px;border:none;border-radius:var(--radius-md);background:var(--color-primary, #1B3A5C);color:#fff;font-size:15px;font-weight:600;font-family:var(--font-display);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">' +
-    svgIcons.family + ' Pray with Family</button></div>';
+    '<span style="display:inline-flex;width:20px;height:20px">' + svgIcons.family + '</span> ' + t('ui.pray_with_family') + '</button></div>';
 
   // --- SECONDARY GRID (medium cards): Adoration, Reflections, Courses, Night Prayer ---
   html += '<div class="section-title" style="padding:0 16px 8px">Explore</div>';
@@ -44,14 +44,14 @@ function renderPray() {
   html += '<div class="section-title" style="padding:0 16px 8px">Browse All</div>';
   html += '<div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:8px">';
   var browseCats = [
-    {key:'stained_glass', name:'Chaplet of Divine Mercy', page:'chaplet-mercy', icon:'rosary'},
-    {key:'church_interior', name:'Stations of the Cross', page:'stations', icon:'church'},
-    {key:'prayer_stock3', name:'Novenas', page:'novenas', icon:'candle'},
-    {key:'prayer_stock2', name:'Litanies', page:'litanies', icon:'book'}
+    {key:'stained_glass', name:'Chaplet of Divine Mercy', page:'chaplet-mercy', icon:'rosary', color:'#7C3AED'},
+    {key:'church_interior', name:'Stations of the Cross', page:'stations', icon:'stationsIcon', color:'#E85D4A'},
+    {key:'prayer_stock3', name:'Novenas', page:'novenas', icon:'candle', color:'#C68A2E'},
+    {key:'prayer_stock2', name:'Litanies', page:'litanies', icon:'litany', color:'#0D9488'}
   ];
   browseCats.forEach(function(c) {
     html += '<div class="browse-card" onclick="showSubPage(\'' + c.page + '\',\'' + c.name + '\')">' +
-      '<div class="bc-icon" style="background:var(--color-primary, #1B3A5C)">' + (svgIcons[c.icon] || svgIcons.chevRight) + '</div>' +
+      '<div class="bc-icon" style="background:' + (c.color || 'var(--color-primary)') + '">' + (svgIcons[c.icon] || svgIcons.chevRight) + '</div>' +
       '<div class="bc-info"><div class="bc-name">' + c.name + '</div></div>' +
       '<div style="flex-shrink:0;display:flex;align-items:center;color:var(--text-light)">' + svgIcons.chevRight + '</div></div>';
   });

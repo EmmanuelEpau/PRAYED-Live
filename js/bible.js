@@ -123,6 +123,7 @@ function loadBibleChapter() {
 
 function prevBibleChapter() {
   hideVerseActions();
+  if (typeof bibleTTS !== 'undefined' && bibleTTS.isPlaying) bibleTTS.stop();
   if(currentBibleChapter > 1) {
     currentBibleChapter--;
   } else if(currentBibleBook > 0) {
@@ -134,6 +135,7 @@ function prevBibleChapter() {
 
 function nextBibleChapter() {
   hideVerseActions();
+  if (typeof bibleTTS !== 'undefined' && bibleTTS.isPlaying) bibleTTS.stop();
   var book = bibleBooks[currentBibleBook];
   if(currentBibleChapter < book.ch) {
     currentBibleChapter++;
@@ -449,6 +451,8 @@ function renderBible() {
     '<button class="bible-toolbar-btn" id="bibleBookBtn" onclick="showBookPicker()">' + book.name + ' ' + currentBibleChapter + ' \u25BE</button>' +
     '<button class="bible-toolbar-btn" id="bibleVerBtn" onclick="showVersionPicker()">' + currentBibleVersion + ' \u25BE</button>' +
     '<div style="flex:1"></div>' +
+    '<button class="bible-toolbar-btn" onclick="bibleTTS.isPlaying ? bibleTTS.stop() : bibleTTS.speak()" style="padding:8px 10px" title="Listen to Chapter">' +
+    '<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:var(--text)"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button>' +
     '<button class="bible-toolbar-btn" onclick="showSubPage(\'gospel-today\',\'Today\u2019s Gospel\')" style="padding:8px 10px" title="Today\u2019s Gospel">' +
     '<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:var(--text)"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-1-1 1V4zm9 16H6V4h1v9l3-3 3 3V4h5v16z"/></svg></button></div>';
   html += '<div onclick="openVotdFromBible()" style="padding:12px 16px;background:linear-gradient(135deg,rgba(37,99,235,0.05),rgba(198,138,46,0.06));border-bottom:1px solid var(--light-gray);cursor:pointer">' +
@@ -502,3 +506,139 @@ function openVotdChapter() {
   currentBibleChapter = votd.c;
   showScreen('bible');
 }
+
+// ===== BIBLE TTS (Text-to-Speech) =====
+var bibleTTS = {
+  synth: window.speechSynthesis || null,
+  utterance: null,
+  isPlaying: false,
+  isPaused: false,
+  currentVerseIdx: 0,
+  verses: [],
+  barEl: null,
+
+  speak: function() {
+    if (!this.synth) { showToast('Text-to-speech not supported in this browser'); return; }
+    // Collect all verse texts from the current chapter
+    var spans = document.querySelectorAll('.bible-verse-span');
+    if (!spans.length) { showToast('No verses to read'); return; }
+    this.verses = [];
+    spans.forEach(function(s) { bibleTTS.verses.push(s.textContent.trim()); });
+    this.currentVerseIdx = 0;
+    this.isPlaying = true;
+    this.isPaused = false;
+    this.showBar();
+    this.speakVerse(0);
+    logEvent('bible_tts_start', {book: bibleBooks[currentBibleBook].name, chapter: currentBibleChapter});
+  },
+
+  speakVerse: function(idx) {
+    if (idx >= this.verses.length) { this.onComplete(); return; }
+    this.currentVerseIdx = idx;
+    this.highlightVerse(idx);
+    this.updateBar();
+
+    var utt = new SpeechSynthesisUtterance(this.verses[idx]);
+    utt.rate = 0.9;
+    utt.pitch = 1;
+    utt.lang = 'en-US';
+    var self = this;
+    utt.onend = function() {
+      if (self.isPlaying && !self.isPaused) {
+        self.speakVerse(idx + 1);
+      }
+    };
+    utt.onerror = function() {
+      if (self.isPlaying) self.speakVerse(idx + 1);
+    };
+    this.utterance = utt;
+    this.synth.cancel();
+    this.synth.speak(utt);
+  },
+
+  pause: function() {
+    if (this.synth && this.isPlaying) {
+      this.synth.pause();
+      this.isPaused = true;
+      this.updateBar();
+    }
+  },
+
+  resume: function() {
+    if (this.synth && this.isPaused) {
+      this.synth.resume();
+      this.isPaused = false;
+      this.updateBar();
+    }
+  },
+
+  toggle: function() {
+    if (!this.isPlaying) { this.speak(); return; }
+    if (this.isPaused) { this.resume(); } else { this.pause(); }
+  },
+
+  stop: function() {
+    if (this.synth) this.synth.cancel();
+    this.isPlaying = false;
+    this.isPaused = false;
+    this.utterance = null;
+    this.clearHighlight();
+    this.hideBar();
+  },
+
+  highlightVerse: function(idx) {
+    this.clearHighlight();
+    var spans = document.querySelectorAll('.bible-verse-span');
+    if (spans[idx]) {
+      spans[idx].classList.add('bible-tts-active');
+      spans[idx].scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+  },
+
+  clearHighlight: function() {
+    document.querySelectorAll('.bible-tts-active').forEach(function(el) {
+      el.classList.remove('bible-tts-active');
+    });
+  },
+
+  showBar: function() {
+    this.hideBar();
+    var bar = document.createElement('div');
+    bar.id = 'bibleTTSBar';
+    bar.className = 'bible-tts-bar';
+    bar.innerHTML = '<button class="bible-tts-btn" onclick="bibleTTS.toggle()" id="ttsPauseBtn">' +
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg></button>' +
+      '<div class="bible-tts-info" id="ttsInfo">Reading verse 1 of ' + this.verses.length + '</div>' +
+      '<button class="bible-tts-btn" onclick="bibleTTS.stop()">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>';
+    document.body.appendChild(bar);
+    this.barEl = bar;
+  },
+
+  hideBar: function() {
+    var bar = document.getElementById('bibleTTSBar');
+    if (bar) bar.remove();
+    this.barEl = null;
+  },
+
+  updateBar: function() {
+    var info = document.getElementById('ttsInfo');
+    var btn = document.getElementById('ttsPauseBtn');
+    if (info) info.textContent = 'Reading verse ' + (this.currentVerseIdx + 1) + ' of ' + this.verses.length;
+    if (btn) {
+      btn.innerHTML = this.isPaused ?
+        '<svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M8 5v14l11-7z"/></svg>' :
+        '<svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>';
+    }
+  },
+
+  onComplete: function() {
+    this.isPlaying = false;
+    this.isPaused = false;
+    this.clearHighlight();
+    var info = document.getElementById('ttsInfo');
+    if (info) info.textContent = 'Reading complete';
+    setTimeout(function() { bibleTTS.hideBar(); }, 2000);
+    showToast('Chapter reading complete');
+  }
+};
