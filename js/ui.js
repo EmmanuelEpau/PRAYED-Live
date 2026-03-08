@@ -26,36 +26,111 @@ function renderOnboardingStep() {
   var nextBtn = document.getElementById('onbNext');
   var footer = document.getElementById('onbFooter');
   var checkSvg = '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
-  // Progress dots
+  // Progress dots (skip welcome & verification screens from progress count)
   progress.innerHTML = '';
-  for (var i = 0; i < totalSteps; i++) {
+  var progressSteps = totalSteps - 2; // Exclude welcome (0) and verification (7)
+  for (var i = 0; i < progressSteps; i++) {
     var cls = 'onb-dot';
-    if (i === onbStep) cls += ' active';
-    else if (i < onbStep) cls += ' completed';
+    var mappedStep = i + 1; // Steps 1-6 map to dots 0-5
+    if (mappedStep === onbStep) cls += ' active';
+    else if (mappedStep < onbStep) cls += ' completed';
     progress.innerHTML += '<div class="' + cls + '"></div>';
   }
-  // Hide progress and footer on welcome screen
-  if (onbStep === 0) { progress.style.display = 'none'; footer.style.display = 'none'; }
+  // Hide progress and footer on welcome (0) and verification (7) screens
+  if (onbStep === 0 || onbStep === 7) { progress.style.display = 'none'; footer.style.display = 'none'; }
   else { progress.style.display = 'flex'; footer.style.display = 'flex'; }
-  // Back button
-  backBtn.style.display = onbStep > 1 ? 'flex' : 'none';
+  // Back button (hide on step 0, 1, and 7)
+  backBtn.style.display = (onbStep > 1 && onbStep < 7) ? 'flex' : 'none';
   // Next button text
-  nextBtn.textContent = (onbStep === totalSteps - 1) ? 'Start Praying' : 'Next';
+  nextBtn.textContent = (onbStep === totalSteps - 2) ? 'Finish' : 'Next';
+  // Hide Next on sign-up step (step 1) — auth buttons handle advancement
+  if (onbStep === 1) { nextBtn.style.display = 'none'; }
+  else { nextBtn.style.display = ''; }
 
   var html = '';
   switch(onbStep) {
-    // ---- SCREEN 1: WELCOME ----
+    // ---- STEP 0: WELCOME ----
     case 0:
       html = '<div class="onb-welcome">' +
-        '<div class="onb-welcome-cross">\u271D</div>' +
+        '<div class="onb-welcome-illustration">' +
+        '<svg viewBox="0 0 140 120" width="140" height="120" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+        '<!-- Parent figure -->' +
+        '<circle cx="55" cy="22" r="8"/>' +
+        '<path d="M55 30 C55 30 55 48 55 52 C55 56 50 58 48 70"/>' +
+        '<path d="M55 52 C55 56 60 58 62 70"/>' +
+        '<path d="M55 38 C50 40 44 44 42 48 C40 50 42 52 44 52 L55 48"/>' +
+        '<path d="M55 38 C60 40 66 44 68 48 C70 50 68 52 66 52 L55 48"/>' +
+        '<!-- Hands together -->' +
+        '<path d="M44 52 C46 50 54 46 55 48 C56 46 64 50 66 52" stroke-width="1.8"/>' +
+        '<!-- Child figure -->' +
+        '<circle cx="85" cy="38" r="6.5"/>' +
+        '<path d="M85 44.5 C85 44.5 85 58 85 62 C85 65 81 66 80 74"/>' +
+        '<path d="M85 62 C85 65 89 66 90 74"/>' +
+        '<path d="M85 50 C81 52 77 55 76 58 C75 59 76 60 77.5 60 L85 57"/>' +
+        '<path d="M85 50 C89 52 93 55 94 58 C95 59 94 60 92.5 60 L85 57"/>' +
+        '<path d="M77.5 60 C79 58.5 84 56 85 57 C86 56 91 58.5 92.5 60" stroke-width="1.8"/>' +
+        '<!-- Light rays -->' +
+        '<path d="M70 8 L70 2" stroke="rgba(198,138,46,0.6)" stroke-width="1"/>' +
+        '<path d="M58 6 L54 1" stroke="rgba(198,138,46,0.4)" stroke-width="1"/>' +
+        '<path d="M82 14 L88 10" stroke="rgba(198,138,46,0.4)" stroke-width="1"/>' +
+        '<path d="M70 12 C66 10 64 6 66 4" stroke="rgba(198,138,46,0.3)" stroke-width="0.8"/>' +
+        '</svg>' +
+        '</div>' +
         '<h1>The Family That Prays Together Stays Together</h1>' +
         '<p class="onb-welcome-sub">Join families around the world in daily prayer with PRAYED.</p>' +
-        '<button class="onb-get-started" onclick="onbStep=1;renderOnboardingStep()">Get Started</button>' +
+        '<button class="onb-get-started" onclick="onbStep=1;renderOnboardingStep()">Create Account</button>' +
         '<p class="onb-signin-link">Already have an account? <a onclick="showAuthModal(\'signin\')">Sign In</a></p>' +
         '</div>';
       break;
-    // ---- SCREEN 2: WHO ARE YOU? ----
+
+    // ---- STEP 1: SIGN UP / SIGN IN ----
     case 1:
+      html = '<h2>Create Your Account</h2>' +
+        '<p class="onb-subtitle">Sync your prayers across all your devices</p>' +
+        '<input id="onbAuthEmail" type="email" placeholder="Email address" class="onb-input" autocomplete="email">' +
+        '<input id="onbAuthPass" type="password" placeholder="Password" class="onb-input" oninput="checkPassStrength()" autocomplete="new-password">' +
+        '<div id="passStrength" style="font-size:12px;margin:-8px 0 8px 4px;display:none">' +
+        '<div style="display:flex;gap:4px;margin-bottom:4px"><div id="psBar1" style="flex:1;height:3px;border-radius:2px;background:#E5E7EB"></div><div id="psBar2" style="flex:1;height:3px;border-radius:2px;background:#E5E7EB"></div><div id="psBar3" style="flex:1;height:3px;border-radius:2px;background:#E5E7EB"></div><div id="psBar4" style="flex:1;height:3px;border-radius:2px;background:#E5E7EB"></div></div>' +
+        '<div id="psText" style="color:var(--text-light)">Password requirements</div>' +
+        '<div style="margin-top:4px;color:var(--text-light);line-height:1.6">' +
+        '<div id="psLen">&#9675; At least 8 characters</div>' +
+        '<div id="psUpper">&#9675; One uppercase letter</div>' +
+        '<div id="psNum">&#9675; One number</div>' +
+        '<div id="psSpecial">&#9675; One special character</div>' +
+        '</div></div>' +
+        '<input id="onbAuthPass2" type="password" placeholder="Confirm password" class="onb-input" autocomplete="new-password">' +
+        '<div id="onbAuthError" style="color:#E85D4A;font-size:13px;margin-bottom:12px;display:none"></div>' +
+        '<button class="onb-get-started" onclick="onbCreateAccount()" style="margin-top:8px">Create Account</button>' +
+        '<div style="text-align:center;color:var(--text-light);font-size:13px;margin:16px 0">or</div>' +
+        '<button class="onb-google-btn" onclick="onbGoogleSignIn()">' +
+        '<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#34A853" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>' +
+        ' Continue with Google</button>' +
+        '<span class="onb-skip" onclick="onbSkipAuth()">Skip for Now</span>';
+      break;
+
+    // ---- STEP 2: NAME & LOCATION ----
+    case 2:
+      html = '<h2>Tell Us About You</h2>' +
+        '<p class="onb-subtitle">This helps connect you with local prayer communities</p>' +
+        '<div class="onb-name-row">' +
+        '<input id="onbFirstName" type="text" placeholder="First Name" class="onb-input" value="' + escapeHtml(userData.firstName || '') + '" oninput="updateOnbNameState()">' +
+        '<input id="onbLastName" type="text" placeholder="Last Name" class="onb-input" value="' + escapeHtml(userData.lastName || '') + '" oninput="updateOnbNameState()">' +
+        '</div>' +
+        '<select id="onbCountry" class="onb-input onb-select" onchange="updateOnbNameState()">' +
+        '<option value="">Select Your Country</option>';
+      var countryList = ['United States','Philippines','Mexico','Brazil','Colombia','Argentina','Peru','Chile','Spain','France','Poland','Italy','Ireland','Portugal','Canada','United Kingdom','Australia','India','Nigeria','Kenya','Ghana','South Africa','Germany','Austria','Ecuador','Venezuela','Guatemala','Honduras','Dominican Republic','Puerto Rico','El Salvador','Costa Rica','Panama','Bolivia','Paraguay','Uruguay','Cuba','Haiti','Nicaragua','Other'];
+      countryList.forEach(function(cn) {
+        var sel = userData.country === cn ? ' selected' : '';
+        html += '<option value="' + cn + '"' + sel + '>' + cn + '</option>';
+      });
+      html += '</select>' +
+        '<input id="onbState" type="text" placeholder="State / Province" class="onb-input" value="' + escapeHtml(userData.state || '') + '" oninput="updateOnbNameState()">' +
+        '<input id="onbCity" type="text" placeholder="City" class="onb-input" value="' + escapeHtml(userData.city || '') + '" oninput="updateOnbNameState()">';
+      nextBtn.disabled = !(userData.firstName && userData.country);
+      break;
+
+    // ---- STEP 3: WHO ARE YOU? (was step 1) ----
+    case 3:
       html = '<h2>Who Are You?</h2>' +
         '<p class="onb-subtitle">This customizes your home screen \u2014 you can change later</p>';
       var types = [
@@ -64,19 +139,19 @@ function renderOnboardingStep() {
         {id:'single',icon:'\u271D\uFE0F',title:'Single Adult',desc:'Default experience'},
         {id:'priest',icon:'\u26EA',title:'Priest / Religious',desc:'Liturgy of the Hours, HC Community'}
       ];
-      types.forEach(function(t) {
-        var sel = userData.userType === t.id ? ' selected' : '';
-        html += '<div class="onb-type-card' + sel + '" onclick="selectOnbType(\'' + t.id + '\',this)">' +
-          '<div class="onb-type-icon">' + t.icon + '</div>' +
-          '<div class="onb-type-info"><div class="onb-type-title">' + t.title + '</div>' +
-          '<div class="onb-type-desc">' + t.desc + '</div></div>' +
+      types.forEach(function(tp) {
+        var sel = userData.userType === tp.id ? ' selected' : '';
+        html += '<div class="onb-type-card' + sel + '" onclick="selectOnbType(\'' + tp.id + '\',this)">' +
+          '<div class="onb-type-icon">' + tp.icon + '</div>' +
+          '<div class="onb-type-info"><div class="onb-type-title">' + tp.title + '</div>' +
+          '<div class="onb-type-desc">' + tp.desc + '</div></div>' +
           '<div class="onb-type-check">' + checkSvg + '</div></div>';
       });
       nextBtn.disabled = !userData.userType;
       break;
 
-    // ---- SCREEN 3: LANGUAGE ----
-    case 2:
+    // ---- STEP 4: LANGUAGE (was step 2) ----
+    case 4:
       html = '<h2>Choose Your Language</h2>' +
         '<p class="onb-subtitle">You can change this anytime in Settings</p>' +
         '<div class="onb-lang-grid">';
@@ -98,8 +173,8 @@ function renderOnboardingStep() {
       nextBtn.disabled = !userData.language;
       break;
 
-    // ---- SCREEN 4: PRAYER TIME ----
-    case 3:
+    // ---- STEP 5: PRAYER TIME (was step 3) ----
+    case 5:
       html = '<h2>Set Your Prayer Time</h2>' +
         '<p class="onb-subtitle">We\'ll gently remind you. You can change these anytime.</p>' +
         '<div class="onb-time-grid">';
@@ -109,20 +184,20 @@ function renderOnboardingStep() {
         {id:'evening',icon:'\uD83C\uDF07',label:'Evening',range:'5pm \u2013 9pm'},
         {id:'night',icon:'\uD83C\uDF19',label:'Night',range:'9pm \u2013 12am'}
       ];
-      times.forEach(function(t) {
-        var sel = userData.prayerTimes && userData.prayerTimes.indexOf(t.id) > -1 ? ' selected' : '';
-        html += '<div class="onb-time-pill' + sel + '" onclick="toggleOnbTime(\'' + t.id + '\',this)">' +
-          '<div class="onb-time-icon">' + t.icon + '</div>' +
-          '<div class="onb-time-info"><div class="onb-time-label">' + t.label + '</div>' +
-          '<div class="onb-time-range">' + t.range + '</div></div>' +
+      times.forEach(function(tm) {
+        var sel = userData.prayerTimes && userData.prayerTimes.indexOf(tm.id) > -1 ? ' selected' : '';
+        html += '<div class="onb-time-pill' + sel + '" onclick="toggleOnbTime(\'' + tm.id + '\',this)">' +
+          '<div class="onb-time-icon">' + tm.icon + '</div>' +
+          '<div class="onb-time-info"><div class="onb-time-label">' + tm.label + '</div>' +
+          '<div class="onb-time-range">' + tm.range + '</div></div>' +
           '<div class="onb-time-check">' + checkSvg + '</div></div>';
       });
       html += '</div>';
       nextBtn.disabled = !userData.prayerTimes || userData.prayerTimes.length === 0;
       break;
 
-    // ---- SCREEN 5: CREATE OR JOIN FAMILY ----
-    case 4:
+    // ---- STEP 6: CREATE OR JOIN FAMILY (was step 4) ----
+    case 6:
       html = '<h2>Create or Join Family</h2>' +
         '<p class="onb-subtitle">Pray together, even when apart</p>' +
         '<div class="onb-family-grid">';
@@ -154,14 +229,46 @@ function renderOnboardingStep() {
       }
       html += '<span class="onb-skip" onclick="skipFamily()">Skip for Now</span>';
       nextBtn.disabled = false;
-      nextBtn.textContent = 'Start Praying';
+      nextBtn.textContent = 'Finish';
+      break;
+
+    // ---- STEP 7: EMAIL VERIFICATION ----
+    case 7:
+      var userEmail = (currentUser && currentUser.email) ? currentUser.email : (userData.email || 'your email');
+      var isVerified = currentUser && currentUser.emailVerified;
+      html = '<div class="onb-welcome" style="padding-top:60px">' +
+        '<div class="onb-verification-icon">' +
+        '<svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="' + (isVerified ? '#10B981' : 'var(--color-primary, #2563EB)') + '" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">' +
+        '<rect x="2" y="4" width="20" height="16" rx="2"/>' +
+        '<path d="M22 4L12 13 2 4"/>' +
+        (isVerified ? '<circle cx="18" cy="16" r="4" fill="#10B981" stroke="#10B981"/><path d="M16.5 16l1 1 2-2" stroke="#fff" stroke-width="1.5"/>' : '') +
+        '</svg></div>' +
+        '<h1 style="font-size:24px;margin-top:20px">' + (isVerified ? 'Email Verified!' : 'Check Your Email') + '</h1>' +
+        '<p class="onb-welcome-sub" style="color:var(--color-text-secondary)">' +
+        (isVerified ? 'Your account is ready. Welcome to PRAYED!' : 'We sent a verification link to <strong>' + escapeHtml(userEmail) + '</strong>. Please verify to sync your prayers across devices.') +
+        '</p>';
+      if (!isVerified) {
+        html += '<button class="onb-get-started" onclick="onbCheckVerification()" style="margin-top:16px">I\'ve Verified My Email</button>' +
+          '<button class="onb-google-btn" onclick="onbResendVerification()" style="margin-top:8px">' +
+          '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>' +
+          ' Resend Verification Email</button>';
+      } else {
+        html += '<button class="onb-get-started" onclick="completeOnboarding()" style="margin-top:16px">Start Praying</button>';
+      }
+      html += '<span class="onb-skip" onclick="completeOnboarding()" style="margin-top:16px">' + (isVerified ? '' : 'Skip for Now') + '</span>' +
+        '</div>';
       break;
   }
 
+  // Add step-specific background illustration class
+  var onbContainer = document.getElementById('onboarding');
+  if(onbContainer) {
+    onbContainer.className = 'onb-step-' + onbStep;
+  }
   c.innerHTML = '<div style="animation:fadeIn 0.3s ease-out">' + html + '</div>';
 
   // Auto-detect language on first render of language screen
-  if (onbStep === 2 && !userData.language) {
+  if (onbStep === 4 && !userData.language) {
     userData.language = detectBrowserLanguage();
     renderOnboardingStep();
   }
@@ -217,7 +324,101 @@ function shareViaWhatsApp() {
   var msg = 'Join our family on PRAYED! Use code: ' + onbInviteCode + '\nhttps://emmanuelepau.github.io/PRAYED-Live/';
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
-function skipFamily() { onbFamilyMode = ''; completeOnboarding(); }
+
+// --- Onboarding Account Creation (Step 1) ---
+function onbCreateAccount() {
+  var email = document.getElementById('onbAuthEmail').value.trim();
+  var pass = document.getElementById('onbAuthPass').value;
+  var pass2 = document.getElementById('onbAuthPass2').value;
+  var errEl = document.getElementById('onbAuthError');
+  if (!email || !pass) { if(errEl){errEl.textContent='Please fill in all fields';errEl.style.display='block';} return; }
+  if (pass.length < 8 || !/[A-Z]/.test(pass) || !/[0-9]/.test(pass) || !/[^A-Za-z0-9]/.test(pass)) {
+    if(errEl){errEl.textContent='Password must be 8+ chars with uppercase, number & special character';errEl.style.display='block';} return;
+  }
+  if (pass !== pass2) { if(errEl){errEl.textContent='Passwords do not match';errEl.style.display='block';} return; }
+  if (!auth) { if(errEl){errEl.textContent='Authentication service not available';errEl.style.display='block';} return; }
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(function(cred) {
+      currentUser = cred.user;
+      userData.email = email;
+      userData.authUid = cred.user.uid;
+      if (cred.user.sendEmailVerification) { cred.user.sendEmailVerification().catch(function(e){ console.warn('Verification email:', e); }); }
+      showToast('Account created!');
+      onbStep = 2;
+      renderOnboardingStep();
+    })
+    .catch(function(err) { if(errEl){errEl.textContent=err.message;errEl.style.display='block';} });
+}
+
+function onbGoogleSignIn() {
+  if (!auth) return;
+  var provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .then(function(result) {
+      currentUser = result.user;
+      userData.email = result.user.email || '';
+      userData.authUid = result.user.uid;
+      if (result.user.displayName) {
+        var parts = result.user.displayName.split(' ');
+        userData.firstName = parts[0] || '';
+        userData.lastName = parts.slice(1).join(' ') || '';
+      }
+      showToast('Signed in with Google!');
+      onbStep = 2;
+      renderOnboardingStep();
+    })
+    .catch(function(err) {
+      var errEl = document.getElementById('onbAuthError');
+      if(errEl){errEl.textContent=err.message;errEl.style.display='block';}
+    });
+}
+
+function onbSkipAuth() {
+  onbStep = 2;
+  renderOnboardingStep();
+}
+
+function updateOnbNameState() {
+  var fn = document.getElementById('onbFirstName');
+  var country = document.getElementById('onbCountry');
+  var nextBtn = document.getElementById('onbNext');
+  if (nextBtn) {
+    nextBtn.disabled = !(fn && fn.value.trim() && country && country.value);
+  }
+}
+
+function onbCheckVerification() {
+  if (!currentUser) { completeOnboarding(); return; }
+  currentUser.reload().then(function() {
+    // Re-fetch user to get updated emailVerified
+    currentUser = auth.currentUser;
+    if (currentUser.emailVerified) {
+      showToast('Email verified!');
+      renderOnboardingStep(); // Re-render to show verified state
+      setTimeout(completeOnboarding, 1500);
+    } else {
+      showToast('Email not yet verified. Please check your inbox.');
+    }
+  }).catch(function() {
+    showToast('Could not check verification status. Please try again.');
+  });
+}
+
+function onbResendVerification() {
+  if (!currentUser) return;
+  currentUser.sendEmailVerification()
+    .then(function() { showToast('Verification email sent!'); })
+    .catch(function(err) { showToast(err.message || 'Could not send email'); });
+}
+function skipFamily() {
+  onbFamilyMode = '';
+  if (currentUser && !currentUser.emailVerified) {
+    onbStep = 7;
+    renderOnboardingStep();
+  } else {
+    completeOnboarding();
+  }
+}
 function updateOnbNextState() {
   var inp = document.getElementById('joinCodeInput');
   if (inp) document.getElementById('onbNext').disabled = inp.value.length < 6;
@@ -225,10 +426,24 @@ function updateOnbNextState() {
 
 // --- Onboarding Navigation ---
 function onbNext() {
-  if (onbStep === 1 && !userData.userType) return;
-  if (onbStep === 2 && !userData.language) return;
-  if (onbStep === 3 && (!userData.prayerTimes || userData.prayerTimes.length === 0)) return;
-  if (onbStep === 4) {
+  // Save name & location data from step 2
+  if (onbStep === 2) {
+    var fn = document.getElementById('onbFirstName');
+    var ln = document.getElementById('onbLastName');
+    var country = document.getElementById('onbCountry');
+    var state = document.getElementById('onbState');
+    var city = document.getElementById('onbCity');
+    if (fn) userData.firstName = fn.value.trim();
+    if (ln) userData.lastName = ln.value.trim();
+    if (country) userData.country = country.value;
+    if (state) userData.state = state.value.trim();
+    if (city) userData.city = city.value.trim();
+    if (!userData.firstName || !userData.country) return;
+  }
+  if (onbStep === 3 && !userData.userType) return;
+  if (onbStep === 4 && !userData.language) return;
+  if (onbStep === 5 && (!userData.prayerTimes || userData.prayerTimes.length === 0)) return;
+  if (onbStep === 6) {
     if (onbFamilyMode === 'join') {
       var joinInput = document.getElementById('joinCodeInput');
       if (joinInput && joinInput.value.length === 6) {
@@ -241,12 +456,21 @@ function onbNext() {
         }
       }
     } else if (onbFamilyMode === 'create') { userData.familyCode = onbInviteCode; }
-    completeOnboarding();
+    // Go to verification step if user has an account, otherwise complete
+    if (currentUser && !currentUser.emailVerified) {
+      onbStep = 7;
+      renderOnboardingStep();
+    } else {
+      completeOnboarding();
+    }
     return;
   }
   if (onbStep < totalSteps - 1) { onbStep++; renderOnboardingStep(); }
 }
-function onbBack() { if (onbStep > 1) { onbStep--; renderOnboardingStep(); } }
+function onbBack() {
+  if (onbStep === 7) { onbStep = 6; renderOnboardingStep(); return; }
+  if (onbStep > 1) { onbStep--; renderOnboardingStep(); }
+}
 
 function completeOnboarding() {
   // Map prayer time selections to actual times
@@ -311,15 +535,16 @@ function personalizeApp() {
 // ===== NAVIGATION =====
 function showScreen(name) {
   currentScreen = name;
+  logEvent('screen_view', {screen_name: name});
   // Close any open overlays
   var sp = document.getElementById('subPage'); if(sp) sp.style.display='none';
   var br = document.getElementById('browserOverlay'); if(br) br.style.display='none';
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
-  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');t.setAttribute('aria-selected','false')});
   var scr = document.getElementById('screen'+name.charAt(0).toUpperCase()+name.slice(1));
   if(scr){scr.classList.add('active')}
   var tab = document.querySelector('[data-tab="'+name+'"]');
-  if(tab){tab.classList.add('active')}
+  if(tab){tab.classList.add('active');tab.setAttribute('aria-selected','true')}
   // Ensure screen is rendered (lazy rendering on first visit)
   if(typeof ensureScreenRendered === 'function') {
     ensureScreenRendered(name);
@@ -383,6 +608,7 @@ function closeInAppBrowser() {
 function showSubPage(name, title) {
   // Intercept Bible tab navigation
   if(name === 'bible-tab') { showScreen('bible'); return; }
+  logEvent('subpage_view', {page_name: name});
   document.getElementById('spTitle').textContent = title || name;
   document.getElementById('spBody').innerHTML = getSubPageContent(name);
   document.getElementById('subPage').style.display = 'flex';

@@ -128,5 +128,21 @@ if('serviceWorker' in navigator) {
   });
 }
 
+// Keyboard navigation for nav tabs (Enter/Space activates, arrow keys move)
+document.addEventListener('keydown', function(e) {
+  var tab = e.target.closest('.nav-tab');
+  if (!tab) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    tab.click();
+  } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    var tabs = Array.from(document.querySelectorAll('.nav-tab'));
+    var idx = tabs.indexOf(tab);
+    var next = e.key === 'ArrowRight' ? (idx + 1) % tabs.length : (idx - 1 + tabs.length) % tabs.length;
+    tabs[next].focus();
+  }
+});
+
 // Init on load
 document.addEventListener('DOMContentLoaded', initApp);

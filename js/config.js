@@ -17,6 +17,36 @@ try {
 } catch(e) { console.warn('Firebase init failed:', e); }
 
 // ===== ANALYTICS =====
+// ===== i18n SHORTHAND =====
+// Global translation helper - tries i18n.t() first, falls back gracefully
+function t(key) {
+  if(typeof i18n !== 'undefined') {
+    var val = i18n.t(key);
+    // i18n.t returns the key itself if not found - check if we got a real translation
+    if(val !== key) return val;
+  }
+  // Fallback: use a hardcoded English map for critical UI strings
+  var fallbacks = {
+    'ui.tagline':'The family that prays together stays together',
+    'ui.family_room':'Family Prayer Room','ui.enter_prayer_room':'Enter Prayer Room',
+    'ui.no_one_online':'No one online right now','ui.todays_habits':'Today\'s Habits',
+    'ui.todays_prayers':'Today\'s Prayers','ui.view_all':'View All','ui.completed':'completed',
+    'ui.my_habits':'My Habits & Streaks','ui.lent_challenge':'Lent Family Prayer Challenge',
+    'ui.verse_of_the_day':'Verse of the Day','ui.read_full_chapter':'Read Full Chapter',
+    'ui.circle_activity':'Circle Activity','ui.a_world_at_prayer':'A World at Prayer',
+    'ui.countries_connected':'countries unite in faith every day',
+    'ui.pray':'Pray','ui.find_prayers':'Find prayers for every moment',
+    'ui.search_prayers':'Search prayers, reflections, courses...',
+    'ui.pray_with_family':'Pray with Family','ui.circles':'Circles',
+    'ui.your_prayer_communities':'Your prayer communities',
+    'ui.my_family':'My Family','ui.your_impact':'Your Impact',
+    'ui.settings':'Settings','ui.dark_mode':'Dark Mode',
+    'ui.notifications':'Notifications & Reminders','ui.sign_out':'Sign Out',
+    'ui.share_prayed':'Share PRAYED'
+  };
+  return fallbacks[key] || key.split('.').pop().replace(/_/g, ' ');
+}
+
 function logEvent(eventName, params) {
   try {
     if(typeof firebase !== 'undefined' && firebase.analytics) {
@@ -38,7 +68,7 @@ function syncToCloud() {
 // ===== DATA =====
 var userData = null;
 var onbStep = 0;
-var totalSteps = 5;
+var totalSteps = 8;
 var currentScreen = 'home';
 var playerState = {playing:false, expanded:false, title:'', image:'', progress:30, duration:754};
 
@@ -156,7 +186,7 @@ var svgIcons = {
   flame: '<svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.59-4.8S9.96 3.1 10.99 5.3c.93-2.2 2.51-4.63 2.51-4.63zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>',
   globe: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>',
   star: '<svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2l-2.81 6.63L2 9.24l5.46 4.73L5.82 21z"/></svg>',
-  church: '<svg viewBox="0 0 24 24"><path d="M18 12.22V9l-5-2.5V5h2V3h-2V1h-2v2H9v2h2v1.5L6 9v3.22L2 14v8h8v-3c0-1.1.9-2 2-2s2 .9 2 2v3h8v-8l-4-1.78zM12 13.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>',
+  church: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v3M10 4h4"/><path d="M6 10l6-5 6 5"/><rect x="6" y="10" width="12" height="12"/><path d="M10 22v-4a2 2 0 014 0v4"/><circle cx="12" cy="14" r="1.5"/><path d="M3 22h18"/></svg>',
   share: '<svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>',
   check: '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>',
   close: '<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
@@ -167,11 +197,15 @@ var svgIcons = {
   verified: '<svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>',
   sun: '<svg viewBox="0 0 24 24"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>',
   moon: '<svg viewBox="0 0 24 24"><path d="M9.37 5.51A7.35 7.35 0 009.1 7.5c0 4.08 3.32 7.4 7.4 7.4.68 0 1.35-.09 1.99-.27A7.014 7.014 0 0112 19.5c-3.86 0-7-3.14-7-7 0-2.93 1.81-5.45 4.37-6.49zM12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>',
-  family: '<svg viewBox="0 0 24 24"><path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zM4 7c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm1 4.15C3.57 12.17 2 13.77 2 15.5V19h6v-3.5c0-1.38-.57-2.63-1.48-3.52-.22-.22-.46-.41-.72-.58-.07-.04-.14-.08-.22-.12-.03-.01-.05-.03-.08-.04A3.9 3.9 0 005 11.15zM15 11.15c-.2.05-.4.12-.58.2-.03.01-.05.03-.08.04-.08.04-.15.08-.22.12-.26.17-.5.36-.72.58C12.57 12.87 12 14.12 12 15.5V19h6v-3.5c0-1.73-1.57-3.33-3-4.35zM10 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm-1 7.15c-.2.05-.4.12-.58.2l-.08.04c-.08.04-.15.08-.22.12-.26.17-.5.36-.72.58C6.57 12.87 6 14.12 6 15.5V19h12v-3.5c0-1.73-1.57-3.33-3-4.35-.2.05-.4.12-.58.2l-.08.04z"/></svg>',
+  family: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5.5" r="2"/><circle cx="16" cy="5.5" r="2"/><circle cx="12" cy="9" r="1.5"/><path d="M4 20c0-3.3 2.7-6 6-6h4c3.3 0 6 2.7 6 6"/></svg>',
   dove: '<svg viewBox="0 0 24 24"><path d="M20.5 2c-1.95 0-4.05.4-5.5 1.5C13.55 2.4 11.45 2 9.5 2 7.55 2 5.45 2.4 4 3.5 2.55 2.4.45 2-1.5 2v2c1.03 0 2.05.25 3 .68v1.5c-.95-.43-1.97-.68-3-.68v2c1.03 0 2.05.25 3 .68v1.5c-.95-.43-1.97-.68-3-.68v2c1.03 0 2.05.25 3 .68V14c0 1.86.98 3.49 2.46 4.41L6.5 23h3l-1.18-3.59C9.5 19.12 10.44 19 11 19c3.17 0 5.83-1.44 7.16-3.68C19.69 13.72 21 11.06 21 8V4c0-1.1-.45-2-1.5-2z"/></svg>',
   passport: '<svg viewBox="0 0 24 24"><path d="M6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H6zm6 3.75c2.07 0 3.75 1.68 3.75 3.75 0 2.07-1.68 3.75-3.75 3.75S8.25 11.57 8.25 9.5c0-2.07 1.68-3.75 3.75-3.75zM16.5 18h-9v-.75c0-1.5 3-2.25 4.5-2.25s4.5.75 4.5 2.25V18z"/></svg>',
   lightbulb: '<svg viewBox="0 0 24 24"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>',
-  cross: '<svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>'
+  cross: '<svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>',
+  rosary: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><circle cx="7" cy="11.5" r=".8" fill="currentColor"/><circle cx="9" cy="14" r=".8" fill="currentColor"/><circle cx="15" cy="14" r=".8" fill="currentColor"/><circle cx="17" cy="11.5" r=".8" fill="currentColor"/><circle cx="12" cy="3.5" r=".8" fill="currentColor"/><path d="M12 15v3"/><path d="M10.5 19.5h3L12 22l-1.5-2.5z"/></svg>',
+  candle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c-.6 1.5-2 3-2 4.5a2 2 0 104 0C14 5 12.6 3.5 12 2z"/><rect x="10" y="8" width="4" height="13" rx="1"/><path d="M8 21h8"/></svg>',
+  stationsIcon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M7 7h10"/><circle cx="12" cy="7" r="1.5" fill="currentColor" stroke="none"/></svg>',
+  litany: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/><line x1="8" y1="9" x2="10" y2="9"/></svg>'
 };
 
 // Flag SVGs
@@ -232,13 +266,13 @@ var bibleBooks = [
   {name:'Revelation',ch:22,num:66,t:'nt'}
 ];
 var bibleVersions = [
+  {id:'DRB',name:'Douay-Rheims (Catholic)'},
+  {id:'CPDV',name:'Catholic Public Domain Version'},
   {id:'KJV',name:'King James Version'},
   {id:'WEB',name:'World English Bible'},
   {id:'ASV',name:'American Standard Version'},
   {id:'BBE',name:'Bible in Basic English'},
-  {id:'DRB',name:'Douay-Rheims (Catholic)'},
-  {id:'YLT',name:"Young's Literal Translation"},
-  {id:'CPDV',name:'Catholic Public Domain Version'}
+  {id:'YLT',name:"Young's Literal Translation"}
 ];
 var currentBibleBook = 0;
 var currentBibleChapter = 1;

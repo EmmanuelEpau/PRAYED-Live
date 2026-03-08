@@ -1,74 +1,101 @@
+// ===== CIRCLE TYPE CONFIG =====
+var circleTypes = {
+  'family': {label:'Family', color:'#7C3AED', icon:'family', badge:'Private', badgeBg:'rgba(124,58,237,0.1)', badgeColor:'#7C3AED'},
+  'parish': {label:'Parish', color:'var(--color-primary, #1B3A5C)', icon:'church', badge:'Local', badgeBg:'rgba(27,58,92,0.1)', badgeColor:'var(--color-primary, #1B3A5C)'},
+  'intention': {label:'Prayer Intention', color:'#0D9488', icon:'heart', badge:'Global', badgeBg:'rgba(13,148,136,0.1)', badgeColor:'#0D9488'},
+  'holycross': {label:'Holy Cross', color:'#C68A2E', icon:'church', badge:'Verified', badgeBg:'rgba(198,138,46,0.12)', badgeColor:'#C68A2E'}
+};
+
+function getCircleType(c) {
+  if (c.icon === 'church') return circleTypes['parish'];
+  if (c.icon === 'globe') return circleTypes['intention'];
+  if (c.icon === 'heart') return circleTypes['intention'];
+  return circleTypes['family'];
+}
+
+function renderAvatarStack(count) {
+  var colors = ['#1B3A5C','#DB2777','#0D9488','#C68A2E'];
+  var show = Math.min(count, 3);
+  var html = '<div class="avatar-stack">';
+  for(var i = 0; i < show; i++) {
+    html += '<div class="as-dot" style="background:' + colors[i % colors.length] + ';z-index:' + (show - i) + '"></div>';
+  }
+  if(count > 3) html += '<div class="as-count">+' + (count - 3) + '</div>';
+  html += '</div>';
+  return html;
+}
+
 // ===== RENDER CIRCLES =====
 function renderCircles() {
-  var html = '<div class="app-header"><div class="header-left"><div class="greeting">Circles<small>Your prayer communities</small></div></div></div>';
+  var html = '<div class="app-header"><div class="header-left"><div class="greeting">' + t('ui.circles') + '<small>' + t('ui.your_prayer_communities') + '</small></div></div></div>';
 
-  // --- My Circles ---
+  // --- My Circles (horizontal scroll) ---
   html += '<div class="section-title" style="padding:12px 16px 8px">My Circles</div>';
   html += '<div class="circles-scroll">';
   circles.forEach(function(c) {
-    // Determine type label based on circle properties
-    var typeLabel = 'Family';
-    if (c.icon === 'globe') typeLabel = 'Prayer Intention';
-    else if (c.icon === 'church') typeLabel = 'Parish';
+    var ct = getCircleType(c);
     html += '<div class="circle-item" onclick="showSubPage(\'circle-detail-' + c.id + '\',\'' + c.name + '\')">' +
-      '<div class="circle-av" style="background:' + c.color + '">' + c.name.charAt(0) + '</div>' +
-      '<div class="ci-name">' + c.name + '</div><div class="ci-count">' + c.members + ' members</div>' +
-      '<div style="font-size:10px;color:var(--text-light);margin-top:2px">' + typeLabel + '</div></div>';
+      '<div class="circle-av" style="background:' + c.color + ';box-shadow:0 0 0 3px ' + ct.color + '33">' + c.name.charAt(0) + '</div>' +
+      '<div class="ci-name">' + c.name + '</div>' +
+      '<div class="ci-type-dot" style="background:' + ct.color + '"></div></div>';
   });
   html += '<div class="circle-item" onclick="showSubPage(\'create-circle\',\'Create Circle\')"><div class="create-circle">' + svgIcons.plus + '</div><div class="ci-name">Create</div></div>';
   html += '</div>';
 
+  // --- Type legend chips ---
+  html += '<div class="circle-legend">';
+  Object.keys(circleTypes).forEach(function(key) {
+    var t = circleTypes[key];
+    html += '<div class="cl-chip"><span class="cl-dot" style="background:' + t.color + '"></span>' + t.label + '</div>';
+  });
+  html += '</div>';
+
   // --- Catholic Churches Near You ---
-  html += '<div class="browse-section"><h3 style="color:var(--color-primary, #1B3A5C)">Catholic Churches Near You</h3>';
+  html += '<div class="browse-section"><h3 style="color:var(--color-primary, #1B3A5C)"><span style="display:inline-flex;width:18px;height:18px;vertical-align:middle">' + svgIcons.church + '</span> Churches Near You</h3>';
   if (nearbyChurchesCache && nearbyChurchesCache.length > 0) {
     nearbyChurchesCache.slice(0, 5).forEach(function(ch) {
       var cid = ch.name.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30);
-      html += '<div class="browse-card" onclick="showSubPage(\'circle-detail-' + cid + '\',\'' + ch.name.replace(/'/g, "\\'") + '\')">' +
-        '<div class="bc-icon" style="background:var(--color-primary, #1B3A5C)">' + svgIcons.church + '</div>' +
-        '<div class="bc-info"><div class="bc-name">' + ch.name + '<span style="display:inline-block;margin-left:8px;font-size:10px;font-weight:500;color:var(--color-primary, #1B3A5C);background:var(--color-surface, #F3F1EC);padding:2px 6px;border-radius:4px">Parish</span></div>' +
-        '<div class="bc-meta">' + ch.address + ' \u2014 ' + ch.dist + ' mi</div></div></div>';
+      html += '<div class="circle-card" onclick="showSubPage(\'circle-detail-' + cid + '\',\'' + ch.name.replace(/'/g, "\\'") + '\')">' +
+        '<div class="cc-accent" style="background:var(--color-primary, #1B3A5C)"></div>' +
+        '<div class="cc-body">' +
+        '<div class="cc-top"><div class="cc-icon" style="background:var(--color-primary, #1B3A5C)">' + svgIcons.church + '</div>' +
+        '<div class="cc-info"><div class="cc-name">' + ch.name + '</div>' +
+        '<div class="cc-meta">' + ch.address + '</div></div></div>' +
+        '<div class="cc-footer"><span class="cc-badge" style="background:rgba(27,58,92,0.1);color:var(--color-primary, #1B3A5C)">Parish</span>' +
+        '<span class="cc-dist">' + ch.dist + ' mi</span></div></div></div>';
     });
   } else {
-    // No data available - prompt user to enable location
-    html += '<div style="padding:16px;text-align:center;color:var(--text-light);font-size:13px">' +
-      '<div style="margin-bottom:6px">' + svgIcons.church + '</div>' +
-      'No churches found nearby \u2014 enable location to find local parishes</div>';
+    html += '<div style="padding:20px;text-align:center;color:var(--text-light);font-size:13px;background:var(--color-surface, #F3F1EC);border-radius:var(--radius-md);margin:0 16px">' +
+      '<div style="margin-bottom:8px;opacity:0.5;display:flex;justify-content:center"><span style="display:inline-flex;width:28px;height:28px">' + svgIcons.church + '</span></div>' +
+      'Enable location to find Catholic parishes near you</div>';
   }
-  html += '</div>';
-
-  // --- Circle type legend ---
-  html += '<div style="padding:4px 16px 12px;display:flex;flex-wrap:wrap;gap:8px">';
-  var typeLabels = [
-    {label:'Family', desc:'private', color:'#7C3AED'},
-    {label:'Parish', desc:'public', color:'var(--color-primary, #1B3A5C)'},
-    {label:'Prayer Intention', desc:'global', color:'#0D9488'},
-    {label:'Holy Cross', desc:'verified', color:'#C68A2E'}
-  ];
-  typeLabels.forEach(function(t) {
-    html += '<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-light)">' +
-      '<span style="width:8px;height:8px;border-radius:50%;background:' + t.color + ';display:inline-block"></span>' +
-      t.label + ' <span style="opacity:0.7">(' + t.desc + ')</span></div>';
-  });
   html += '</div>';
 
   // --- Browse sections: Prayer Intentions, Families, Global ---
   var sectionTypes = {
-    'Prayer Intentions': {data: browseCircles['intentions'], type: 'Prayer Intention'},
-    'Families': {data: browseCircles['families'], type: 'Family'},
-    'Global': {data: browseCircles['global'], type: 'Prayer Intention'}
+    'Prayer Intentions': {data: browseCircles['intentions'], type: 'intention'},
+    'Families': {data: browseCircles['families'], type: 'family'},
+    'Global': {data: browseCircles['global'], type: 'intention'}
   };
   Object.keys(sectionTypes).forEach(function(sec) {
     var section = sectionTypes[sec];
+    var ct = circleTypes[section.type];
     html += '<div class="browse-section"><h3 style="color:var(--color-primary, #1B3A5C)">' + sec + '</h3>';
     section.data.forEach(function(c) {
       var iconHtml = c.img
         ? '<img src="' + c.img + '" alt="' + c.name + '" loading="lazy" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0">'
-        : '<div class="bc-icon" style="background:' + c.color + '">' + (svgIcons[c.icon] || svgIcons.globe) + '</div>';
-      html += '<div class="browse-card" onclick="showSubPage(\'circle-detail-' + c.id + '\',\'' + c.name + '\')">' +
-        iconHtml +
-        '<div class="bc-info"><div class="bc-name">' + c.name + '<span style="display:inline-block;margin-left:8px;font-size:10px;font-weight:500;color:var(--text-light);background:var(--color-surface, #F3F1EC);padding:2px 6px;border-radius:4px">' + section.type + '</span></div>' +
-        '<div class="bc-meta">' + c.meta + '</div>' +
-        '<div class="bc-members">' + c.members + '</div></div></div>';
+        : '<div class="cc-icon" style="background:' + c.color + '">' + (svgIcons[c.icon] || svgIcons.globe) + '</div>';
+      var memberNum = parseInt(c.members) || 0;
+      html += '<div class="circle-card" onclick="showSubPage(\'circle-detail-' + c.id + '\',\'' + c.name + '\')">' +
+        '<div class="cc-accent" style="background:' + ct.color + '"></div>' +
+        '<div class="cc-body">' +
+        '<div class="cc-top">' + iconHtml +
+        '<div class="cc-info"><div class="cc-name">' + c.name + '</div>' +
+        '<div class="cc-meta">' + c.meta + '</div></div></div>' +
+        '<div class="cc-footer">' +
+        '<span class="cc-badge" style="background:' + ct.badgeBg + ';color:' + ct.badgeColor + '">' + ct.badge + '</span>' +
+        renderAvatarStack(memberNum) +
+        '<span class="cc-members-count">' + c.members + '</span></div></div></div>';
     });
     html += '</div>';
   });
@@ -154,12 +181,39 @@ function getSubPageContent(name) {
       '<button class="sp-btn" onclick="showVideoPlayer(\'Mother Teresa & Fr. Peyton\',\'VWebKiHR95c\')"><svg viewBox="0 0 24 24" width="20" height="20" style="fill:var(--gold)"><path d="M8 5v14l11-7z"/></svg> Mother Teresa and Fr. Peyton</button>' +
       '<button class="sp-btn primary" style="margin-top:16px;background:linear-gradient(135deg,var(--gold),#A0722A)" onclick="showInAppBrowser(\'Donate\',\'https://www.hcfm.org/donate\')"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> Continue His Mission</button>',
 
-    'challenge': '<div class="sp-section"><h3>Lent Family Prayer Challenge</h3><p>Join 23,456 families in a 30-day journey of prayer, reflection, and community during the season of Lent.</p></div>' +
-      '<div style="background:var(--primary-blue);color:#fff;border-radius:12px;padding:16px;margin-bottom:16px;text-align:center">' +
-      '<div style="font-size:32px;font-weight:800">Day 7</div><div style="font-size:14px;opacity:0.9">of 30</div>' +
-      '<div style="height:6px;background:rgba(255,255,255,0.3);border-radius:3px;margin-top:12px"><div style="height:100%;width:23%;background:#fff;border-radius:3px"></div></div></div>' +
-      '<div class="sp-section"><h3>Today\'s Challenge</h3><div class="sp-prayer">Pray one decade of the Rosary as a family. Choose the Sorrowful Mysteries and reflect on how Jesus suffered for love of us.<br><br><span class="response">Intention:</span> Pray for families who are separated or struggling.</div></div>' +
-      '<button class="sp-btn primary" onclick="playContent(\'Lent Challenge Day 7\',\''+imgMap['diverse_family_praying']+'\',audioSources.lent)"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z"/></svg> Begin Today\'s Prayer</button>',
+    'challenge': (function() {
+      var currentDay = 7;
+      var totalDays = 40;
+      var pct = Math.round((currentDay / totalDays) * 100);
+      var h = '<div class="sp-section"><h3>Lent Family Prayer Challenge</h3><p>Join 23,456 families in 40 days of prayer, reflection, and community during Lent.</p></div>';
+      // Progress ring
+      h += '<div style="text-align:center;margin-bottom:20px">' +
+        '<svg viewBox="0 0 120 120" width="120" height="120" style="margin:0 auto">' +
+        '<circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-surface, #F3F1EC)" stroke-width="8"/>' +
+        '<circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-primary, #1B3A5C)" stroke-width="8" stroke-linecap="round" stroke-dasharray="' + (2 * Math.PI * 52 * pct / 100) + ' ' + (2 * Math.PI * 52) + '" transform="rotate(-90 60 60)"/>' +
+        '<text x="60" y="55" text-anchor="middle" font-size="28" font-weight="800" fill="var(--color-primary, #1B3A5C)">' + currentDay + '</text>' +
+        '<text x="60" y="72" text-anchor="middle" font-size="11" fill="var(--text-light)">of ' + totalDays + ' days</text></svg>' +
+        '<div style="margin-top:8px;font-size:13px;color:var(--text-light)">' + pct + '% complete</div></div>';
+      // Calendar grid
+      h += '<div class="sp-section"><h3>Your Journey</h3></div>';
+      h += '<div class="lent-calendar">';
+      for(var d = 1; d <= totalDays; d++) {
+        var cls = 'lent-day';
+        if(d < currentDay) cls += ' completed';
+        else if(d === currentDay) cls += ' current';
+        else cls += ' upcoming';
+        h += '<div class="' + cls + '">' + d + '</div>';
+      }
+      h += '</div>';
+      // Today's challenge
+      h += '<div class="sp-section"><h3>Day ' + currentDay + ' Challenge</h3><div class="sp-prayer">Pray one decade of the Rosary as a family. Choose the Sorrowful Mysteries and reflect on how Jesus suffered for love of us.<br><br><span class="response">Intention:</span> Pray for families who are separated or struggling.<br><br><span class="response">Action:</span> Call or text a family member you haven\'t spoken to recently.</div></div>';
+      h += '<button class="sp-btn primary" onclick="playContent(\'Lent Challenge Day ' + currentDay + '\',\'' + imgMap['diverse_family_praying'] + '\',audioSources.lent)"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z"/></svg> Begin Today\'s Prayer</button>';
+      // Community
+      h += '<div style="background:var(--color-surface, #F3F1EC);border-radius:12px;padding:14px;margin-top:16px;text-align:center">' +
+        '<div style="font-size:22px;font-weight:800;color:var(--color-primary, #1B3A5C)">23,456</div>' +
+        '<div style="font-size:12px;color:var(--text-light)">families praying together this Lent</div></div>';
+      return h;
+    })(),
 
     'daily-challenge': '<div class="sp-section"><h3>Daily Challenge</h3><p>Test your Catholic knowledge with a daily trivia question!</p></div>' +
       '<div style="font-size:15px;font-weight:600;color:var(--navy);margin-bottom:16px;line-height:1.4">In which mystery of the Rosary do we meditate on the Resurrection of Jesus?</div>' +
@@ -327,7 +381,9 @@ function getSubPageContent(name) {
       '<div class="story-card"><div class="sc-body"><h4>St. Nicholas</h4><p>The Giver Saint. Nicholas was a bishop who secretly gave gifts to the poor. He once dropped bags of gold coins down a chimney to help a family in need.</p></div></div>' +
       '<div class="story-card"><div class="sc-body"><h4>St. Francis of Assisi</h4><p>Friend to All Creation. Francis gave up his wealth to live simply and serve the poor. He loved animals and all of God\'s creation, often preaching to birds and wolves.</p></div></div>' +
       '<div class="story-card"><div class="sc-body"><h4>St. Joan of Arc</h4><p>Brave and Bold. At just 17, Joan led an army to defend her country. She trusted God\'s voice even when others doubted her. Her courage changed history.</p></div></div>' +
-      '<div class="story-card"><div class="sc-body"><h4>St. Therese of Lisieux</h4><p>The Little Way. Therese showed that you do not need to do great things \u2014 small acts of love, done with great heart, are what matter most to God.</p></div></div>'
+      '<div class="story-card"><div class="sc-body"><h4>St. Therese of Lisieux</h4><p>The Little Way. Therese showed that you do not need to do great things \u2014 small acts of love, done with great heart, are what matter most to God.</p></div></div>',
+
+    'settings-full': renderFullSettings()
   };
 
   // Handle circle detail pages
@@ -363,15 +419,21 @@ function getSubPageContent(name) {
     var localPosts = [];
     try { localPosts = JSON.parse(localStorage.getItem(circleLocalKey)) || []; } catch(e) {}
     localPosts.forEach(function(w) {
+      if(isUserBlocked(w.name)) return;
       h += '<div class="prayer-wall-item"><div class="pw-header"><div class="pw-av" style="background:'+(w.color||'var(--primary-blue)')+'">'+escapeHtml(w.initials)+'</div>' +
         '<div class="pw-name">'+escapeHtml(w.name)+'</div><div class="pw-time">'+escapeHtml(w.time)+'</div></div>' +
         '<div class="pw-text">'+escapeHtml(w.text)+'</div>' +
         '<div class="pw-pray-btn">' + svgIcons.heart + ' '+(w.count||1)+' praying</div></div>';
     });
-    // Feed (default/seed posts)
-    wall.forEach(function(w) {
+    // Feed (default/seed posts) - filter out blocked users
+    wall.forEach(function(w, wi) {
+      if(isUserBlocked(w.name)) return;
       h += '<div class="prayer-wall-item"><div class="pw-header"><div class="pw-av" style="background:'+w.color+'">'+w.initials+'</div>' +
-        '<div class="pw-name">'+w.name+' '+flagSVG(w.flag)+'</div><div class="pw-time">'+w.time+'</div></div>' +
+        '<div class="pw-name">'+w.name+' '+flagSVG(w.flag)+'</div><div class="pw-time">'+w.time+'</div>' +
+        '<button class="pw-report" onclick="event.stopPropagation();reportPost(\''+cid+'\','+wi+')" aria-label="Report post" title="Report">' +
+        '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></button>' +
+        '<button class="pw-report" onclick="event.stopPropagation();blockUser(\''+escapeHtml(w.name)+'\')" aria-label="Block user" title="Block user" style="margin-left:4px">' +
+        '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/></svg></button></div>' +
         '<div class="pw-text">'+w.text+'</div>' +
         '<div class="pw-pray-btn">' + svgIcons.heart + ' '+w.count+' praying</div></div>';
     });
@@ -441,10 +503,67 @@ function switchCircleTab(tab, el) {
   }
 }
 
+// Content moderation word filter
+var blockedWords = ['spam','scam','http://','https://','www.','buy now','click here','free money','wire transfer'];
+function moderateContent(text) {
+  var lower = text.toLowerCase();
+  for(var i = 0; i < blockedWords.length; i++) {
+    if(lower.indexOf(blockedWords[i]) > -1) {
+      return {ok: false, reason: 'Your post contains content that isn\'t allowed. Please remove links or promotional content.'};
+    }
+  }
+  if(text.length > 500) return {ok: false, reason: 'Posts must be under 500 characters.'};
+  return {ok: true};
+}
+
+function reportPost(cid, postIndex) {
+  var confirmed = confirm('Report this post as inappropriate?');
+  if(!confirmed) return;
+  // Store report locally and in Firestore
+  var reportObj = {circleId: cid, postIndex: postIndex, reportedBy: (currentUser && currentUser.uid) || 'anonymous', ts: Date.now()};
+  try {
+    var reports = JSON.parse(localStorage.getItem('prayedReports')) || [];
+    reports.push(reportObj);
+    localStorage.setItem('prayedReports', JSON.stringify(reports.slice(-50)));
+  } catch(e) {}
+  if(db && currentUser) {
+    try { db.collection('reports').add(reportObj).catch(function(){}); } catch(e) {}
+  }
+  logEvent('post_reported', {circleId: cid});
+  showToast('Post reported. Thank you for helping keep our community safe.');
+}
+
+// User blocking - hide posts from blocked users
+function getBlockedUsers() {
+  try { return JSON.parse(localStorage.getItem('prayedBlockedUsers')) || []; } catch(e) { return []; }
+}
+function blockUser(userName) {
+  if(!confirm('Block ' + userName + '? You won\'t see their posts anymore.')) return;
+  var blocked = getBlockedUsers();
+  if(blocked.indexOf(userName) === -1) {
+    blocked.push(userName);
+    localStorage.setItem('prayedBlockedUsers', JSON.stringify(blocked));
+  }
+  logEvent('user_blocked', {userName: userName});
+  showToast(userName + ' blocked. Their posts are now hidden.');
+  // Re-render current circle if open
+  var detail = document.querySelector('.circle-detail');
+  if(detail) {
+    var cid = detail.getAttribute('data-cid');
+    if(cid) showSubPage('circle-detail-' + cid, detail.getAttribute('data-name') || 'Circle');
+  }
+}
+function isUserBlocked(userName) {
+  return getBlockedUsers().indexOf(userName) > -1;
+}
+
 function postToCircle(cid) {
   var inp = document.getElementById('circlePostInput');
   if(!inp || !inp.value.trim()) return;
   var text = inp.value.trim();
+  // Content moderation check
+  var check = moderateContent(text);
+  if(!check.ok) { showToast(check.reason); return; }
   inp.value = '';
   var u = userData || {};
   var initials = u.initials || 'ME';
