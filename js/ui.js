@@ -745,8 +745,49 @@ function toggleDistanceUnit() {
 function signOut() {
   if(auth) { try { auth.signOut(); } catch(e) {} }
   currentUser = null;
+  userData = null;
   localStorage.removeItem('prayedLiveUser');
-  location.reload();
+  localStorage.removeItem('prayedOnboarded');
+  localStorage.removeItem('prayedUserData');
+  // Hide main app, show onboarding
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('bottomNav').style.display = 'none';
+  document.getElementById('onboarding').style.display = 'flex';
+  onbStep = 0;
+  userData = {firstName:'', lastName:'', email:'', country:'', state:'', city:'', userType:'', language:'', prayerTimes:[], interests:[], morningTime:'07:00', eveningTime:'20:00', habits:habits};
+  renderOnboardingStep();
+}
+
+function deleteAccount() {
+  if(!confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
+  var user = auth ? auth.currentUser : null;
+  // Delete Firestore data
+  if(user && typeof db !== 'undefined' && db) {
+    try { db.collection('users').doc(user.uid).delete(); } catch(e) { console.warn('Could not delete Firestore data:', e); }
+  }
+  // Delete Firebase Auth account
+  if(user) {
+    user.delete().then(function() {
+      console.log('Account deleted');
+    }).catch(function(e) {
+      console.warn('Could not delete auth account:', e);
+    });
+  }
+  // Clear all local data
+  currentUser = null;
+  userData = null;
+  localStorage.removeItem('prayedLiveUser');
+  localStorage.removeItem('prayedOnboarded');
+  localStorage.removeItem('prayedUserData');
+  localStorage.removeItem('prayedFamilyStreak');
+  localStorage.removeItem('prayedLastFamilyPrayer');
+  // Show onboarding
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('bottomNav').style.display = 'none';
+  document.getElementById('onboarding').style.display = 'flex';
+  onbStep = 0;
+  userData = {firstName:'', lastName:'', email:'', country:'', state:'', city:'', userType:'', language:'', prayerTimes:[], interests:[], morningTime:'07:00', eveningTime:'20:00', habits:habits};
+  renderOnboardingStep();
 }
 
 function showToast(msg) {

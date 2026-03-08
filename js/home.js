@@ -25,7 +25,7 @@ function renderHome() {
     '<div class="frc-content">' +
     '<div class="family-room-card__header">' +
     '<div class="family-room-card__title">' +
-    '<div class="frc-icon-wrap"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5.5" r="2"/><circle cx="16" cy="5.5" r="2"/><circle cx="12" cy="9" r="1.5"/><path d="M4 20c0-3.3 2.7-6 6-6h4c3.3 0 6 2.7 6 6"/></svg></div>' +
+    '<div class="frc-icon-wrap"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="2.5"/><path d="M7.5 20c0-3 2-5.5 4.5-5.5s4.5 2.5 4.5 5.5"/><circle cx="5" cy="7" r="2"/><path d="M1.5 16c0-2.2 1.6-4 3.5-4s3.5 1.8 3.5 4"/><circle cx="19" cy="7" r="2"/><path d="M15.5 16c0-2.2 1.6-4 3.5-4s3.5 1.8 3.5 4"/></svg></div>' +
     '<div><h3>' + escapeHtml(familyName) + '</h3>' +
     '<span class="frc-subtitle">' + t('ui.family_room') + '</span></div></div>' +
     (familyStreak > 0 ? '<span class="streak-badge">\uD83D\uDD25 ' + familyStreak + ' days</span>' : '') +
@@ -118,9 +118,9 @@ function renderHome() {
   html += '<div class="votd-card" onclick="openVotdChapter()">' +
     '<div class="votd-label">' +
     '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15z"/><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/></svg>' +
-    ' ' + t('ui.verse_of_the_day').toUpperCase() + '</div>' +
+    ' ' + (votd.season ? 'TODAY\u2019S GOSPEL \u2022 ' + votd.season.toUpperCase() : t('ui.verse_of_the_day').toUpperCase()) + '</div>' +
     '<div class="votd-text">\u201c' + escapeHtml(votd.text) + '\u201d</div>' +
-    '<div class="votd-ref">\u2014 ' + votd.ref + ' (' + currentBibleVersion + ')</div>' +
+    '<div class="votd-ref">\u2014 ' + votd.ref + (votd.season ? ' (Mass Reading)' : ' (' + currentBibleVersion + ')') + '</div>' +
     '<div class="votd-action">' +
     '<svg viewBox="0 0 24 24" width="14" height="14" fill="var(--color-primary)"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>' +
     ' ' + t('ui.read_full_chapter') + '</div></div>';

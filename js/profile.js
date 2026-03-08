@@ -246,6 +246,7 @@ function renderProfile() {
 
   html += '<div style="text-align:center;padding:var(--space-md);font-size:var(--text-xs);color:var(--color-text-muted)">PRAYED 1.0.0 &middot; Holy Cross Family Ministries</div>';
   html += '<button class="signout-btn" onclick="signOut()">' + t('ui.sign_out') + '</button>';
+  html += '<button class="signout-btn" onclick="deleteAccount()" style="background:rgba(220,38,38,0.1);color:#DC2626;margin-top:8px;border:1px solid rgba(220,38,38,0.2)">Delete Account</button>';
   document.getElementById('screenProfile').innerHTML = html;
 }
 

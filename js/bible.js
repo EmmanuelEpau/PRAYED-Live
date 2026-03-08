@@ -437,9 +437,58 @@ function loadHighlightsFromCloud() {
   }
 }
 
+// Cached liturgical verse — fetched from Catholic daily readings API
+var cachedLiturgicalVerse = null;
+var liturgicalFetchDone = false;
+
 function getVerseOfTheDay() {
+  if (cachedLiturgicalVerse) return cachedLiturgicalVerse;
+  // Fallback to hardcoded while fetching
   var dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
   return votdVerses[dayOfYear % votdVerses.length];
+}
+
+function fetchLiturgicalVerse() {
+  if (liturgicalFetchDone) return;
+  liturgicalFetchDone = true;
+  var today = new Date();
+  var year = today.getFullYear();
+  var mm = String(today.getMonth() + 1);
+  if (mm.length < 2) mm = '0' + mm;
+  var dd = String(today.getDate());
+  if (dd.length < 2) dd = '0' + dd;
+  var url = 'https://cpbjr.github.io/catholic-readings-api/readings/' + year + '/' + mm + '-' + dd + '.json';
+  fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+    if (!data || !data.readings || !data.readings.gospel) return;
+    var gospelRef = data.readings.gospel;
+    // Fetch gospel text from bible-api.com
+    return fetch('https://bible-api.com/' + encodeURIComponent(gospelRef) + '?translation=web')
+      .then(function(r2) { return r2.json(); })
+      .then(function(bible) {
+        if (!bible || !bible.verses || bible.verses.length === 0) return;
+        // Pick first verse as VOTD
+        var v = bible.verses[0];
+        var ref = v.book_name + ' ' + v.chapter + ':' + v.verse;
+        var text = v.text.replace(/\n/g, ' ').trim();
+        // Find matching book index
+        var bookIdx = 0;
+        var chap = v.chapter;
+        for (var i = 0; i < bibleBooks.length; i++) {
+          if (bibleBooks[i].name.toLowerCase() === v.book_name.toLowerCase()) { bookIdx = i; break; }
+        }
+        cachedLiturgicalVerse = { ref: ref, text: text, b: bookIdx, c: chap, season: data.season || '' };
+        // Re-render home and bible if visible to show updated verse
+        if (typeof renderHome === 'function' && document.getElementById('screenHome').innerHTML) renderHome();
+        if (typeof renderBible === 'function' && document.getElementById('screenBible') && document.getElementById('screenBible').innerHTML) renderBible();
+      });
+  }).catch(function(e) {
+    console.warn('Could not fetch liturgical reading:', e);
+  });
+}
+
+// Fetch on load
+if (typeof fetch !== 'undefined') {
+  try { fetchLiturgicalVerse(); } catch(e) {}
 }
 
 // ===== RENDER BIBLE SCREEN =====
