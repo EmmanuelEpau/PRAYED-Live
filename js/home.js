@@ -108,22 +108,24 @@ function renderHome() {
   });
   html += '</div>';
 
+  // === DAILY GOSPEL REFLECTION (Spec 0C) ===
+  var votd = getVerseOfTheDay();
+  var seasonLabel = votd.season ? votd.season.toUpperCase() : 'DAILY GOSPEL';
+  html += '<div class="reflection-card">' +
+    '<div class="season-label">' + seasonLabel + '</div>' +
+    '<div class="gospel-text">\u201c' + escapeHtml(votd.text) + '\u201d</div>' +
+    '<div class="gospel-ref">\u2014 ' + votd.ref + (votd.season ? ' (Mass Reading)' : '') + '</div>' +
+    '<div class="reflection-actions">' +
+    '<button class="btn-ponder" onclick="openVotdChapter()">' +
+    '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15z"/></svg> Ponder</button>' +
+    '<button class="btn-pray-together" onclick="openPrayerRoomUI()">' +
+    '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Pray Together</button>' +
+    '</div></div>';
+
   // === LENT BANNER (seasonal) ===
   html += '<div class="lent-banner" onclick="showSubPage(\'challenge\',\'Lent Prayer Challenge\')">' +
     '<div class="lent-banner__icon"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="#fff"/></svg></div>' +
     '<div class="lent-banner__text"><h3>' + t('ui.lent_challenge') + '</h3><p>Join families in 40 days of prayer together</p></div></div>';
-
-  // === VERSE OF THE DAY ===
-  var votd = getVerseOfTheDay();
-  html += '<div class="votd-card" onclick="openVotdChapter()">' +
-    '<div class="votd-label">' +
-    '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15z"/><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/></svg>' +
-    ' ' + (votd.season ? 'TODAY\u2019S GOSPEL \u2022 ' + votd.season.toUpperCase() : t('ui.verse_of_the_day').toUpperCase()) + '</div>' +
-    '<div class="votd-text">\u201c' + escapeHtml(votd.text) + '\u201d</div>' +
-    '<div class="votd-ref">\u2014 ' + votd.ref + (votd.season ? ' (Mass Reading)' : ' (' + currentBibleVersion + ')') + '</div>' +
-    '<div class="votd-action">' +
-    '<svg viewBox="0 0 24 24" width="14" height="14" fill="var(--color-primary)"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>' +
-    ' ' + t('ui.read_full_chapter') + '</div></div>';
 
   // === BOTTOM: CIRCLE ACTIVITY FEED ===
   html += '<div class="section-title">' +
@@ -143,6 +145,13 @@ function renderHome() {
     '<svg viewBox="0 0 24 24" width="20" height="20" fill="var(--color-accent)"><path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg>' +
     '<blockquote class="crimson">\u201cThe family that prays together stays together.\u201d</blockquote>' +
     '<cite>\u2014 Fr. Patrick Peyton, C.S.C.</cite></div>';
+
+  // === GLOBAL PRAYER COUNTER ===
+  html += '<div class="global-counter">' +
+    '<div class="counter-number" id="globalCounterNum">' + (globalPrayerCount || 0).toLocaleString() + '</div>' +
+    '<div class="counter-label">prayers offered worldwide</div>' +
+    '<div class="counter-subtitle gold-shimmer">' + t('ui.a_world_at_prayer') + '</div>' +
+    '</div>';
 
   // === WORLD MAP (compact) ===
   html += '<div class="world-section" onclick="showSubPage(\'world-at-prayer\',\'A World at Prayer\')">' +

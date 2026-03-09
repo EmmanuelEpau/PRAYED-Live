@@ -2,6 +2,7 @@
 var firebaseConfig = {
   apiKey: "AIzaSyAnnrgNTAJeqjNXnJsfuXeD3NI5ephTPHM",
   authDomain: "prayed-app-2a108.firebaseapp.com",
+  databaseURL: "https://prayed-app-2a108-default-rtdb.firebaseio.com",
   projectId: "prayed-app-2a108",
   storageBucket: "prayed-app-2a108.firebasestorage.app",
   messagingSenderId: "540401821546",
@@ -10,10 +11,12 @@ var firebaseConfig = {
 var db = null;
 var auth = null;
 var currentUser = null;
+var rtdb = null;
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
   auth = firebase.auth();
+  rtdb = firebase.database();
 } catch(e) { console.warn('Firebase init failed:', e); }
 
 // ===== ANALYTICS =====
@@ -87,6 +90,34 @@ var extraHabits = [
   {name:'Spiritual Reading',time:'15 min',done:false,cat:'wellness'}
 ];
 var countryCount = 12;
+var globalPrayerCount = 0;
+var nearbyChurchesCache = [];
+
+// Global prayer counter - syncs with Firestore
+function fetchGlobalPrayerCount() {
+  if (!db) return;
+  try {
+    db.collection('counters').doc('global').onSnapshot(function(doc) {
+      if (doc.exists) {
+        globalPrayerCount = doc.data().prayers || 0;
+        // Update any visible counters
+        var el = document.getElementById('globalCounterNum');
+        if (el) el.textContent = globalPrayerCount.toLocaleString();
+      }
+    });
+  } catch(e) { console.warn('Counter fetch failed:', e); }
+}
+
+function incrementPrayerCount() {
+  if (!db) return;
+  try {
+    db.collection('counters').doc('global').set({
+      prayers: firebase.firestore.FieldValue.increment(1),
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge: true});
+    globalPrayerCount++;
+  } catch(e) { console.warn('Counter increment failed:', e); }
+}
 
 // Security: HTML escaping to prevent XSS attacks
 function escapeHtml(str) {
