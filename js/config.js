@@ -91,32 +91,317 @@ var extraHabits = [
 ];
 var countryCount = 12;
 var globalPrayerCount = 0;
+var worldAtPrayerCount = 0;
+var appPrayerCount = 0;
 var nearbyChurchesCache = [];
+var liveStreamData = null;
+var todaysReflection = null;
+var prayerIntentionsCache = [];
+var peytonQuotes = [
+  'The family that prays together stays together.',
+  'A world at prayer is a world at peace.',
+  'The Rosary is the weapon for these times.',
+  'Mary is the path that leads to Christ.',
+  'If families give Our Lady fifteen minutes a day by praying the Rosary, I assure them that their homes will become more peaceful.',
+  'No family can afford to be without the Rosary.',
+  'Prayer is as necessary to the soul as food is to the body.',
+  'The family Rosary is a sure way to family peace.',
+  'The greatest weapon available to us is the Rosary.',
+  'Pray, pray, pray. The family Rosary is the answer to every problem.'
+];
 
-// Global prayer counter - syncs with Firestore
+// ===== TWO-DOCUMENT GLOBAL PRAYER COUNTER (Spec 0H) =====
 function fetchGlobalPrayerCount() {
   if (!db) return;
+  // Listen to counters/worldatprayer (synced from worldatprayer.org)
+  try {
+    db.collection('counters').doc('worldatprayer').onSnapshot(function(doc) {
+      if (doc.exists) {
+        worldAtPrayerCount = doc.data().prayersOffered || 2738160;
+      } else {
+        worldAtPrayerCount = 2738160; // Seed fallback
+      }
+      updateGlobalCounterDisplay();
+    });
+  } catch(e) { worldAtPrayerCount = 2738160; }
+  // Listen to counters/global (PRAYED app native counters)
   try {
     db.collection('counters').doc('global').onSnapshot(function(doc) {
       if (doc.exists) {
-        globalPrayerCount = doc.data().prayers || 0;
-        // Update any visible counters
-        var el = document.getElementById('globalCounterNum');
-        if (el) el.textContent = globalPrayerCount.toLocaleString();
+        var d = doc.data();
+        appPrayerCount = (d.totalPrayers || 0);
       }
+      updateGlobalCounterDisplay();
     });
   } catch(e) { console.warn('Counter fetch failed:', e); }
 }
 
-function incrementPrayerCount() {
+function updateGlobalCounterDisplay() {
+  globalPrayerCount = worldAtPrayerCount + appPrayerCount;
+  var el = document.getElementById('globalCounterNum');
+  if (el) {
+    var target = globalPrayerCount;
+    if (!el.getAttribute('data-animated')) {
+      el.setAttribute('data-target', target);
+      // Will be animated by IntersectionObserver
+    } else {
+      el.textContent = target.toLocaleString();
+    }
+  }
+  // Update breakdown if visible
+  var breakdownEl = document.getElementById('counterBreakdown');
+  if (breakdownEl) {
+    breakdownEl.textContent = worldAtPrayerCount.toLocaleString() + ' via World at Prayer + ' + appPrayerCount.toLocaleString() + ' via PRAYED app';
+  }
+}
+
+function incrementPrayerCount(type) {
+  if (!db) return;
+  var updates = {
+    totalPrayers: firebase.firestore.FieldValue.increment(1),
+    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  if (type === 'rosary') updates.totalRosaries = firebase.firestore.FieldValue.increment(1);
+  if (type === 'reflection') updates.totalReflections = firebase.firestore.FieldValue.increment(1);
+  if (type === 'intention') updates.totalIntentions = firebase.firestore.FieldValue.increment(1);
+  try {
+    db.collection('counters').doc('global').set(updates, {merge: true});
+    appPrayerCount++;
+    globalPrayerCount = worldAtPrayerCount + appPrayerCount;
+  } catch(e) { console.warn('Counter increment failed:', e); }
+}
+
+// Animated count-up with easeOutCubic
+function animateCounter(element, target, duration) {
+  duration = duration || 2000;
+  var start = 0;
+  var startTime = null;
+  function step(timestamp) {
+    if (!startTime) startTime = timestamp;
+    var progress = Math.min((timestamp - startTime) / duration, 1);
+    var eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+    var current = Math.floor(eased * target);
+    element.textContent = current.toLocaleString();
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      element.textContent = target.toLocaleString();
+      element.setAttribute('data-animated', '1');
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+// Set up IntersectionObserver for counter animation
+function setupCounterObserver() {
+  var counterEl = document.querySelector('.global-counter');
+  if (!counterEl) return;
+  var numEl = document.getElementById('globalCounterNum');
+  if (!numEl || numEl.getAttribute('data-animated')) return;
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        var target = parseInt(numEl.getAttribute('data-target')) || globalPrayerCount;
+        if (target > 0) animateCounter(numEl, target, 2000);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {threshold: 0.5});
+  observer.observe(counterEl);
+}
+
+// ===== LIVE STREAM STATUS (Spec 0F) =====
+function fetchLiveStreamStatus() {
   if (!db) return;
   try {
-    db.collection('counters').doc('global').set({
-      prayers: firebase.firestore.FieldValue.increment(1),
+    db.collection('liveStream').doc('current').onSnapshot(function(doc) {
+      if (doc.exists) {
+        liveStreamData = doc.data();
+      } else {
+        liveStreamData = null;
+      }
+    });
+  } catch(e) { liveStreamData = null; }
+}
+
+function parseETTime(timeStr) {
+  // Parse "HH:MM" in ET to today's Date in local time approx
+  var parts = timeStr.split(':');
+  var d = new Date();
+  // ET offset rough estimate (EST=-5, EDT=-4)
+  var etOffset = (d.getMonth() >= 2 && d.getMonth() <= 10) ? -4 : -5;
+  var localOffset = -d.getTimezoneOffset() / 60;
+  var diff = localOffset - etOffset;
+  d.setHours(parseInt(parts[0]) + diff, parseInt(parts[1]), 0, 0);
+  return d;
+}
+
+function getLiveStreamSchedule() {
+  // Weekday 11:30 AM ET Rosary, 12:00 PM ET Mass
+  var now = new Date();
+  var day = now.getDay(); // 0=Sun, 6=Sat
+  if (day === 0 || day === 6) return null; // No weekend broadcasts
+  var rosaryStart = parseETTime('11:30');
+  var rosaryEnd = parseETTime('12:00');
+  var massEnd = parseETTime('12:30');
+  return {rosaryStart: rosaryStart, rosaryEnd: rosaryEnd, massEnd: massEnd};
+}
+
+// ===== DAILY GOSPEL REFLECTION (Spec 0C) =====
+function getTodaysReflection() {
+  return new Promise(function(resolve) {
+    if (!db) { resolve(null); return; }
+    var today = new Date();
+    var dateId = today.getFullYear() + '-' +
+      String(today.getMonth() + 1).padStart(2, '0') + '-' +
+      String(today.getDate()).padStart(2, '0');
+    try {
+      db.collection('dailyReflections').doc(dateId).get().then(function(doc) {
+        if (doc.exists) {
+          todaysReflection = doc.data();
+          resolve(todaysReflection);
+        } else {
+          // Fallback: get most recent reflection
+          db.collection('dailyReflections').orderBy('date', 'desc').limit(1).get().then(function(snap) {
+            if (!snap.empty) {
+              todaysReflection = snap.docs[0].data();
+              resolve(todaysReflection);
+            } else {
+              resolve(null); // No reflections at all, use VOTD fallback
+            }
+          }).catch(function() { resolve(null); });
+        }
+      }).catch(function() { resolve(null); });
+    } catch(e) { resolve(null); }
+  });
+}
+
+function markReflectionComplete(reflectionId) {
+  if (!currentUser || !db) { showToast('Sign in to track your reflections'); return; }
+  try {
+    var batch = db.batch();
+    // 1. Write completion to user's history
+    var histRef = db.collection('users').doc(currentUser.uid).collection('reflectionHistory').doc(reflectionId);
+    batch.set(histRef, {
+      completedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      prayedTogether: true
+    });
+    // 2. Increment global counters
+    var counterRef = db.collection('counters').doc('global');
+    batch.set(counterRef, {
+      totalPrayers: firebase.firestore.FieldValue.increment(1),
+      totalReflections: firebase.firestore.FieldValue.increment(1),
       lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
     }, {merge: true});
-    globalPrayerCount++;
-  } catch(e) { console.warn('Counter increment failed:', e); }
+    batch.commit().then(function() {
+      showToast('Reflection complete! God bless your prayer.');
+      // Update button state
+      var btn = document.querySelector('.reflection-complete-btn');
+      if (btn) { btn.classList.add('completed'); btn.textContent = 'Completed'; }
+      if (typeof completeHabitByType === 'function') completeHabitByType('daily-reflection');
+    }).catch(function(e) { console.warn('Reflection complete failed:', e); });
+  } catch(e) { console.warn('markReflectionComplete error:', e); }
+}
+
+// ===== PRAYER WALL GLOBAL INTERCESSION (Spec 0D) =====
+function loadPrayerIntentions(limit) {
+  limit = limit || 20;
+  return new Promise(function(resolve) {
+    if (!db) { resolve([]); return; }
+    try {
+      db.collection('prayerIntentions')
+        .where('status', '==', 'active')
+        .orderBy('createdAt', 'desc')
+        .limit(limit)
+        .get().then(function(snap) {
+          var items = [];
+          snap.forEach(function(doc) { items.push({id: doc.id, data: doc.data()}); });
+          prayerIntentionsCache = items;
+          resolve(items);
+        }).catch(function() { resolve([]); });
+    } catch(e) { resolve([]); }
+  });
+}
+
+function submitPrayerIntention(text, anonymous) {
+  if (!currentUser || !db) { showToast('Sign in to submit a prayer intention'); return Promise.resolve(false); }
+  if (!text || text.length > 1000) { showToast('Intention must be 1-1000 characters'); return Promise.resolve(false); }
+  var u = userData || {};
+  var authorName = anonymous ? 'Anonymous' : ((u.firstName || '') + ' ' + ((u.lastName || '').charAt(0) + '.')).trim();
+  var authorInitials = anonymous ? '\uD83D\uDE4F' : (u.initials || 'ME');
+  var colors = ['#1B3A5C','#7C3AED','#0D9488','#C68A2E','#E85D4A','#DB2777','#2563EB'];
+  var authorColor = colors[Math.floor(Math.random() * colors.length)];
+  return db.collection('prayerIntentions').add({
+    text: text,
+    authorUid: currentUser.uid,
+    authorName: authorName,
+    authorInitials: authorInitials,
+    authorColor: authorColor,
+    anonymous: !!anonymous,
+    prayerCount: 0,
+    status: 'active',
+    flagCount: 0,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    lastPrayedAt: null
+  }).then(function() {
+    // Increment global intentions counter
+    db.collection('counters').doc('global').set({
+      totalIntentions: firebase.firestore.FieldValue.increment(1),
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge: true});
+    showToast('Your intention has been submitted. We bring it to our chapel daily.');
+    return true;
+  }).catch(function(e) {
+    console.warn('Submit intention failed:', e);
+    showToast('Could not submit intention. Please try again.');
+    return false;
+  });
+}
+
+function prayForIntentionGlobal(intentionId, btn) {
+  if (!currentUser || !db) { showToast('Sign in to pray for this intention'); return; }
+  // Check if already prayed
+  var localKey = 'prayed_intention_' + intentionId;
+  if (localStorage.getItem(localKey)) { showToast('You already prayed for this intention'); return; }
+  localStorage.setItem(localKey, '1');
+  // Firestore batch write: 3 operations
+  try {
+    var batch = db.batch();
+    // 1. Record who prayed
+    var prayedByRef = db.collection('prayerIntentions').doc(intentionId).collection('prayedBy').doc(currentUser.uid);
+    batch.set(prayedByRef, {
+      uid: currentUser.uid,
+      prayedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // 2. Increment intention's prayer count
+    var intentionRef = db.collection('prayerIntentions').doc(intentionId);
+    batch.update(intentionRef, {
+      prayerCount: firebase.firestore.FieldValue.increment(1),
+      lastPrayedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // 3. Increment global prayer counter
+    var counterRef = db.collection('counters').doc('global');
+    batch.set(counterRef, {
+      totalPrayers: firebase.firestore.FieldValue.increment(1),
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge: true});
+    batch.commit().catch(function(e) { console.warn('Batch pray failed:', e); });
+  } catch(e) { console.warn('prayForIntentionGlobal error:', e); }
+  // Immediate visual feedback
+  if (btn) {
+    btn.classList.add('prayed');
+    var countSpan = btn.querySelector('.pw-count');
+    if (countSpan) {
+      var c = parseInt(countSpan.textContent) || 0;
+      countSpan.textContent = c + 1;
+      countSpan.classList.add('just-incremented');
+      setTimeout(function() { countSpan.classList.remove('just-incremented'); }, 600);
+    }
+  }
+  appPrayerCount++;
+  globalPrayerCount = worldAtPrayerCount + appPrayerCount;
+  logEvent('prayed_for_intention', {intentionId: intentionId});
+  showToast('Your prayer has been offered. God bless you.');
 }
 
 // Security: HTML escaping to prevent XSS attacks

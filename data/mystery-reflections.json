@@ -1,0 +1,130 @@
+{
+  "joyful": [
+    {
+      "number": 1,
+      "title": "The Annunciation",
+      "artwork": "img/mysteries/joyful/1-annunciation.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 2,
+      "title": "The Visitation",
+      "artwork": "img/mysteries/joyful/2-visitation.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 3,
+      "title": "The Nativity",
+      "artwork": "img/mysteries/joyful/3-nativity.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 4,
+      "title": "The Presentation",
+      "artwork": "img/mysteries/joyful/4-presentation.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 5,
+      "title": "The Finding in the Temple",
+      "artwork": "img/mysteries/joyful/5-finding-temple.jpg",
+      "reflection": ""
+    }
+  ],
+  "sorrowful": [
+    {
+      "number": 1,
+      "title": "The Agony in the Garden",
+      "artwork": "img/mysteries/sorrowful/1-agony-garden.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 2,
+      "title": "The Scourging at the Pillar",
+      "artwork": "img/mysteries/sorrowful/2-scourging.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 3,
+      "title": "The Crowning with Thorns",
+      "artwork": "img/mysteries/sorrowful/3-crowning-thorns.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 4,
+      "title": "The Carrying of the Cross",
+      "artwork": "img/mysteries/sorrowful/4-carrying-cross.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 5,
+      "title": "The Crucifixion",
+      "artwork": "img/mysteries/sorrowful/5-crucifixion.jpg",
+      "reflection": ""
+    }
+  ],
+  "glorious": [
+    {
+      "number": 1,
+      "title": "The Resurrection",
+      "artwork": "img/mysteries/glorious/1-resurrection.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 2,
+      "title": "The Ascension",
+      "artwork": "img/mysteries/glorious/2-ascension.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 3,
+      "title": "The Descent of the Holy Spirit",
+      "artwork": "img/mysteries/glorious/3-descent-holy-spirit.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 4,
+      "title": "The Assumption",
+      "artwork": "img/mysteries/glorious/4-assumption.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 5,
+      "title": "The Coronation of the Blessed Virgin Mary",
+      "artwork": "img/mysteries/glorious/5-coronation.jpg",
+      "reflection": ""
+    }
+  ],
+  "luminous": [
+    {
+      "number": 1,
+      "title": "The Baptism in the Jordan",
+      "artwork": "img/mysteries/luminous/1-baptism-jordan.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 2,
+      "title": "The Wedding at Cana",
+      "artwork": "img/mysteries/luminous/2-wedding-cana.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 3,
+      "title": "The Proclamation of the Kingdom",
+      "artwork": "img/mysteries/luminous/3-proclamation-kingdom.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 4,
+      "title": "The Transfiguration",
+      "artwork": "img/mysteries/luminous/4-transfiguration.jpg",
+      "reflection": ""
+    },
+    {
+      "number": 5,
+      "title": "The Institution of the Eucharist",
+      "artwork": "img/mysteries/luminous/5-institution-eucharist.jpg",
+      "reflection": ""
+    }
+  ]
+}

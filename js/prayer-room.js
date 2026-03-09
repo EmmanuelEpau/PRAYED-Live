@@ -10,6 +10,66 @@ var rosaryIsPlaying = false;
 var isRoomLeader = false;
 var pendingJoinRoomId = null;
 var _lastSyncBroadcast = 0;
+var mysteryReflectionsData = null;
+var _lastShownMystery = -1;
+
+// Load mystery reflections data
+function loadMysteryReflections() {
+  if (mysteryReflectionsData) return Promise.resolve(mysteryReflectionsData);
+  return fetch('data/mystery-reflections.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) { mysteryReflectionsData = data; return data; })
+    .catch(function() { mysteryReflectionsData = null; return null; });
+}
+
+// Show mystery transition overlay with stained glass artwork
+function showMysteryTransition(mysterySet, mysteryNumber) {
+  if (!mysteryReflectionsData) return;
+  var set = mysteryReflectionsData[mysterySet];
+  if (!set || !set[mysteryNumber - 1]) return;
+  // Prevent showing same mystery twice
+  var key = mysterySet + '-' + mysteryNumber;
+  if (_lastShownMystery === key) return;
+  _lastShownMystery = key;
+  var mystery = set[mysteryNumber - 1];
+  var ordinals = ['', '1st', '2nd', '3rd', '4th', '5th'];
+  var setName = mysterySet.charAt(0).toUpperCase() + mysterySet.slice(1);
+  // Create overlay
+  var overlay = document.createElement('div');
+  overlay.className = 'mystery-transition-overlay';
+  overlay.innerHTML = '<div class="mystery-transition">' +
+    '<img class="mystery-artwork" src="' + mystery.artwork + '" alt="' + escapeHtml(mystery.title) + '" loading="eager">' +
+    '<div class="mystery-number">' + ordinals[mysteryNumber] + ' ' + setName + ' Mystery</div>' +
+    '<h2 class="mystery-title">' + escapeHtml(mystery.title) + '</h2>' +
+    (mystery.reflection ? '<div class="mystery-reflection">' + escapeHtml(mystery.reflection) + '</div>' : '') +
+    '<button class="mystery-continue-btn" onclick="dismissMysteryTransition()">Continue Praying \u203A</button>' +
+    '</div>';
+  var container = document.getElementById('prayerRoomContainer') || document.body;
+  container.appendChild(overlay);
+  // Auto-dismiss after 15 seconds if audio is playing
+  if (rosaryAudio && !rosaryAudio.paused) {
+    setTimeout(function() { dismissMysteryTransition(); }, 15000);
+  }
+}
+
+function dismissMysteryTransition() {
+  var overlay = document.querySelector('.mystery-transition-overlay');
+  if (overlay) {
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.3s ease';
+    setTimeout(function() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 300);
+  }
+}
+
+// Detect mystery set from prayer ID
+function getMysterySetFromPrayerId(prayerId) {
+  if (!prayerId) return null;
+  if (prayerId.indexOf('joyful') !== -1) return 'joyful';
+  if (prayerId.indexOf('sorrowful') !== -1) return 'sorrowful';
+  if (prayerId.indexOf('glorious') !== -1) return 'glorious';
+  if (prayerId.indexOf('luminous') !== -1) return 'luminous';
+  return null;
+}
 
 function selectPrayerOption(btn, prayerId) {
   selectedPrayerForRoom = prayerId;
@@ -245,6 +305,9 @@ function startRosaryPlayback(prayerId) {
   rosaryPlaylistIdx = 0;
   rosaryIsPlaying = true;
   isRoomLeader = true;
+  _lastShownMystery = -1;
+  // Pre-load mystery reflections data
+  loadMysteryReflections();
   if (!rosaryAudio) rosaryAudio = new Audio();
   rosaryAudio.onended = function() {
     rosaryPlaylistIdx++;
@@ -262,6 +325,14 @@ function startRosaryPlayback(prayerId) {
 function playRosaryTrack(playlist, idx) {
   if (!playlist || idx >= playlist.tracks.length) return;
   var track = playlist.tracks[idx];
+  // Check if this is a decade start (Our Father track) — show mystery transition
+  var pos = getTrackRosaryPosition(selectedPrayerForRoom, idx, 0);
+  if (pos && pos.isDecadeTrack && pos.decadeNumber >= 1 && pos.decadeNumber <= 5) {
+    var mysterySet = getMysterySetFromPrayerId(selectedPrayerForRoom);
+    if (mysterySet && mysteryReflectionsData) {
+      showMysteryTransition(mysterySet, pos.decadeNumber);
+    }
+  }
   rosaryAudio.src = 'audio/rosary/' + track.file;
   rosaryAudio.play().catch(function(e) { console.warn('Audio play blocked:', e); });
   updateRosaryUI(playlist, idx);

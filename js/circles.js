@@ -383,7 +383,118 @@ function getSubPageContent(name) {
       '<div class="story-card"><div class="sc-body"><h4>St. Joan of Arc</h4><p>Brave and Bold. At just 17, Joan led an army to defend her country. She trusted God\'s voice even when others doubted her. Her courage changed history.</p></div></div>' +
       '<div class="story-card"><div class="sc-body"><h4>St. Therese of Lisieux</h4><p>The Little Way. Therese showed that you do not need to do great things \u2014 small acts of love, done with great heart, are what matter most to God.</p></div></div>',
 
-    'settings-full': renderFullSettings()
+    'settings-full': renderFullSettings(),
+
+    // === LIVE STREAM SUB-PAGE (Spec 0F) ===
+    'live-stream': (function() {
+      var h = '';
+      if (liveStreamData && liveStreamData.youtubeVideoId) {
+        h += '<div class="live-stream-container">' +
+          '<div class="live-stream-player">' +
+          '<iframe src="https://www.youtube.com/embed/' + liveStreamData.youtubeVideoId + '?autoplay=1&rel=0" ' +
+          'frameborder="0" allow="autoplay; encrypted-media" allowfullscreen ' +
+          'style="width:100%;aspect-ratio:16/9;border-radius:12px"></iframe></div>' +
+          '<div class="live-stream-info">' +
+          '<h3>' + escapeHtml(liveStreamData.title || 'Holy Rosary from the Chapel') + '</h3>' +
+          '<p>' + escapeHtml(liveStreamData.description || 'Join us for the Daily Rosary & Mass, live from the Father Peyton Center chapel in North Easton, MA.') + '</p></div></div>';
+      } else {
+        h += '<div class="sp-section"><h3>Live from the Chapel</h3>' +
+          '<p>The Daily Rosary & Mass broadcasts live from the Father Peyton Center chapel, weekdays at 11:30 AM ET.</p></div>' +
+          '<div style="text-align:center;padding:32px 16px;background:var(--color-surface-muted);border-radius:16px;margin-bottom:16px">' +
+          '<svg viewBox="0 0 24 24" width="48" height="48" fill="var(--color-text-muted)" style="margin-bottom:12px"><circle cx="12" cy="12" r="3"/><path d="M6.34 17.66A8 8 0 014 12a8 8 0 012.34-5.66l1.42 1.42A6 6 0 006 12a6 6 0 001.76 4.24zM17.66 6.34A8 8 0 0120 12a8 8 0 01-2.34 5.66l-1.42-1.42A6 6 0 0018 12a6 6 0 00-1.76-4.24z"/></svg>' +
+          '<div style="font-size:16px;font-weight:600;color:var(--color-text)">No live broadcast right now</div>' +
+          '<div style="font-size:14px;color:var(--color-text-secondary);margin-top:4px">Weekdays at 11:30 AM ET</div></div>';
+      }
+      h += '<div class="chapel-banner" style="margin:0">' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+        '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.5"><path d="M12 2v3M10 4h4"/><path d="M6 10l6-5 6 5"/><rect x="6" y="10" width="12" height="12"/><path d="M10 22v-4a2 2 0 014 0v4"/></svg>' +
+        '<strong style="font-size:15px">We bring your intentions to this chapel</strong></div>' +
+        '<p style="font-size:13px;opacity:0.7;margin-bottom:12px">Every weekday, the community prays the Rosary and celebrates Mass for all submitted intentions.</p>' +
+        '<button class="btn-sacred-gold" style="width:100%" onclick="showSubPage(\'prayer-wall\',\'Prayer Wall\')">Submit a Prayer Intention</button></div>';
+      return h;
+    })(),
+
+    // === DAILY REFLECTION FULL PAGE (Spec 0C) ===
+    'daily-reflection': (function() {
+      var r = todaysReflection;
+      if (!r) {
+        // Fallback to VOTD-based reflection
+        var votd = getVerseOfTheDay();
+        return '<div class="sp-section"><h3>Today\'s Reflection</h3>' +
+          '<blockquote class="sp-prayer crimson" style="font-style:italic;font-size:18px;line-height:1.7">\u201c' + escapeHtml(votd.text) + '\u201d</blockquote>' +
+          '<div style="text-align:right;font-size:14px;color:var(--color-text-secondary);margin-bottom:24px">\u2014 ' + votd.ref + '</div></div>' +
+          '<div class="sp-section"><h3><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-primary)" stroke-width="1.5"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg> Ponder</h3>' +
+          '<div class="sp-prayer">How does this Scripture speak to your life today? What is God inviting you to see differently?</div></div>' +
+          '<div class="sp-section"><h3><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> Pray</h3>' +
+          '<div class="sp-prayer">Lord, open my heart to Your Word today. Help me to hear what You want me to know, and give me the courage to live it. Amen.</div></div>' +
+          '<div class="reflection-section--together" style="background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));color:#fff;border-radius:16px;padding:24px;margin:16px 0">' +
+          '<h3 style="color:#fff;margin-bottom:8px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.5"><circle cx="12" cy="8" r="2.5"/><path d="M7.5 20c0-3 2-5.5 4.5-5.5s4.5 2.5 4.5 5.5"/></svg> Pray Together</h3>' +
+          '<p style="opacity:0.85;margin-bottom:12px">At dinner tonight, share one thing from today\'s reading that spoke to you. Then pray together as a family.</p>' +
+          '<button class="btn-sacred-gold" style="width:100%" onclick="openPrayerRoomUI()">Start Family Prayer Room</button></div>';
+      }
+      var scripture = r.scripture || {};
+      var reflection = r.reflection || {};
+      var ponder = r.ponder || {};
+      var pray = r.pray || {};
+      var prayTogether = r.prayTogether || {};
+      var dateId = r.id || '';
+      var h = '';
+      // Hero section
+      h += '<div style="background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));color:#fff;padding:24px 16px;border-radius:0 0 24px 24px;margin:-16px -16px 16px -16px">' +
+        '<div style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-light);margin-bottom:8px">' + (r.liturgicalSeason || 'ORDINARY TIME').toUpperCase() + ' \u2022 ' + (r.liturgicalDay || '') + '</div>' +
+        '<h2 style="font-family:var(--font-display);font-size:24px;margin-bottom:4px">' + escapeHtml(reflection.title || 'Today\'s Gospel') + '</h2>' +
+        '<div style="font-size:14px;opacity:0.7">' + escapeHtml(scripture.displayRef || scripture.reference || '') + '</div></div>';
+      // Scripture
+      h += '<div class="sp-section"><h3>Scripture</h3>' +
+        '<blockquote class="sp-prayer crimson" style="font-style:italic;font-size:18px;line-height:1.7">\u201c' + escapeHtml(scripture.fullText || scripture.text || '') + '\u201d</blockquote>' +
+        '<div style="text-align:right;font-size:14px;color:var(--color-text-secondary)">\u2014 ' + escapeHtml(scripture.displayRef || '') + '</div></div>';
+      // Reflection body
+      if (reflection.body) {
+        h += '<div class="sp-section"><h3>Reflection</h3>' +
+          '<div class="sp-prayer" style="font-size:16px;line-height:1.7">' + escapeHtml(reflection.body) + '</div>' +
+          (reflection.author ? '<div style="font-size:13px;color:var(--color-text-secondary);margin-top:8px">\u2014 ' + escapeHtml(reflection.author) + (reflection.authorRole ? ', ' + escapeHtml(reflection.authorRole) : '') + '</div>' : '') +
+          '</div>';
+      }
+      // Ponder
+      h += '<div class="sp-section" style="border-left:3px solid var(--color-primary);padding-left:16px"><h3><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-primary)" stroke-width="1.5"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg> Ponder</h3>' +
+        '<div class="sp-prayer" style="font-size:17px;font-weight:500">' + escapeHtml(ponder.question || 'How does this Scripture speak to your life today?') + '</div>' +
+        (ponder.subtext ? '<div style="font-size:14px;color:var(--color-text-secondary);margin-top:8px">' + escapeHtml(ponder.subtext) + '</div>' : '') +
+        '</div>';
+      // Pray
+      h += '<div class="sp-section" style="border-left:3px solid var(--color-accent);padding-left:16px"><h3><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> Pray</h3>' +
+        '<div class="sp-prayer" style="font-style:italic">' + escapeHtml(pray.text || 'Lord, open my heart to Your Word today. Amen.') + '</div></div>';
+      // Pray Together
+      h += '<div class="reflection-section--together" style="background:linear-gradient(135deg,var(--color-primary),var(--color-primary-dark));color:#fff;border-radius:16px;padding:24px;margin:16px 0">' +
+        '<h3 style="color:#fff;margin-bottom:8px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.5"><circle cx="12" cy="8" r="2.5"/><path d="M7.5 20c0-3 2-5.5 4.5-5.5s4.5 2.5 4.5 5.5"/></svg> Pray Together</h3>' +
+        '<p style="opacity:0.85;margin-bottom:4px"><strong>' + escapeHtml(prayTogether.action || 'Pray as a family tonight') + '</strong></p>' +
+        '<p style="opacity:0.7;font-size:14px;margin-bottom:16px">' + escapeHtml(prayTogether.familyPrompt || 'Share one thing from today\'s reading at dinner.') + '</p>' +
+        '<button class="reflection-complete-btn btn-sacred-gold" style="width:100%" onclick="markReflectionComplete(\'' + dateId + '\')">We Prayed Together</button></div>';
+      // Share
+      h += '<div style="text-align:center;margin-top:12px"><button class="btn-sacred-outline" onclick="shareReflection()"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg> Share Reflection</button></div>';
+      return h;
+    })(),
+
+    // === PRAYER WALL FULL PAGE (Spec 0D) ===
+    'prayer-wall': (function() {
+      var h = '';
+      // Chapel banner
+      h += '<div class="chapel-banner" style="margin:0 0 16px">' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">' +
+        '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.5"><path d="M12 2v3M10 4h4"/><path d="M6 10l6-5 6 5"/><rect x="6" y="10" width="12" height="12"/><path d="M10 22v-4a2 2 0 014 0v4"/></svg>' +
+        '<strong style="font-size:15px">We bring your intention to our chapel</strong></div>' +
+        '<p style="font-size:13px;opacity:0.7">Every weekday at 11:30 AM ET, the Father Peyton Center community prays the Rosary and celebrates Mass for all submitted intentions.</p></div>';
+      // Submit form
+      h += '<div class="sp-section"><h3>Share Your Prayer Intention</h3>' +
+        '<textarea id="intentionInput" class="onb-input" style="height:80px;resize:none" placeholder="What would you like us to pray for?" maxlength="1000"></textarea>' +
+        '<div style="display:flex;gap:8px;align-items:center;margin-top:8px">' +
+        '<label style="display:flex;align-items:center;gap:6px;font-size:14px;color:var(--color-text-secondary);cursor:pointer">' +
+        '<input type="checkbox" id="intentionAnonymous"> Post anonymously</label>' +
+        '<div style="flex:1"></div>' +
+        '<button class="btn-sacred" onclick="submitIntentionFromWall()">Submit Intention</button></div></div>';
+      // Intentions list (loaded async)
+      h += '<div id="prayerWallList"><div class="skeleton" style="height:120px;margin-bottom:12px"></div><div class="skeleton" style="height:120px;margin-bottom:12px"></div></div>';
+      return h;
+    })()
   };
 
   // Handle circle detail pages
@@ -586,6 +697,58 @@ function prayForIntention(cid, postIndex, btn) {
   }
   logEvent('prayed_for_intention', {circleId: cid});
   showToast('Your prayer has been offered. God bless you.');
+}
+
+// Submit intention from Prayer Wall page
+function submitIntentionFromWall() {
+  var inp = document.getElementById('intentionInput');
+  if (!inp || !inp.value.trim()) { showToast('Please enter your prayer intention'); return; }
+  var text = inp.value.trim();
+  var check = moderateContent(text);
+  if (!check.ok) { showToast(check.reason); return; }
+  var anonymous = document.getElementById('intentionAnonymous') && document.getElementById('intentionAnonymous').checked;
+  submitPrayerIntention(text, anonymous).then(function(success) {
+    if (success) {
+      inp.value = '';
+      // Reload the wall
+      loadPrayerWallPage();
+    }
+  });
+}
+
+// Load intentions into prayer wall page
+function loadPrayerWallPage() {
+  var listEl = document.getElementById('prayerWallList');
+  if (!listEl) return;
+  loadPrayerIntentions(20).then(function(items) {
+    if (items.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center;padding:32px;color:var(--color-text-secondary)">No intentions yet. Be the first to submit one!</div>';
+      return;
+    }
+    var html = '';
+    items.forEach(function(item) {
+      html += renderPrayerWallItem(item);
+    });
+    listEl.innerHTML = html;
+  });
+}
+
+// Share reflection
+function shareReflection() {
+  var r = todaysReflection;
+  var text = r ? ('Today\'s Gospel Reflection: ' + (r.scripture && r.scripture.displayRef || '') + ' - ' + (r.reflection && r.reflection.title || '')) : 'Join me in prayer on PRAYED';
+  if (navigator.share) {
+    navigator.share({title: 'PRAYED - Daily Reflection', text: text, url: 'https://emmanuelepau.github.io/PRAYED-Live/'}).catch(function(){});
+  } else {
+    var temp = document.createElement('textarea');
+    temp.value = text + '\nhttps://emmanuelepau.github.io/PRAYED-Live/';
+    temp.style.position = 'fixed';
+    temp.style.opacity = '0';
+    document.body.appendChild(temp);
+    temp.select();
+    try { document.execCommand('copy'); showToast('Reflection link copied!'); } catch(e) {}
+    document.body.removeChild(temp);
+  }
 }
 
 function postToCircle(cid) {
