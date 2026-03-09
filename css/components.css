@@ -2357,3 +2357,339 @@
 .report-reason-btn { display: block; width: 100%; padding: 14px; margin-bottom: 8px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); font-size: 16px; cursor: pointer; text-align: left; }
 .report-reason-btn:hover { background: var(--color-bg); border-color: var(--color-primary); }
 .report-cancel-btn { display: block; width: 100%; padding: 14px; margin-top: 8px; border: none; background: none; font-size: 16px; color: var(--color-text-secondary); cursor: pointer; }
+
+/* ============================================
+   PREMIUM COMPONENT PATTERNS (Spec 0I)
+   ============================================ */
+
+/* === Glassmorphism Card === */
+.prayed-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  padding: var(--space-lg);
+  transition: transform 0.3s var(--ease-spring), box-shadow 0.3s ease;
+}
+.prayed-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* === Sacred Buttons === */
+.btn-sacred {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: all 0.3s var(--ease-spring);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: var(--color-text-on-primary);
+  box-shadow: 0 4px 16px rgba(27, 58, 92, 0.25);
+  min-height: 48px;
+}
+.btn-sacred:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 6px 24px rgba(27, 58, 92, 0.35);
+}
+.btn-sacred:active {
+  transform: translateY(0) scale(0.98);
+}
+.btn-sacred-gold {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dark));
+  box-shadow: 0 4px 16px rgba(198, 138, 46, 0.3);
+}
+.btn-sacred-gold:hover {
+  box-shadow: var(--shadow-glow-gold);
+}
+.btn-sacred-outline {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  box-shadow: none;
+}
+.btn-sacred-outline:hover {
+  background: rgba(27, 58, 92, 0.06);
+  box-shadow: var(--shadow-glow-blue);
+}
+
+/* === Section Headers === */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+.section-header h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+.section-header .view-all {
+  font-size: var(--text-sm);
+  color: var(--color-primary);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* === Daily Reflection Card === */
+.reflection-card {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.reflection-card::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(198,138,46,0.15) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.reflection-card .season-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent-light);
+  margin-bottom: 8px;
+}
+.reflection-card .gospel-text {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-style: italic;
+  line-height: var(--line-height-relaxed);
+  margin-bottom: 12px;
+  opacity: 0.95;
+}
+.reflection-card .gospel-ref {
+  font-size: var(--text-sm);
+  opacity: 0.7;
+  margin-bottom: var(--space-lg);
+}
+.reflection-card .reflection-actions {
+  display: flex;
+  gap: 10px;
+}
+.reflection-card .reflection-actions button {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+.reflection-card .btn-ponder {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+.reflection-card .btn-pray-together {
+  background: var(--color-accent);
+  border: none;
+  color: #fff;
+}
+
+/* === Global Prayer Counter === */
+.global-counter {
+  text-align: center;
+  padding: var(--space-xl) var(--space-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+}
+.global-counter .counter-number {
+  font-family: var(--font-mono);
+  font-size: var(--text-4xl);
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.global-counter .counter-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+.global-counter .counter-subtitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--color-text);
+  margin-top: 8px;
+}
+
+/* === Prayer Wall Card === */
+.prayer-wall-item {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  border: 1px solid rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s ease;
+}
+.prayer-wall-item:hover {
+  box-shadow: var(--shadow-sm);
+}
+.prayer-wall-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.prayer-wall-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.prayer-wall-text {
+  font-size: var(--text-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+.prayer-wall-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.pray-for-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: rgba(27, 58, 92, 0.06);
+  color: var(--color-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  min-height: 36px;
+}
+.pray-for-btn:hover {
+  background: rgba(27, 58, 92, 0.12);
+}
+.pray-for-btn.prayed {
+  background: var(--color-primary);
+  color: #fff;
+}
+.pray-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* === Live Indicator === */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-live);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.live-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-live);
+  animation: breathe 2s ease infinite;
+}
+
+/* === Chapel Banner === */
+.chapel-banner {
+  background: linear-gradient(135deg, #0F2440 0%, #1B3A5C 100%);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.chapel-banner .live-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-live);
+  margin-bottom: 8px;
+}
+.chapel-banner .chapel-title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  margin-bottom: 4px;
+}
+.chapel-banner .chapel-sub {
+  font-size: var(--text-sm);
+  opacity: 0.7;
+  margin-bottom: var(--space-lg);
+}
+
+/* === Gold shimmer effect === */
+.gold-shimmer {
+  background: linear-gradient(90deg, var(--color-accent-dark), var(--color-accent-light), var(--color-accent-dark));
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: goldShimmer 3s ease infinite;
+}
+
+/* === Giving / Donation Section === */
+.giving-card {
+  background: var(--color-surface);
+  border: 1px solid rgba(198, 138, 46, 0.15);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  text-align: center;
+}
+.giving-card h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+.giving-card p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-lg);
+  line-height: var(--line-height-normal);
+}

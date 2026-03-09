@@ -435,7 +435,7 @@ function getSubPageContent(name) {
         '<button class="pw-report" onclick="event.stopPropagation();blockUser(\''+escapeHtml(w.name)+'\')" aria-label="Block user" title="Block user" style="margin-left:4px">' +
         '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/></svg></button></div>' +
         '<div class="pw-text">'+w.text+'</div>' +
-        '<div class="pw-pray-btn">' + svgIcons.heart + ' '+w.count+' praying</div></div>';
+        '<button class="pray-for-btn" onclick="event.stopPropagation();prayForIntention(\''+cid+'\','+w.count+',this)">' + svgIcons.heart + ' <span class="pw-count">'+w.count+'</span> praying</button></div></div>';
     });
     h += '</div>';
     return h;
@@ -555,6 +555,37 @@ function blockUser(userName) {
 }
 function isUserBlocked(userName) {
   return getBlockedUsers().indexOf(userName) > -1;
+}
+
+// Intercession: "I prayed for this" button with Firestore increment
+function prayForIntention(cid, postIndex, btn) {
+  var key = 'prayed_' + cid + '_' + postIndex;
+  if (localStorage.getItem(key)) { showToast('You already prayed for this'); return; }
+  localStorage.setItem(key, '1');
+  // Update count in Firestore
+  if (db) {
+    try {
+      db.collection('circles').doc(cid).collection('posts').where('ts', '==', postIndex)
+        .get().then(function(snap) {
+          snap.forEach(function(doc) {
+            doc.ref.update({count: firebase.firestore.FieldValue.increment(1)});
+          });
+        }).catch(function(){});
+    } catch(e) {}
+  }
+  // Increment global counter too
+  if (typeof incrementPrayerCount === 'function') incrementPrayerCount();
+  // Visual feedback
+  if (btn) {
+    btn.classList.add('prayed');
+    var countSpan = btn.querySelector('.pw-count');
+    if (countSpan) {
+      var c = parseInt(countSpan.textContent) || 0;
+      countSpan.textContent = c + 1;
+    }
+  }
+  logEvent('prayed_for_intention', {circleId: cid});
+  showToast('Your prayer has been offered. God bless you.');
 }
 
 function postToCircle(cid) {
