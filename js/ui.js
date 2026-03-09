@@ -53,33 +53,17 @@ function renderOnboardingStep() {
     case 0:
       html = '<div class="onb-welcome">' +
         '<div class="onb-welcome-illustration">' +
-        '<svg viewBox="0 0 140 120" width="140" height="120" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
-        '<!-- Parent figure -->' +
-        '<circle cx="55" cy="22" r="8"/>' +
-        '<path d="M55 30 C55 30 55 48 55 52 C55 56 50 58 48 70"/>' +
-        '<path d="M55 52 C55 56 60 58 62 70"/>' +
-        '<path d="M55 38 C50 40 44 44 42 48 C40 50 42 52 44 52 L55 48"/>' +
-        '<path d="M55 38 C60 40 66 44 68 48 C70 50 68 52 66 52 L55 48"/>' +
-        '<!-- Hands together -->' +
-        '<path d="M44 52 C46 50 54 46 55 48 C56 46 64 50 66 52" stroke-width="1.8"/>' +
-        '<!-- Child figure -->' +
-        '<circle cx="85" cy="38" r="6.5"/>' +
-        '<path d="M85 44.5 C85 44.5 85 58 85 62 C85 65 81 66 80 74"/>' +
-        '<path d="M85 62 C85 65 89 66 90 74"/>' +
-        '<path d="M85 50 C81 52 77 55 76 58 C75 59 76 60 77.5 60 L85 57"/>' +
-        '<path d="M85 50 C89 52 93 55 94 58 C95 59 94 60 92.5 60 L85 57"/>' +
-        '<path d="M77.5 60 C79 58.5 84 56 85 57 C86 56 91 58.5 92.5 60" stroke-width="1.8"/>' +
-        '<!-- Light rays -->' +
-        '<path d="M70 8 L70 2" stroke="rgba(198,138,46,0.6)" stroke-width="1"/>' +
-        '<path d="M58 6 L54 1" stroke="rgba(198,138,46,0.4)" stroke-width="1"/>' +
-        '<path d="M82 14 L88 10" stroke="rgba(198,138,46,0.4)" stroke-width="1"/>' +
-        '<path d="M70 12 C66 10 64 6 66 4" stroke="rgba(198,138,46,0.3)" stroke-width="0.8"/>' +
-        '</svg>' +
+        '<img src="assets/family-unity.svg" alt="Family Unity" class="onb-family-illustration">' +
         '</div>' +
+        '<div class="onb-welcome-text">' +
+        '<p class="onb-welcome-brand">PRAYED</p>' +
         '<h1>The Family That Prays Together Stays Together</h1>' +
-        '<p class="onb-welcome-sub">Join families around the world in daily prayer with PRAYED.</p>' +
-        '<button class="onb-get-started" onclick="onbStep=1;renderOnboardingStep()">Create Account</button>' +
+        '<p class="onb-welcome-sub">Join families around the world in daily prayer, guided by the legacy of Fr. Patrick Peyton.</p>' +
+        '</div>' +
+        '<div class="onb-welcome-actions">' +
+        '<button class="onb-get-started" onclick="onbStep=1;renderOnboardingStep()">Get Started</button>' +
         '<p class="onb-signin-link">Already have an account? <a onclick="showAuthModal(\'signin\')">Sign In</a></p>' +
+        '</div>' +
         '</div>';
       break;
 
@@ -116,6 +100,10 @@ function renderOnboardingStep() {
         '<input id="onbFirstName" type="text" placeholder="First Name" class="onb-input" value="' + escapeHtml(userData.firstName || '') + '" oninput="updateOnbNameState()">' +
         '<input id="onbLastName" type="text" placeholder="Last Name" class="onb-input" value="' + escapeHtml(userData.lastName || '') + '" oninput="updateOnbNameState()">' +
         '</div>' +
+        '<button type="button" class="onb-location-btn" id="onbLocBtn" onclick="onbAutoDetectLocation(this)">' +
+        '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>' +
+        ' Use My Location</button>' +
+        '<div id="onbLocStatus" style="display:none;text-align:center;font-size:12px;margin:-6px 0 8px;color:var(--text-light)"></div>' +
         '<select id="onbCountry" class="onb-input onb-select" onchange="updateOnbNameState()">' +
         '<option value="">Select Your Country</option>';
       var countryList = ['United States','Philippines','Mexico','Brazil','Colombia','Argentina','Peru','Chile','Spain','France','Poland','Italy','Ireland','Portugal','Canada','United Kingdom','Australia','India','Nigeria','Kenya','Ghana','South Africa','Germany','Austria','Ecuador','Venezuela','Guatemala','Honduras','Dominican Republic','Puerto Rico','El Salvador','Costa Rica','Panama','Bolivia','Paraguay','Uruguay','Cuba','Haiti','Nicaragua','Other'];
@@ -387,6 +375,82 @@ function updateOnbNameState() {
   }
 }
 
+function onbAutoDetectLocation(btn) {
+  if (!navigator.geolocation) {
+    var status = document.getElementById('onbLocStatus');
+    if (status) { status.style.display = 'block'; status.style.color = '#E85D4A'; status.textContent = 'Geolocation not supported by your browser'; }
+    return;
+  }
+  var origHTML = btn.innerHTML;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="onb-loc-spin"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg> Locating...';
+  btn.disabled = true;
+  var statusEl = document.getElementById('onbLocStatus');
+
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var lat = pos.coords.latitude;
+    var lon = pos.coords.longitude;
+    fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&addressdetails=1')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var addr = data.address || {};
+        var country = addr.country || '';
+        var state = addr.state || addr.region || '';
+        var city = addr.city || addr.town || addr.village || addr.county || '';
+
+        // Map Nominatim country to our dropdown values
+        var countryMap = {'United States of America':'United States','Republic of the Philippines':'Philippines'};
+        if (countryMap[country]) country = countryMap[country];
+
+        var countryEl = document.getElementById('onbCountry');
+        var stateEl = document.getElementById('onbState');
+        var cityEl = document.getElementById('onbCity');
+
+        if (countryEl) {
+          // Try to match country in dropdown
+          for (var i = 0; i < countryEl.options.length; i++) {
+            if (countryEl.options[i].value === country) {
+              countryEl.value = country;
+              break;
+            }
+          }
+        }
+        if (stateEl) stateEl.value = state;
+        if (cityEl) cityEl.value = city;
+
+        // Update userData
+        userData.country = countryEl ? countryEl.value : country;
+        userData.state = state;
+        userData.city = city;
+
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Located!';
+        btn.style.borderColor = 'rgba(13,148,136,0.5)';
+        btn.style.background = 'rgba(13,148,136,0.1)';
+        btn.style.color = '#0D9488';
+        if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = '#0D9488'; statusEl.textContent = city + (state ? ', ' + state : '') + ', ' + country; }
+        updateOnbNameState();
+
+        setTimeout(function() {
+          btn.innerHTML = origHTML;
+          btn.disabled = false;
+          btn.style.borderColor = '';
+          btn.style.background = '';
+          btn.style.color = '';
+        }, 3000);
+      })
+      .catch(function() {
+        btn.innerHTML = origHTML;
+        btn.disabled = false;
+        if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = '#E85D4A'; statusEl.textContent = 'Could not detect location. Please enter manually.'; }
+      });
+  }, function(err) {
+    btn.innerHTML = origHTML;
+    btn.disabled = false;
+    var msg = 'Could not detect location. Please enter manually.';
+    if (err.code === 1) msg = 'Location permission denied. Please enter manually.';
+    if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = '#E85D4A'; statusEl.textContent = msg; }
+  }, {timeout: 10000, enableHighAccuracy: false});
+}
+
 function onbCheckVerification() {
   if (!currentUser) { completeOnboarding(); return; }
   currentUser.reload().then(function() {
@@ -503,6 +567,39 @@ function completeOnboarding() {
     personalizeApp();
     showScreen('home');
   }, 500);
+}
+
+function skipToPreview() {
+  // Quick preview mode for HC reviewers — skip onboarding with demo data
+  userData = {
+    firstName: 'Reviewer',
+    lastName: '',
+    initials: 'HC',
+    email: '',
+    country: 'United States',
+    state: '',
+    city: '',
+    userType: 'Parent / Guardian',
+    language: 'en',
+    prayerTimes: ['morning', 'evening'],
+    interests: [],
+    morningTime: '07:00',
+    eveningTime: '20:00',
+    habits: habits,
+    completed: true
+  };
+  localStorage.setItem('prayedOnboarded', 'true');
+  try { localStorage.setItem('prayedUserData', JSON.stringify(userData)); } catch(e) {}
+  var ob = document.getElementById('onboarding');
+  ob.style.transition = 'opacity 0.4s';
+  ob.style.opacity = '0';
+  setTimeout(function() {
+    ob.style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('bottomNav').style.display = 'flex';
+    personalizeApp();
+    showScreen('home');
+  }, 400);
 }
 
 function personalizeApp() {

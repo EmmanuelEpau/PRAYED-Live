@@ -25,6 +25,8 @@ function renderAvatarStack(count) {
   return html;
 }
 
+var showAllChurches = false;
+
 // ===== RENDER CIRCLES =====
 function renderCircles() {
   var html = '<div class="app-header"><div class="header-left"><div class="greeting">' + t('ui.circles') + '<small>' + t('ui.your_prayer_communities') + '</small></div></div></div>';
@@ -50,10 +52,19 @@ function renderCircles() {
   });
   html += '</div>';
 
-  // --- Catholic Churches Near You ---
+  // --- Holy Cross Community Banner (prominent, at top) ---
+  html += '<div class="hc-comm-banner" onclick="showSubPage(\'hc-community\',\'Holy Cross Community\')">' +
+    '<img src="' + imgMap['csc_anchor_gold'] + '" alt="CSC" loading="lazy" class="hc-comm-logo">' +
+    '<div class="hc-comm-text">' +
+    '<h4>Holy Cross Community <span class="hc-comm-badge">Verified</span></h4>' +
+    '<p>Secure platform for CSC communities &amp; HCFM staff</p></div>' +
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="rgba(198,138,46,0.7)" class="hc-comm-arrow"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div>';
+
+  // --- Catholic Churches Near You (top 3 + View More) ---
   html += '<div class="browse-section"><h3 style="color:var(--color-primary, #1B3A5C)"><span style="display:inline-flex;width:18px;height:18px;vertical-align:middle">' + svgIcons.church + '</span> Churches Near You</h3>';
   if (nearbyChurchesCache && nearbyChurchesCache.length > 0) {
-    nearbyChurchesCache.slice(0, 5).forEach(function(ch) {
+    var churchLimit = showAllChurches ? nearbyChurchesCache.length : 3;
+    nearbyChurchesCache.slice(0, churchLimit).forEach(function(ch) {
       var cid = ch.name.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30);
       html += '<div class="circle-card" onclick="showSubPage(\'circle-detail-' + cid + '\',\'' + ch.name.replace(/'/g, "\\'") + '\')">' +
         '<div class="cc-accent" style="background:var(--color-primary, #1B3A5C)"></div>' +
@@ -64,6 +75,11 @@ function renderCircles() {
         '<div class="cc-footer"><span class="cc-badge" style="background:rgba(27,58,92,0.1);color:var(--color-primary, #1B3A5C)">Parish</span>' +
         '<span class="cc-dist">' + ch.dist + ' mi</span></div></div></div>';
     });
+    if (nearbyChurchesCache.length > 3) {
+      html += '<button class="circles-view-more" onclick="toggleAllChurches()">' +
+        (showAllChurches ? 'Show Less' : 'View More Churches (' + (nearbyChurchesCache.length - 3) + ')') +
+        '</button>';
+    }
   } else {
     html += '<div style="padding:20px;text-align:center;color:var(--text-light);font-size:13px;background:var(--color-surface, #F3F1EC);border-radius:var(--radius-md);margin:0 16px">' +
       '<div style="margin-bottom:8px;opacity:0.5;display:flex;justify-content:center"><span style="display:inline-flex;width:28px;height:28px">' + svgIcons.church + '</span></div>' +
@@ -71,17 +87,23 @@ function renderCircles() {
   }
   html += '</div>';
 
-  // --- Browse sections: Prayer Intentions, Families, Global ---
-  var sectionTypes = {
-    'Prayer Intentions': {data: browseCircles['intentions'], type: 'intention'},
-    'Families': {data: browseCircles['families'], type: 'family'},
-    'Global': {data: browseCircles['global'], type: 'intention'}
-  };
-  Object.keys(sectionTypes).forEach(function(sec) {
-    var section = sectionTypes[sec];
-    var ct = circleTypes[section.type];
-    html += '<div class="browse-section"><h3 style="color:var(--color-primary, #1B3A5C)">' + sec + '</h3>';
-    section.data.forEach(function(c) {
+  // --- Browse sections: Prayer Intentions, Families, Global (collapsible) ---
+  var chevronSvg = '<svg class="browse-chevron" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>';
+  var sectionList = [
+    {title: 'Prayer Intentions', key: 'intentions', type: 'intention', defaultOpen: true},
+    {title: 'Families', key: 'families', type: 'family', defaultOpen: false},
+    {title: 'Global', key: 'global', type: 'intention', defaultOpen: false}
+  ];
+  sectionList.forEach(function(sec) {
+    var data = browseCircles[sec.key];
+    var ct = circleTypes[sec.type];
+    var openClass = sec.defaultOpen ? ' open' : '';
+    var collapsedClass = sec.defaultOpen ? '' : ' collapsed';
+    html += '<div class="browse-section">';
+    html += '<div class="browse-section-header' + openClass + '" onclick="toggleBrowseSection(this)">' +
+      '<h3 style="color:var(--color-primary, #1B3A5C);margin:0;flex:1">' + sec.title + ' <span class="browse-count">(' + data.length + ')</span></h3>' + chevronSvg + '</div>';
+    html += '<div class="browse-section-body' + collapsedClass + '">';
+    data.forEach(function(c) {
       var iconHtml = c.img
         ? '<img src="' + c.img + '" alt="' + c.name + '" loading="lazy" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0">'
         : '<div class="cc-icon" style="background:' + c.color + '">' + (svgIcons[c.icon] || svgIcons.globe) + '</div>';
@@ -97,17 +119,21 @@ function renderCircles() {
         renderAvatarStack(memberNum) +
         '<span class="cc-members-count">' + c.members + '</span></div></div></div>';
     });
-    html += '</div>';
+    html += '</div></div>';
   });
 
-  // --- Holy Cross Community Platform ---
-  html += '<div class="comm-header" onclick="showSubPage(\'hc-community\',\'Holy Cross Community\')" style="display:flex;align-items:center;gap:12px">' +
-    '<div style="flex:1"><h3><svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg> Holy Cross Community' +
-    '<span style="display:inline-block;margin-left:8px;font-size:10px;font-weight:500;color:#C68A2E;background:rgba(198,138,46,0.15);padding:2px 6px;border-radius:4px">Verified</span></h3>' +
-    '<p>Secure communication for CSC communities, HCFM staff &amp; Holy Cross institutions worldwide</p></div>' +
-    '<img src="' + imgMap['csc_anchor_gold'] + '" alt="CSC" loading="lazy" style="width:48px;height:48px;object-fit:contain;flex-shrink:0;opacity:0.9"></div>';
-
   document.getElementById('screenCircles').innerHTML = html;
+}
+
+function toggleAllChurches() {
+  showAllChurches = !showAllChurches;
+  renderCircles();
+}
+
+function toggleBrowseSection(header) {
+  header.classList.toggle('open');
+  var body = header.nextElementSibling;
+  if (body) body.classList.toggle('collapsed');
 }
 
 // ===== SUB-PAGE CONTENT =====
@@ -316,7 +342,11 @@ function getSubPageContent(name) {
       '<div style="text-align:center;margin-top:12px">' +
       '<span style="font-size:12px;color:var(--text-light)">Don\u2019t have access? </span>' +
       '<span style="font-size:12px;color:var(--primary-blue);font-weight:600;cursor:pointer">Request Credentials</span></div>' +
-      '<div style="text-align:center;margin-top:20px;padding:12px;background:rgba(37,99,235,0.05);border-radius:12px">' +
+      '<div style="text-align:center;margin-top:20px">' +
+      '<button onclick="hcLogin()" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:100px;border:1px solid rgba(27,58,92,0.2);background:rgba(27,58,92,0.06);color:var(--primary-blue,#1B3A5C);font-family:var(--font-body);font-size:12px;font-weight:600;letter-spacing:0.3px;cursor:pointer">' +
+      'Skip to Preview Platform <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>' +
+      '<p style="font-size:10px;color:var(--text-light);margin-top:6px">For HCFM reviewers to preview the platform</p></div>' +
+      '<div style="text-align:center;margin-top:16px;padding:12px;background:rgba(37,99,235,0.05);border-radius:12px">' +
       '<p style="font-size:11px;color:var(--text-light);line-height:1.5">Access is restricted to verified members of the Congregation of Holy Cross, HCFM staff, and affiliated Holy Cross institutions. Contact your provincial secretary or HCFM administrator for credentials.</p></div>' +
       '</div></div>' +
       '<div id="hcMainContent" style="display:none">' +

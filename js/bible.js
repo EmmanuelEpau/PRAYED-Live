@@ -5,6 +5,16 @@ var bibleHighlights = {};
 var selectedVerseNum = null;
 var currentBibleBook = 0;
 var currentBibleChapter = 1;
+var bibleView = 'home'; // 'home' or 'reader'
+
+// Reading plans data
+var bibleReadingPlans = [
+  {id:'gospels-40', title:'Gospels in 40 Days', desc:'Journey through Matthew, Mark, Luke & John', icon:'\u2728', duration:'40 days', progress:0, color:'#2563EB'},
+  {id:'psalms-peace', title:'Psalms for Peace', desc:'30 Psalms for comfort and hope', icon:'\uD83C\uDF3F', duration:'30 days', progress:0, color:'#0D9488'},
+  {id:'lent-journey', title:'Lenten Journey', desc:'Daily readings through the season of Lent', icon:'\u271D\uFE0F', duration:'40 days', progress:0, color:'#7C3AED'},
+  {id:'proverbs-wisdom', title:'Proverbs & Wisdom', desc:'Practical wisdom for daily life', icon:'\uD83D\uDCD6', duration:'31 days', progress:0, color:'#C68A2E'},
+  {id:'letters-paul', title:'Letters of St. Paul', desc:'Explore Paul\u2019s epistles to the early Church', icon:'\u2709\uFE0F', duration:'21 days', progress:0, color:'#E85D4A'}
+];
 
 // Load saved state
 try {
@@ -493,8 +503,117 @@ if (typeof fetch !== 'undefined') {
 
 // ===== RENDER BIBLE SCREEN =====
 function renderBible() {
-  var book = bibleBooks[currentBibleBook];
+  if (bibleView === 'reader') {
+    renderBibleReaderView();
+  } else {
+    renderBibleHomeView();
+  }
+}
+
+function openBibleReader(bookIdx, chapter) {
+  if (typeof bookIdx === 'number') currentBibleBook = bookIdx;
+  if (typeof chapter === 'number') currentBibleChapter = chapter;
+  bibleView = 'reader';
+  renderBible();
+}
+
+function openBibleHome() {
+  bibleView = 'home';
+  renderBible();
+}
+
+// ===== BIBLE HOME VIEW =====
+function renderBibleHomeView() {
   var votd = getVerseOfTheDay();
+  var book = bibleBooks[currentBibleBook];
+  var html = '';
+
+  // --- Header ---
+  html += '<div class="bible-home-header">' +
+    '<h2>Scripture</h2>' +
+    '<button class="bible-home-search-btn" onclick="openBibleReader()" title="Open Reader">' +
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-1-1 1V4zm9 16H6V4h1v9l3-3 3 3V4h5v16z"/></svg></button></div>';
+
+  // --- Verse of the Day Card ---
+  html += '<div class="bible-home-card bible-votd-card" onclick="openVotdFromBible()">' +
+    '<div class="bible-votd-label">\u2728 Verse of the Day</div>' +
+    '<div class="bible-votd-text">\u201c' + escapeHtml(votd.text) + '\u201d</div>' +
+    '<div class="bible-votd-ref">\u2014 ' + votd.ref + '</div></div>';
+
+  // --- Today's Readings Card ---
+  var liturgical = cachedLiturgicalVerse;
+  html += '<div class="bible-home-card bible-readings-card">' +
+    '<div class="bible-home-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="var(--color-primary, #1B3A5C)"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg> Today\u2019s Readings</div>' +
+    '<div class="bible-readings-grid">' +
+    '<button class="bible-reading-chip" onclick="showSubPage(\'gospel-today\',\'Today\u2019s Gospel\')">' +
+    '<span class="brc-icon">\uD83D\uDCD6</span><span class="brc-label">Gospel</span></button>' +
+    '<button class="bible-reading-chip" onclick="showSubPage(\'gospel-today\',\'Today\u2019s Gospel\')">' +
+    '<span class="brc-icon">\uD83D\uDCDC</span><span class="brc-label">First Reading</span></button>' +
+    '<button class="bible-reading-chip" onclick="showSubPage(\'gospel-today\',\'Today\u2019s Gospel\')">' +
+    '<span class="brc-icon">\uD83C\uDFB6</span><span class="brc-label">Psalm</span></button>' +
+    '<button class="bible-reading-chip" onclick="showSubPage(\'gospel-today\',\'Today\u2019s Gospel\')">' +
+    '<span class="brc-icon">\u2709\uFE0F</span><span class="brc-label">Second Reading</span></button>' +
+    '</div></div>';
+
+  // --- Continue Reading Card ---
+  html += '<div class="bible-home-card bible-continue-card" onclick="openBibleReader()">' +
+    '<div class="bible-continue-left">' +
+    '<div class="bible-home-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="var(--teal, #0D9488)"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-1-1 1V4zm9 16H6V4h1v9l3-3 3 3V4h5v16z"/></svg> Continue Reading</div>' +
+    '<div class="bible-continue-book">' + book.name + ' ' + currentBibleChapter + '</div>' +
+    '<div class="bible-continue-ver">' + currentBibleVersion + '</div></div>' +
+    '<div class="bible-continue-arrow"><svg viewBox="0 0 24 24" width="20" height="20" fill="var(--teal, #0D9488)"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div></div>';
+
+  // --- My Highlights Preview ---
+  var hlKeys = Object.keys(bibleHighlights);
+  if (hlKeys.length > 0) {
+    html += '<div class="bible-home-card bible-highlights-card">' +
+      '<div class="bible-home-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="#C68A2E"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg> My Highlights</div>' +
+      '<div class="bible-highlights-scroll">';
+    var hlCount = 0;
+    for (var hk = hlKeys.length - 1; hk >= 0 && hlCount < 4; hk--) {
+      var verses = bibleHighlights[hlKeys[hk]];
+      var verseNums = Object.keys(verses);
+      for (var vi = 0; vi < verseNums.length && hlCount < 4; vi++) {
+        var color = verses[verseNums[vi]];
+        var parts = hlKeys[hk].split('_');
+        var hlBookNum = parseInt(parts[1]) || 0;
+        var hlCh = parseInt(parts[2]) || 1;
+        var hlBookName = '';
+        for (var bi = 0; bi < bibleBooks.length; bi++) {
+          if (bibleBooks[bi].num === hlBookNum) { hlBookName = bibleBooks[bi].name; break; }
+        }
+        html += '<div class="bible-hl-chip bible-hl-' + color + '" onclick="openBibleReader(' + hlBookNum + ',' + hlCh + ')">' +
+          '<span class="bible-hl-chip-ref">' + hlBookName + ' ' + hlCh + ':' + verseNums[vi] + '</span></div>';
+        hlCount++;
+      }
+    }
+    html += '</div></div>';
+  }
+
+  // --- Reading Plans ---
+  html += '<div class="bible-home-card bible-plans-card">' +
+    '<div class="bible-home-card-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="var(--color-primary, #1B3A5C)"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg> Reading Plans</div>';
+  bibleReadingPlans.forEach(function(plan) {
+    var savedProgress = 0;
+    try { savedProgress = parseInt(localStorage.getItem('prayedPlan_' + plan.id)) || 0; } catch(e) {}
+    html += '<div class="bible-plan-row" onclick="openBibleReader()">' +
+      '<div class="bible-plan-icon" style="background:' + plan.color + '22;color:' + plan.color + '">' + plan.icon + '</div>' +
+      '<div class="bible-plan-info">' +
+      '<div class="bible-plan-title">' + plan.title + '</div>' +
+      '<div class="bible-plan-desc">' + plan.desc + '</div>' +
+      '<div class="bible-plan-meta">' + plan.duration + '</div></div>' +
+      '<svg viewBox="0 0 24 24" width="16" height="16" fill="var(--color-text-muted, #999)"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div>';
+  });
+  html += '</div>';
+
+  html += '<div style="height:80px"></div>'; // bottom padding for nav
+
+  document.getElementById('screenBible').innerHTML = html;
+}
+
+// ===== BIBLE READER VIEW =====
+function renderBibleReaderView() {
+  var book = bibleBooks[currentBibleBook];
   var html = '';
   html += '<div class="bible-toolbar" style="position:relative">' +
     '<button class="bible-toolbar-btn" id="bibleBookBtn" onclick="showBookPicker()">' + book.name + ' ' + currentBibleChapter + ' \u25BE</button>' +
@@ -504,14 +623,13 @@ function renderBible() {
     '<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:var(--text)"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button>' +
     '<button class="bible-toolbar-btn" onclick="showSubPage(\'gospel-today\',\'Today\u2019s Gospel\')" style="padding:8px 10px" title="Today\u2019s Gospel">' +
     '<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:var(--text)"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-1-1 1V4zm9 16H6V4h1v9l3-3 3 3V4h5v16z"/></svg></button></div>';
-  html += '<div onclick="openVotdFromBible()" style="padding:12px 16px;background:linear-gradient(135deg,rgba(37,99,235,0.05),rgba(198,138,46,0.06));border-bottom:1px solid var(--light-gray);cursor:pointer">' +
-    '<div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">\u2728 Verse of the Day</div>' +
-    '<div class="crimson" style="font-size:15px;line-height:1.4;color:var(--navy);font-style:italic;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">\u201c' + escapeHtml(votd.text) + '\u201d</div>' +
-    '<div style="font-size:11px;color:var(--text-light);margin-top:4px">\u2014 ' + votd.ref + '</div></div>';
   html += '<div id="bibleReaderBody" style="padding-bottom:70px">' +
     '<div class="bible-chapter-title">' + book.name + ' ' + currentBibleChapter + '</div>' +
     '<div class="bible-skeleton"><div class="sk-line"></div><div class="sk-line"></div><div class="sk-line"></div>' +
     '<div class="sk-line"></div><div class="sk-line"></div><div class="sk-line"></div></div></div>';
+  // FAB button to go back to Bible Home
+  html += '<button class="bible-home-fab" onclick="openBibleHome()" title="Bible Home">' +
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button>';
   document.getElementById('screenBible').innerHTML = html;
   setTimeout(function() { loadBibleChapter(); }, 100);
 }
@@ -525,6 +643,7 @@ function openVotdFromBible() {
     }
   }
   currentBibleChapter = votd.c;
+  bibleView = 'reader';
   renderBible();
 }
 

@@ -135,10 +135,28 @@ function handleProfilePhoto(input) {
   reader.readAsDataURL(file);
 }
 
+// ===== COUNTRY FLAG EMOJI LOOKUP =====
+var countryFlags = {
+  'United States':'\uD83C\uDDFA\uD83C\uDDF8','Philippines':'\uD83C\uDDF5\uD83C\uDDED','Mexico':'\uD83C\uDDF2\uD83C\uDDFD','Brazil':'\uD83C\uDDE7\uD83C\uDDF7',
+  'Colombia':'\uD83C\uDDE8\uD83C\uDDF4','Argentina':'\uD83C\uDDE6\uD83C\uDDF7','Peru':'\uD83C\uDDF5\uD83C\uDDEA','Chile':'\uD83C\uDDE8\uD83C\uDDF1',
+  'Spain':'\uD83C\uDDEA\uD83C\uDDF8','France':'\uD83C\uDDEB\uD83C\uDDF7','Poland':'\uD83C\uDDF5\uD83C\uDDF1','Italy':'\uD83C\uDDEE\uD83C\uDDF9',
+  'Ireland':'\uD83C\uDDEE\uD83C\uDDEA','Portugal':'\uD83C\uDDF5\uD83C\uDDF9','Canada':'\uD83C\uDDE8\uD83C\uDDE6','United Kingdom':'\uD83C\uDDEC\uD83C\uDDE7',
+  'Australia':'\uD83C\uDDE6\uD83C\uDDFA','India':'\uD83C\uDDEE\uD83C\uDDF3','Nigeria':'\uD83C\uDDF3\uD83C\uDDEC','Kenya':'\uD83C\uDDF0\uD83C\uDDEA',
+  'Ghana':'\uD83C\uDDEC\uD83C\uDDED','South Africa':'\uD83C\uDDFF\uD83C\uDDE6','Germany':'\uD83C\uDDE9\uD83C\uDDEA','Austria':'\uD83C\uDDE6\uD83C\uDDF9',
+  'Ecuador':'\uD83C\uDDEA\uD83C\uDDE8','Venezuela':'\uD83C\uDDFB\uD83C\uDDEA','Guatemala':'\uD83C\uDDEC\uD83C\uDDF9','Honduras':'\uD83C\uDDED\uD83C\uDDF3',
+  'Dominican Republic':'\uD83C\uDDE9\uD83C\uDDF4','Puerto Rico':'\uD83C\uDDF5\uD83C\uDDF7','El Salvador':'\uD83C\uDDF8\uD83C\uDDFB','Costa Rica':'\uD83C\uDDE8\uD83C\uDDF7',
+  'Panama':'\uD83C\uDDF5\uD83C\uDDE6','Bolivia':'\uD83C\uDDE7\uD83C\uDDF4','Paraguay':'\uD83C\uDDF5\uD83C\uDDFE','Uruguay':'\uD83C\uDDFA\uD83C\uDDFE',
+  'Cuba':'\uD83C\uDDE8\uD83C\uDDFA','Haiti':'\uD83C\uDDED\uD83C\uDDF9','Nicaragua':'\uD83C\uDDF3\uD83C\uDDEE'
+};
+function getCountryFlag(country) {
+  return countryFlags[country] || '\uD83C\uDF0D';
+}
+
 // ===== RENDER PROFILE (Whoop-style Dashboard) =====
 function renderProfile() {
   var u = userData || {initials:'JD',firstName:'John',lastName:'David',cityDisplay:'San Francisco, USA'};
   var photo = getProfilePhoto();
+  var flagEmoji = getCountryFlag(u.country);
   var html = '';
 
   // --- COMPACT PROFILE HEADER ---
@@ -156,9 +174,9 @@ function renderProfile() {
   html += '</div>';
   html += '<div class="profile-name-section">' +
     '<h2>' + escapeHtml((u.firstName || 'John') + ' ' + (u.lastName || 'David')) + '</h2>' +
-    '<p>' + escapeHtml(u.cityDisplay || ((u.city || 'San Francisco') + ', ' + (u.country || 'USA'))) + '</p></div></div>';
+    '<p>' + flagEmoji + ' ' + escapeHtml(u.cityDisplay || ((u.city || 'San Francisco') + ', ' + (u.country || 'USA'))) + '</p></div></div>';
 
-  // --- DASHBOARD: Progress Rings (Whoop-style) ---
+  // --- DASHBOARD: Progress Rings (Apple Watch-style gradients) ---
   var prayerPct = typeof getPrayerCategoryPct === 'function' ? getPrayerCategoryPct('prayer') : 50;
   var famPct = typeof getPrayerCategoryPct === 'function' ? getPrayerCategoryPct('family') : 33;
   var wellPct = typeof getPrayerCategoryPct === 'function' ? getPrayerCategoryPct('wellness') : 67;
@@ -170,12 +188,19 @@ function renderProfile() {
   html += '<div class="profile-dash">';
   html += '<div class="profile-dash__rings">';
   html += '<div class="pd-ring-visual"><svg viewBox="0 0 60 60">';
+  // Gradient definitions for Apple Watch-style rings
+  html += '<defs>';
+  html += '<linearGradient id="ringFamily" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#E85D4A"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient>';
+  html += '<linearGradient id="ringWellness" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0D9488"/><stop offset="100%" stop-color="#34D399"/></linearGradient>';
+  html += '<linearGradient id="ringPrayer" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1B3A5C"/><stop offset="100%" stop-color="#2563EB"/></linearGradient>';
+  html += '</defs>';
+  // Background tracks
   html += '<circle cx="30" cy="30" r="24" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="5"/>';
-  html += '<circle class="ring-anim" cx="30" cy="30" r="24" fill="none" stroke="var(--coral)" stroke-width="5" stroke-dasharray="' + Math.round(c1*famPct/100) + ' ' + c1 + '" stroke-linecap="round" transform="rotate(-90 30 30)"/>';
+  html += '<circle class="ring-anim" cx="30" cy="30" r="24" fill="none" stroke="url(#ringFamily)" stroke-width="5" style="--ring-target:' + Math.round(c1*famPct/100) + ';--ring-circ:' + c1 + '" stroke-linecap="round" transform="rotate(-90 30 30)"/>';
   html += '<circle cx="30" cy="30" r="20" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="5"/>';
-  html += '<circle class="ring-anim" cx="30" cy="30" r="20" fill="none" stroke="var(--teal)" stroke-width="5" stroke-dasharray="' + Math.round(c2*wellPct/100) + ' ' + c2 + '" stroke-linecap="round" transform="rotate(-90 30 30)"/>';
+  html += '<circle class="ring-anim" cx="30" cy="30" r="20" fill="none" stroke="url(#ringWellness)" stroke-width="5" style="--ring-target:' + Math.round(c2*wellPct/100) + ';--ring-circ:' + c2 + '" stroke-linecap="round" transform="rotate(-90 30 30)"/>';
   html += '<circle cx="30" cy="30" r="16" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="5"/>';
-  html += '<circle class="ring-anim" cx="30" cy="30" r="16" fill="none" stroke="var(--color-primary)" stroke-width="5" stroke-dasharray="' + Math.round(c3*prayerPct/100) + ' ' + c3 + '" stroke-linecap="round" transform="rotate(-90 30 30)"/>';
+  html += '<circle class="ring-anim" cx="30" cy="30" r="16" fill="none" stroke="url(#ringPrayer)" stroke-width="5" style="--ring-target:' + Math.round(c3*prayerPct/100) + ';--ring-circ:' + c3 + '" stroke-linecap="round" transform="rotate(-90 30 30)"/>';
   html += '</svg>';
   html += '<div class="pd-ring-center"><div class="pd-ring-pct">' + overallPct + '%</div><div class="pd-ring-label">Today</div></div></div>';
   html += '<div class="pd-ring-legend"><h3>My Progress</h3>';

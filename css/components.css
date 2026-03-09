@@ -1637,6 +1637,116 @@
   margin-top: 4px;
 }
 
+/* === HC Community Banner (new, prominent) === */
+.hc-comm-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin: 4px 16px 12px;
+  background: linear-gradient(135deg, rgba(198,138,46,0.08), rgba(198,138,46,0.03));
+  border: 1.5px solid rgba(198,138,46,0.2);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.hc-comm-banner:active {
+  transform: scale(0.98);
+}
+.hc-comm-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+.hc-comm-text {
+  flex: 1;
+  min-width: 0;
+}
+.hc-comm-text h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text, #1a1a1a);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.hc-comm-badge {
+  font-size: 10px;
+  font-weight: 500;
+  color: #C68A2E;
+  background: rgba(198,138,46,0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.hc-comm-text p {
+  font-size: 12px;
+  color: var(--color-text-muted, #888);
+  margin: 3px 0 0;
+}
+.hc-comm-arrow {
+  flex-shrink: 0;
+}
+
+/* === Collapsible Browse Sections === */
+.browse-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 10px 0 6px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.browse-section-header h3 {
+  margin-bottom: 0 !important;
+}
+.browse-count {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-muted, #999);
+}
+.browse-chevron {
+  flex-shrink: 0;
+  color: var(--color-text-muted, #999);
+  transition: transform 0.3s ease;
+}
+.browse-section-header.open .browse-chevron {
+  transform: rotate(180deg);
+}
+.browse-section-body {
+  overflow: hidden;
+  max-height: 2000px;
+  opacity: 1;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+.browse-section-body.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* === View More Button === */
+.circles-view-more {
+  width: 100%;
+  padding: 10px 16px;
+  margin-top: 6px;
+  background: rgba(27,58,92,0.06);
+  border: 1px solid rgba(27,58,92,0.1);
+  border-radius: 10px;
+  color: var(--color-primary, #1B3A5C);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s;
+}
+.circles-view-more:active {
+  background: rgba(27,58,92,0.12);
+}
+
 /* === Search Bar === */
 .search-bar {
   margin: 0 16px 16px;
@@ -3198,6 +3308,14 @@
 .hr-svg .ring-anim {
   transition: stroke-dasharray 0.8s var(--ease-smooth);
 }
+/* Profile gradient ring load animation */
+.pd-ring-visual .ring-anim {
+  stroke-dasharray: 0 200;
+  animation: ringGrow 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+}
+@keyframes ringGrow {
+  to { stroke-dasharray: var(--ring-target) var(--ring-circ); }
+}
 .hr-center {
   position: absolute;
   top: 50%;
@@ -3552,7 +3670,12 @@
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: transform var(--transition-fast);
+  border-left: 3px solid transparent;
 }
+.pd-metric-card:nth-child(1) { border-left-color: var(--coral, #E85D4A); }
+.pd-metric-card:nth-child(2) { border-left-color: var(--color-primary, #1B3A5C); }
+.pd-metric-card:nth-child(3) { border-left-color: var(--teal, #0D9488); }
+.pd-metric-card:nth-child(4) { border-left-color: var(--color-accent, #C68A2E); }
 .pd-metric-card:active {
   transform: scale(0.98);
 }
