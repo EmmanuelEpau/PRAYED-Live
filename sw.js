@@ -1,7 +1,7 @@
 // ===== PRAYED Service Worker =====
 // Offline-first architecture: cache-first for static, network-first for API
 
-const CACHE_NAME = 'prayed-v7';
+const CACHE_NAME = 'prayed-v8';
 const STATIC_ASSETS = [
   './',
   './index.html',

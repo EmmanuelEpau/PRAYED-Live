@@ -432,12 +432,12 @@ function runSplashAnimation() {
   var tag = document.getElementById('splashTagline');
   var hint = document.getElementById('splashHint');
   logo.classList.add('spinning');
-  setTimeout(function(){ logo.style.opacity='0'; globe.style.opacity='1'; }, 1000);
-  setTimeout(function(){ globe.style.opacity='0'; logo.style.opacity='1'; logo.classList.remove('spinning'); logo.classList.add('spin-slow'); }, 3500);
-  setTimeout(function(){ title.style.opacity='1'; }, 4000);
-  setTimeout(function(){ tag.style.opacity='1'; }, 4500);
-  setTimeout(function(){ if(hint) hint.style.opacity='1'; }, 5000);
-  setTimeout(function(){ onGetStarted(); }, 6000);
+  setTimeout(function(){ logo.style.opacity='0'; globe.style.opacity='1'; }, 500);
+  setTimeout(function(){ globe.style.opacity='0'; logo.style.opacity='1'; logo.classList.remove('spinning'); logo.classList.add('spin-slow'); }, 1750);
+  setTimeout(function(){ title.style.opacity='1'; }, 2000);
+  setTimeout(function(){ tag.style.opacity='1'; }, 2250);
+  setTimeout(function(){ if(hint) hint.style.opacity='1'; }, 2500);
+  setTimeout(function(){ onGetStarted(); }, 3000);
 }
 
 var splashDismissed = false;
