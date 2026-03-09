@@ -209,12 +209,18 @@
     </div>
   </div>
 
-  <!-- ACTIVE STATE -->
+  <!-- ACTIVE STATE (Audio Call Style) -->
   <div id="prActive" style="display:none">
     <div class="pr-active-content">
       <div class="pr-ambient"></div>
       <button class="pr-close-float" onclick="closePrayerRoom()" aria-label="Close" style="z-index:2">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+
+      <!-- Invite button (top-left) -->
+      <button class="pr-invite-float" onclick="showPrayerRoomInvite()" aria-label="Invite family">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span>Invite</span>
       </button>
 
       <div class="pr-live-badge">PRAYING TOGETHER</div>
@@ -230,7 +236,7 @@
       <!-- Current prayer label -->
       <div class="pr-current-prayer-label" id="prCurrentPrayerLabel">Sign of the Cross</div>
 
-      <!-- Audio Controls -->
+      <!-- Audio playback controls (skip/play) -->
       <div class="pr-audio-controls">
         <button class="pr-ctrl-btn pr-ctrl-skip" onclick="skipRosaryBack()" aria-label="Previous">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
@@ -251,16 +257,40 @@
         <div class="pr-progress-bar"><div class="pr-progress-fill" id="prBeadProgress" style="width:0%"></div></div>
       </div>
 
-      <!-- Voice Participant Bar -->
-      <div class="pr-voice-bar" id="prVoiceBar">
-        <div class="pr-voice-participants" id="prVoiceParticipants"></div>
-        <div class="pr-voice-controls">
-          <button class="pr-voice-mute-btn" id="prVoiceMuteBtn" onclick="toggleVoiceMute()" aria-label="Toggle microphone">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15a.998.998 0 00-.98-.85c-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08a6.993 6.993 0 005.91-5.78c.1-.6-.39-1.14-1-1.14z"/></svg>
-          </button>
-          <button class="pr-voice-leave-btn" id="prVoiceLeaveBtn" onclick="leaveVoiceCall()" aria-label="Leave voice call" style="display:none">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.956.956 0 01-.29-.7c0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28a11.27 11.27 0 00-2.67-1.85.996.996 0 01-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
-          </button>
+      <!-- CALL-STYLE BOTTOM BAR -->
+      <div class="pr-call-bar" id="prCallBar">
+        <!-- Participant strip with speaking indicators -->
+        <div class="pr-call-participants" id="prVoiceParticipants">
+          <!-- Populated dynamically -->
+        </div>
+        <div class="pr-call-participant-count" id="prParticipantCount">0 in room</div>
+
+        <!-- Call Controls (walkie-talkie style) -->
+        <div class="pr-call-controls">
+          <!-- Mute Fr. Peyton / Guide Audio -->
+          <div class="pr-call-btn-wrap">
+            <button class="pr-call-btn" id="prMuteGuideBtn" onclick="toggleMuteGuide()" aria-label="Mute guide audio">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            </button>
+            <span class="pr-call-btn-label">Fr. Peyton</span>
+          </div>
+
+          <!-- BIG MIC BUTTON (center, prominent) -->
+          <div class="pr-call-btn-wrap pr-call-btn-main">
+            <button class="pr-call-mic" id="prVoiceMuteBtn" onclick="toggleVoiceMute()" aria-label="Toggle microphone">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="#fff"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15a.998.998 0 00-.98-.85c-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08a6.993 6.993 0 005.91-5.78c.1-.6-.39-1.14-1-1.14z"/></svg>
+              <div class="pr-mic-pulse" id="prMicPulse"></div>
+            </button>
+            <span class="pr-call-btn-label" id="prMicLabel">Mic On</span>
+          </div>
+
+          <!-- Leave / End Call -->
+          <div class="pr-call-btn-wrap">
+            <button class="pr-call-btn pr-call-end" onclick="closePrayerRoom()" aria-label="Leave prayer room">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.956.956 0 01-.29-.7c0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28a11.27 11.27 0 00-2.67-1.85.996.996 0 01-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
+            </button>
+            <span class="pr-call-btn-label">Leave</span>
+          </div>
         </div>
       </div>
     </div>

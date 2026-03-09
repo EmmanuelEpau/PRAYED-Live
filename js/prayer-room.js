@@ -832,8 +832,10 @@ function closePrayerRoom() {
   if (rosaryAudio) {
     rosaryAudio.pause();
     rosaryAudio.src = '';
+    rosaryAudio.muted = false;
     rosaryIsPlaying = false;
   }
+  guideMuted = false;
   activeRoomId = null;
   pendingJoinRoomId = null;
   isRoomLeader = false;
@@ -846,6 +848,8 @@ function closePrayerRoom() {
   if (vc2) vc2.style.display = 'none';
   if (sb) sb.style.display = '';
   if (jb) jb.style.display = '';
+  // Close invite overlay if open
+  closeInviteOverlay();
   var overlay = document.getElementById('prayerRoomOverlay');
   if (overlay) overlay.style.display = 'none';
 }
@@ -1264,11 +1268,11 @@ function startVoiceCall(withMic) {
 
   prayerVoice.start(withMic).then(function() {
     renderVoiceParticipants();
-    // Show leave button if on a voice call
-    var leaveBtn = document.getElementById('prVoiceLeaveBtn');
-    if (leaveBtn) leaveBtn.style.display = 'flex';
-    // Update mute button state
+    // Update mute button state for new call-style UI
     updateVoiceMuteBtn();
+    // Show call bar if active
+    var callBar = document.getElementById('prCallBar');
+    if (callBar) callBar.style.display = 'flex';
   });
 }
 
@@ -1278,8 +1282,6 @@ function stopVoiceCall() {
     prayerVoice = null;
   }
   voiceMode = 'none';
-  var leaveBtn = document.getElementById('prVoiceLeaveBtn');
-  if (leaveBtn) leaveBtn.style.display = 'none';
 }
 
 function toggleVoiceMute() {
@@ -1295,11 +1297,15 @@ function toggleVoiceMute() {
 
 function updateVoiceMuteBtn() {
   var btn = document.getElementById('prVoiceMuteBtn');
-  if (!btn || !prayerVoice) return;
-  btn.classList.toggle('muted', prayerVoice.isMuted);
-  btn.innerHTML = prayerVoice.isMuted ?
-    '<svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.55-.9l4.18 4.18L21 19.73 4.27 3z"/></svg>' :
-    '<svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15a.998.998 0 00-.98-.85c-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08a6.993 6.993 0 005.91-5.78c.1-.6-.39-1.14-1-1.14z"/></svg>';
+  if (!btn) return;
+  var isMuted = prayerVoice ? prayerVoice.isMuted : true;
+  btn.classList.toggle('muted', isMuted);
+  btn.innerHTML = isMuted ?
+    '<svg viewBox="0 0 24 24" width="28" height="28" fill="#fff"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.55-.9l4.18 4.18L21 19.73 4.27 3z"/></svg><div class="pr-mic-pulse" id="prMicPulse"></div>' :
+    '<svg viewBox="0 0 24 24" width="28" height="28" fill="#fff"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15a.998.998 0 00-.98-.85c-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08a6.993 6.993 0 005.91-5.78c.1-.6-.39-1.14-1-1.14z"/></svg><div class="pr-mic-pulse" id="prMicPulse"></div>';
+  // Update mic label
+  var micLabel = document.getElementById('prMicLabel');
+  if (micLabel) micLabel.textContent = isMuted ? 'Unmute' : 'Mic On';
 }
 
 function leaveVoiceCall() {
@@ -1362,6 +1368,7 @@ function renderVoiceParticipants() {
 }
 
 function _renderVoiceList(container, participants) {
+  if (!container) return;
   var colors = ['#1B3A5C','#7C3AED','#0D9488','#C68A2E','#E74C8B','#3B82F6'];
   var html = '';
   var keys = Object.keys(participants);
@@ -1380,10 +1387,106 @@ function _renderVoiceList(container, participants) {
     html += '<div class="pr-voice-glow"></div>';
     html += initial;
     html += '</div>';
-    html += '<span class="pr-voice-name">' + (p.name || '?') + '</span>';
+    html += '<span class="pr-voice-name">' + (isSelf ? 'You' : (p.name || '?')) + '</span>';
     html += '<span class="pr-voice-status ' + statusClass + '">\u25CF</span>';
     html += '</div>';
   });
 
   container.innerHTML = html;
+}
+
+// ===== MUTE GUIDE AUDIO (Fr. Peyton) =====
+var guideMuted = false;
+
+function toggleMuteGuide() {
+  guideMuted = !guideMuted;
+  if (rosaryAudio) {
+    rosaryAudio.muted = guideMuted;
+  }
+  var btn = document.getElementById('prMuteGuideBtn');
+  if (btn) {
+    btn.classList.toggle('guide-muted', guideMuted);
+    btn.innerHTML = guideMuted ?
+      '<svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>' :
+      '<svg viewBox="0 0 24 24" width="22" height="22" fill="#fff"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
+  }
+  // Update label
+  var lbl = btn ? btn.parentNode.querySelector('.pr-call-btn-label') : null;
+  if (lbl) lbl.textContent = guideMuted ? 'Unmute' : 'Fr. Peyton';
+  showToast(guideMuted ? 'Guide audio muted' : 'Guide audio on');
+}
+
+// ===== INVITE TO PRAYER ROOM =====
+function showPrayerRoomInvite() {
+  var roomId = activeRoomId;
+  var u = userData || {};
+  var familyName = u.lastName ? u.lastName + ' Family' : 'Your family';
+  var mysteryName = selectedPrayerForRoom ? (getRosaryPlaylist(selectedPrayerForRoom) || {}).name || '' : '';
+  var shareText = familyName + ' is praying the ' + mysteryName + ' together on PRAYED! Join us now.';
+  var shareUrl = 'https://emmanuelepau.github.io/PRAYED-Live/?room=' + (roomId || 'family');
+
+  // Try Web Share API first (mobile)
+  if (navigator.share) {
+    navigator.share({
+      title: 'Join ' + familyName + ' in Prayer',
+      text: shareText,
+      url: shareUrl
+    }).catch(function() {
+      // User cancelled — show fallback
+      showInviteOverlay(shareText, shareUrl);
+    });
+    return;
+  }
+
+  // Fallback: show modal with copy/WhatsApp options
+  showInviteOverlay(shareText, shareUrl);
+}
+
+function showInviteOverlay(shareText, shareUrl) {
+  var overlay = document.createElement('div');
+  overlay.className = 'bible-picker-overlay';
+  overlay.id = 'prInviteOverlay';
+  overlay.style.cssText = 'display:flex;align-items:center;justify-content:center;z-index:500';
+  var html = '<div style="background:linear-gradient(180deg,#122240,#1B3A5C);border-radius:20px;padding:28px 20px;width:90%;max-width:340px;text-align:center;box-shadow:var(--shadow-lg);position:relative;color:#fff">';
+  html += '<button onclick="closeInviteOverlay()" style="position:absolute;top:12px;right:12px;background:none;border:none;cursor:pointer;padding:4px">' +
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="rgba(255,255,255,0.5)"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>';
+  html += '<div style="margin-bottom:16px">' +
+    '<svg viewBox="0 0 24 24" width="40" height="40" fill="var(--color-accent)"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>' +
+    '<h3 style="font-size:18px;font-weight:700;margin:8px 0 4px">Invite to Prayer Room</h3>' +
+    '<p style="font-size:13px;color:rgba(255,255,255,0.5);margin:0">Share so family can join and pray together</p></div>';
+  // Link display
+  html += '<div style="background:rgba(255,255,255,0.06);border-radius:12px;padding:12px;margin-bottom:16px;font-size:12px;color:rgba(255,255,255,0.6);word-break:break-all;border:1px solid rgba(255,255,255,0.08)">' + escapeHtml(shareUrl) + '</div>';
+  // Copy button
+  html += '<button onclick="copyPrayerRoomLink(\'' + shareUrl + '\')" style="width:100%;padding:14px;background:linear-gradient(135deg,#C68A2E,#D4A64E);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit">' +
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>' +
+    'Copy Link</button>';
+  // WhatsApp share
+  var waMsg = encodeURIComponent(shareText + '\n' + shareUrl);
+  html += '<button onclick="window.open(\'https://wa.me/?text=' + waMsg + '\',\'_blank\');closeInviteOverlay()" style="width:100%;padding:14px;background:#25D366;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit">' +
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>' +
+    'Share via WhatsApp</button>';
+  html += '</div>';
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+  logEvent('prayer_room_invite_shown', {roomId: activeRoomId});
+}
+
+function closeInviteOverlay() {
+  var overlay = document.getElementById('prInviteOverlay');
+  if (overlay) overlay.remove();
+}
+
+function copyPrayerRoomLink(url) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function() { showToast('Link copied!'); }).catch(function() { showToast('Could not copy'); });
+  } else {
+    var temp = document.createElement('textarea');
+    temp.value = url;
+    temp.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(temp);
+    temp.select();
+    try { document.execCommand('copy'); showToast('Link copied!'); }
+    catch(e) { showToast('Could not copy'); }
+    document.body.removeChild(temp);
+  }
 }
