@@ -135,33 +135,20 @@ function handleProfilePhoto(input) {
   reader.readAsDataURL(file);
 }
 
-// ===== RENDER PROFILE =====
+// ===== RENDER PROFILE (Whoop-style Dashboard) =====
 function renderProfile() {
   var u = userData || {initials:'JD',firstName:'John',lastName:'David',cityDisplay:'San Francisco, USA'};
   var photo = getProfilePhoto();
   var html = '';
 
-  // --- PROFILE HEADER with passport ring ---
+  // --- COMPACT PROFILE HEADER ---
   html += '<div class="profile-header-premium">';
   html += '<div class="profile-av-wrap">';
-  // Passport stamps ring
-  var stampFlags = ['usa','brazil','uganda','france','kenya','ireland','peru','india'];
-  html += '<div class="passport-ring">';
-  stampFlags.forEach(function(flag, i) {
-    var angle = (i / stampFlags.length) * 360 - 90;
-    var rad = angle * Math.PI / 180;
-    var cx = 50 + 42 * Math.cos(rad);
-    var cy = 50 + 42 * Math.sin(rad);
-    html += '<div class="pr-stamp" style="left:' + cx + '%;top:' + cy + '%">' + flagSVG(flag) + '</div>';
-  });
-  html += '</div>';
-  // Avatar
   if(photo) {
     html += '<img class="profile-av-img" src="' + photo + '" alt="Profile photo">';
   } else {
     html += '<div class="profile-av-initials">' + (u.initials || 'JD') + '</div>';
   }
-  // Camera overlay
   html += '<label class="profile-av-camera">' +
     '<svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M12 15.2a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4z"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>' +
     '<input type="file" accept="image/*" onchange="handleProfilePhoto(this)" style="display:none">' +
@@ -169,29 +156,114 @@ function renderProfile() {
   html += '</div>';
   html += '<div class="profile-name-section">' +
     '<h2>' + escapeHtml((u.firstName || 'John') + ' ' + (u.lastName || 'David')) + '</h2>' +
-    '<p>' + escapeHtml(u.cityDisplay || ((u.city || 'San Francisco') + ', ' + (u.country || 'USA'))) + '</p>' +
-    '<span class="profile-joined">Joined March 2026</span></div></div>';
+    '<p>' + escapeHtml(u.cityDisplay || ((u.city || 'San Francisco') + ', ' + (u.country || 'USA'))) + '</p></div></div>';
 
-  // --- STATS ROW ---
+  // --- DASHBOARD: Progress Rings (Whoop-style) ---
+  var prayerPct = typeof getPrayerCategoryPct === 'function' ? getPrayerCategoryPct('prayer') : 50;
+  var famPct = typeof getPrayerCategoryPct === 'function' ? getPrayerCategoryPct('family') : 33;
+  var wellPct = typeof getPrayerCategoryPct === 'function' ? getPrayerCategoryPct('wellness') : 67;
+  var doneH = habits.filter(function(h){return h.done}).length;
+  var totalH = habits.length;
+  var overallPct = totalH > 0 ? Math.round(doneH/totalH*100) : 0;
+  var c1 = 150.80, c2 = 125.66, c3 = 100.53; // r=24,r=20,r=16
+
+  html += '<div class="profile-dash">';
+  html += '<div class="profile-dash__rings">';
+  html += '<div class="pd-ring-visual"><svg viewBox="0 0 60 60">';
+  html += '<circle cx="30" cy="30" r="24" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="5"/>';
+  html += '<circle class="ring-anim" cx="30" cy="30" r="24" fill="none" stroke="var(--coral)" stroke-width="5" stroke-dasharray="' + Math.round(c1*famPct/100) + ' ' + c1 + '" stroke-linecap="round" transform="rotate(-90 30 30)"/>';
+  html += '<circle cx="30" cy="30" r="20" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="5"/>';
+  html += '<circle class="ring-anim" cx="30" cy="30" r="20" fill="none" stroke="var(--teal)" stroke-width="5" stroke-dasharray="' + Math.round(c2*wellPct/100) + ' ' + c2 + '" stroke-linecap="round" transform="rotate(-90 30 30)"/>';
+  html += '<circle cx="30" cy="30" r="16" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="5"/>';
+  html += '<circle class="ring-anim" cx="30" cy="30" r="16" fill="none" stroke="var(--color-primary)" stroke-width="5" stroke-dasharray="' + Math.round(c3*prayerPct/100) + ' ' + c3 + '" stroke-linecap="round" transform="rotate(-90 30 30)"/>';
+  html += '</svg>';
+  html += '<div class="pd-ring-center"><div class="pd-ring-pct">' + overallPct + '%</div><div class="pd-ring-label">Today</div></div></div>';
+  html += '<div class="pd-ring-legend"><h3>My Progress</h3>';
+  html += '<div class="pd-leg-row"><div class="pd-leg-dot" style="background:var(--color-primary)"></div><span class="pd-leg-name">Prayer</span><span class="pd-leg-val">' + prayerPct + '%</span></div>';
+  html += '<div class="pd-leg-row"><div class="pd-leg-dot" style="background:var(--teal)"></div><span class="pd-leg-name">Wellness</span><span class="pd-leg-val">' + wellPct + '%</span></div>';
+  html += '<div class="pd-leg-row"><div class="pd-leg-dot" style="background:var(--coral)"></div><span class="pd-leg-name">Family</span><span class="pd-leg-val">' + famPct + '%</span></div>';
+  html += '</div></div>';
+
+  // --- METRIC CARDS (Whoop-style) ---
   var prayerCount = getPrayerCount();
   var personalStreak = getPersonalStreak();
   var circleCount = (typeof circles !== 'undefined' && Array.isArray(circles)) ? circles.length : 0;
   var familyStreak = (typeof getFamilyStreak === 'function') ? getFamilyStreak() : 0;
+  var longestStreak = (typeof getLongestStreak === 'function') ? getLongestStreak() : 23;
 
-  html += '<div class="profile-stats">' +
-    '<div class="ps-item"><div class="ps-val">' + prayerCount + '</div><div class="ps-label">Prayers</div></div>' +
-    '<div class="ps-item"><div class="ps-val">' + personalStreak + '</div><div class="ps-label">Streak</div></div>' +
-    '<div class="ps-item"><div class="ps-val">' + circleCount + '</div><div class="ps-label">Circles</div></div>' +
-    '<div class="ps-item"><div class="ps-val">' + familyStreak + '</div><div class="ps-label">Family</div></div></div>';
+  html += '<div class="pd-metrics">';
+  // Streak
+  html += '<div class="pd-metric-card" onclick="showScreen(\'habits\')">' +
+    '<div class="pd-mc-icon" style="background:rgba(232,93,74,0.12)"><svg viewBox="0 0 24 24" width="20" height="20" fill="var(--coral)"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.59-4.8S9.96 3.1 10.99 5.3c.93-2.2 2.51-4.63 2.51-4.63zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg></div>' +
+    '<div class="pd-mc-body"><div class="pd-mc-label">PRAYER STREAK</div></div>' +
+    '<div class="pd-mc-right"><div class="pd-mc-val">' + personalStreak + '</div><div class="pd-mc-sub">longest: ' + longestStreak + '</div></div></div>';
+  // Prayers Offered
+  html += '<div class="pd-metric-card">' +
+    '<div class="pd-mc-icon" style="background:rgba(27,58,92,0.12)"><svg viewBox="0 0 24 24" width="20" height="20" fill="var(--color-primary)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>' +
+    '<div class="pd-mc-body"><div class="pd-mc-label">PRAYERS OFFERED</div></div>' +
+    '<div class="pd-mc-right"><div class="pd-mc-val">' + prayerCount + '</div><div class="pd-mc-sub">' + (prayerCount > 0 ? '<span class="pd-mc-trend up">\u2191 Active</span>' : 'Start praying') + '</div></div></div>';
+  // Circles
+  html += '<div class="pd-metric-card" onclick="showScreen(\'circles\')">' +
+    '<div class="pd-mc-icon" style="background:rgba(13,148,136,0.12)"><svg viewBox="0 0 24 24" width="20" height="20" fill="var(--teal)"><circle cx="12" cy="12" r="10"/></svg></div>' +
+    '<div class="pd-mc-body"><div class="pd-mc-label">CIRCLES</div></div>' +
+    '<div class="pd-mc-right"><div class="pd-mc-val">' + circleCount + '</div><div class="pd-mc-sub">prayer groups</div></div></div>';
+  // Family Bond
+  html += '<div class="pd-metric-card">' +
+    '<div class="pd-mc-icon" style="background:rgba(198,138,46,0.12)"><svg viewBox="0 0 24 24" width="20" height="20" fill="var(--color-accent)"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>' +
+    '<div class="pd-mc-body"><div class="pd-mc-label">FAMILY BOND</div></div>' +
+    '<div class="pd-mc-right"><div class="pd-mc-val">' + familyStreak + '</div><div class="pd-mc-sub">day family streak</div></div></div>';
+  html += '</div>';
 
-  // --- AUTH STATUS ---
-  if(currentUser) {
-    html += '<div class="auth-status-card">' +
-      '<div class="auth-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>' +
-      '<div class="auth-info"><span class="auth-label">Signed In</span><span class="auth-email">' + escapeHtml(currentUser.email) + '</span></div></div>';
-  }
+  // --- WEEKLY PRAYER CHART ---
+  var weekData = typeof getWeeklyTrend === 'function' ? getWeeklyTrend() : [{label:'W1',val:32},{label:'W2',val:45},{label:'W3',val:38},{label:'W4',val:52},{label:'This',val:47}];
+  var maxVal = Math.max.apply(null, weekData.map(function(w){return w.val})) || 1;
+  var chartH = 70, chartW = 260;
+  html += '<div class="pd-chart-card">';
+  html += '<div class="pd-chart-header"><h3>Prayer Activity</h3><span>Minutes / week</span></div>';
+  html += '<svg viewBox="0 0 ' + chartW + ' ' + (chartH + 20) + '" style="width:100%;height:auto">';
+  html += '<defs><linearGradient id="pdGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0"/></linearGradient></defs>';
+  var pts = [];
+  var segW = chartW / (weekData.length - 1);
+  weekData.forEach(function(w, i) {
+    var x = Math.round(i * segW);
+    var y = Math.round(chartH - (w.val / maxVal) * (chartH - 10));
+    pts.push(x + ',' + y);
+  });
+  html += '<polygon points="0,' + chartH + ' ' + pts.join(' ') + ' ' + chartW + ',' + chartH + '" fill="url(#pdGrad)"/>';
+  html += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+  weekData.forEach(function(w, i) {
+    var x = Math.round(i * segW);
+    var y = Math.round(chartH - (w.val / maxVal) * (chartH - 10));
+    html += '<circle cx="' + x + '" cy="' + y + '" r="3.5" fill="var(--color-surface)" stroke="var(--color-primary)" stroke-width="2"/>';
+    html += '<text x="' + x + '" y="' + (chartH + 14) + '" text-anchor="middle" fill="var(--color-text-muted)" font-size="9" font-family="var(--font-body)">' + w.label + '</text>';
+  });
+  html += '</svg></div>';
 
-  // --- FAMILY SECTION ---
+  // --- PERSONAL GOALS ---
+  html += '<div class="pd-goals"><h3><svg viewBox="0 0 24 24" width="18" height="18" fill="var(--color-accent)"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2l-2.81 6.63L2 9.24l5.46 4.73L5.82 21z"/></svg> My Goals</h3>';
+  var goals = [
+    {name:'Daily Rosary', current:5, target:7, unit:'days/week', color:'var(--color-primary)'},
+    {name:'Family Prayer', current:3, target:5, unit:'times/week', color:'var(--coral)'},
+    {name:'Scripture Reading', current:4, target:7, unit:'days/week', color:'var(--teal)'},
+    {name:'Water Intake', current:5, target:8, unit:'glasses/day', color:'#3B82F6'}
+  ];
+  goals.forEach(function(g) {
+    var gPct = Math.round(g.current / g.target * 100);
+    var circ = 2 * Math.PI * 16;
+    html += '<div class="pd-goal-row">' +
+      '<div class="pd-goal-ring"><svg viewBox="0 0 40 40">' +
+      '<circle cx="20" cy="20" r="16" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="3.5"/>' +
+      '<circle cx="20" cy="20" r="16" fill="none" stroke="' + g.color + '" stroke-width="3.5" stroke-dasharray="' + Math.round(circ*gPct/100) + ' ' + Math.round(circ) + '" stroke-linecap="round" transform="rotate(-90 20 20)"/>' +
+      '</svg><div class="pd-goal-ring-pct">' + gPct + '%</div></div>' +
+      '<div class="pd-goal-info">' +
+      '<div class="pd-goal-name">' + g.name + '</div>' +
+      '<div class="pd-goal-progress">' + g.current + '/' + g.target + ' ' + g.unit + '</div>' +
+      '<div class="pd-goal-bar"><div class="pd-goal-fill" style="width:' + gPct + '%;background:' + g.color + '"></div></div>' +
+      '</div></div>';
+  });
+  html += '</div>';
+
+  // --- FAMILY SECTION (compact) ---
   html += '<div class="family-section"><h3>' + svgIcons.family + ' ' + t('ui.my_family') + '</h3><div class="family-row">' +
     '<div class="family-member"><div class="fm-av" style="background:var(--color-primary)">' + (u.initials || 'JD') + '</div><div class="fm-name">' + (u.firstName || 'You') + '</div></div>';
   var famMembers = (userData && userData.familyMembers) ? userData.familyMembers : [];
@@ -201,30 +273,20 @@ function renderProfile() {
     });
   }
   html += '<div class="family-member" onclick="showInviteModal()"><div class="fm-add">' + svgIcons.plus + '</div><div class="fm-name">Add</div></div></div></div>';
+  html += '</div>'; // close profile-dash
 
-  // --- GIVING / IMPACT ---
-  html += '<div class="giving-section"><h3>' + svgIcons.heart + ' ' + t('ui.your_impact') + '</h3>';
-  var campaigns = [
-    {title:'Build a Chapel in Kampala',img:imgMap['kampala_rosary'],raised:12450,goal:25000},
-    {title:'Education for 100 Children',img:imgMap['prayer_stock2'],raised:8200,goal:15000}
-  ];
-  campaigns.forEach(function(c){
-    html += '<div class="campaign-card" style="position:relative;pointer-events:none;opacity:0.65">' +
-      '<img src="' + c.img + '" alt="' + escapeHtml(c.title) + '">' +
-      '<div class="cc-body"><div class="cc-title">' + escapeHtml(c.title) + '</div>' +
-      '<div class="cc-bar"><div class="cc-fill" style="width:0%"></div></div>' +
-      '<div class="cc-meta"><span>Campaign details</span></div></div>' +
-      '<div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);border-radius:var(--radius-md)">' +
-      '<span style="background:var(--color-accent);color:#fff;padding:6px 16px;border-radius:var(--radius-full);font-size:13px;font-weight:700;box-shadow:var(--shadow-md)">Coming Soon</span></div></div>';
-  });
-  html += '</div>';
+  // --- AUTH STATUS ---
+  if(currentUser) {
+    html += '<div class="auth-status-card">' +
+      '<div class="auth-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>' +
+      '<div class="auth-info"><span class="auth-label">Signed In</span><span class="auth-email">' + escapeHtml(currentUser.email) + '</span></div></div>';
+  }
 
-  // --- SETTINGS (full page link) ---
+  // --- SETTINGS ---
   html += '<div class="section-title">' + svgIcons.gear + ' ' + t('ui.settings') + '</div><div class="settings-list">';
   html += '<div class="settings-item" onclick="toggleDarkMode()"><div class="si-left">' + svgIcons.moon + '<span class="si-label">' + t('ui.dark_mode') + '</span></div>' +
     '<div class="toggle-switch' + (document.body.classList.contains('dark-mode') ? ' on' : '') + '"><div class="toggle-knob"></div></div></div>';
   html += '<div class="settings-item" onclick="showSubPage(\'settings-full\',\'' + t('ui.settings') + '\')"><div class="si-left">' + svgIcons.gear + '<span class="si-label">All Settings</span></div>' + svgIcons.chevRight + '</div>';
-  html += '<div class="settings-item" onclick="showSubPage(\'notifications\',\'' + t('ui.notifications') + '\')"><div class="si-left">' + svgIcons.bell + '<span class="si-label">' + t('ui.notifications') + '</span></div>' + svgIcons.chevRight + '</div>';
   html += '<div class="settings-item" onclick="showSubPage(\'my-habits\',\'' + t('ui.my_habits') + '\')"><div class="si-left">' + svgIcons.check + '<span class="si-label">' + t('ui.my_habits') + '</span></div>' + svgIcons.chevRight + '</div>';
   html += '<div class="settings-item" onclick="showSubPage(\'rosary-passport\',\'Rosary Passport\')"><div class="si-left">' + svgIcons.passport + '<span class="si-label">Rosary Passport</span></div>' + svgIcons.chevRight + '</div>';
   html += '</div>';
@@ -234,8 +296,6 @@ function renderProfile() {
   html += '<div class="settings-item" onclick="showInAppBrowser(\'About HCFM\',\'https://www.hcfm.org/about-holy-cross-family-ministries\')"><div class="si-left">' + svgIcons.church + '<span class="si-label">About HCFM</span></div>' + svgIcons.chevRight + '</div>';
   html += '<div class="settings-item" onclick="showSubPage(\'fr-peyton\',\'Father Peyton\')"><div class="si-left">' + svgIcons.heart + '<span class="si-label">Fr. Patrick Peyton, C.S.C.</span></div>' + svgIcons.chevRight + '</div>';
   html += '<div class="settings-item" onclick="showInAppBrowser(\'Family Rosary\',\'https://www.familyrosary.org\')"><div class="si-left">' + svgIcons.globe + '<span class="si-label">Family Rosary</span></div>' + svgIcons.chevRight + '</div>';
-  html += '<div class="settings-item" onclick="showInAppBrowser(\'Family Theater\',\'https://www.familytheater.org\')"><div class="si-left">' + svgIcons.globe + '<span class="si-label">Family Theater Productions</span></div>' + svgIcons.chevRight + '</div>';
-  html += '<div class="settings-item" onclick="showInAppBrowser(\'Catholic Mom\',\'https://www.catholicmom.com\')"><div class="si-left">' + svgIcons.globe + '<span class="si-label">Catholic Mom</span></div>' + svgIcons.chevRight + '</div>';
   html += '</div>';
 
   // --- SUPPORT ---

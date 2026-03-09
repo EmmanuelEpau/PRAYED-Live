@@ -1,49 +1,39 @@
-// ===== RENDER HOME (Spec 0G: 3-screen rule, 10 sections) =====
+// ===== RENDER HOME (Redesigned: 7 sections, 2-screen rule) =====
 function renderHome() {
   personalizeApp();
   var u = userData || {greeting:'Good Morning',cityDisplay:'',initials:'FR',firstName:'Friend'};
   var html = '';
 
-  // === 1. HEADER ===
+  // === 1. HEADER (compact) ===
   html += renderHomeHeader(u);
 
   // === 2. FAMILY PRAYER ROOM CARD ===
   html += renderFamilyRoomCard(u);
 
-  // === 3. LIVE NOW CARD (conditional — rendered async below) ===
+  // === 3. LIVE NOW CARD (conditional — only shows if live/starting) ===
   html += '<div id="liveCardSlot"></div>';
 
-  // === 4. QUICK HABITS ROW ===
-  html += renderQuickHabitsRow();
+  // === 4. HABITS RINGS (Whoop-style 3-ring summary) ===
+  html += renderHabitsRings();
 
-  // === 5. TODAY'S REFLECTION CARD (async — rendered into slot) ===
+  // === 5. TODAY'S REFLECTION (async) ===
   html += '<div id="reflectionSlot"></div>';
 
-  // === 6. TODAY'S PRAYERS ===
+  // === 6. PRIMARY PRAYER CARDS (top 3 only) ===
   html += renderPrimaryPrayerCards();
-  html += renderSecondaryPrayerGrid();
 
-  // === 7. GLOBAL PRAYER COUNTER ===
-  html += renderGlobalCounter();
-
-  // === 8. SEASONAL BANNER (conditional) ===
-  html += renderSeasonalBanner();
-
-  // === 9. PRAYER WALL PREVIEW (3 recent intentions) ===
+  // === 7. PRAYER WALL (horizontal, compact cards) ===
   html += '<div id="prayerWallSlot"></div>';
 
-  // === 10. CIRCLE ACTIVITY + FR. PEYTON QUOTE + WORLD MAP ===
-  html += renderCircleActivity(3);
-  html += renderPeytonQuote();
-  html += renderWorldMap();
+  // === 8. GLOBAL COUNTER (clean, bottom — links to worldatprayer.org) ===
+  html += renderGlobalCounterClean();
 
   document.getElementById('screenHome').innerHTML = html;
 
-  // Async sections: load Firestore data and render into slots
+  // Async sections
   renderLiveCardAsync();
   renderReflectionAsync();
-  renderPrayerWallPreview();
-  // Set up counter animation observer
+  renderPrayerWallHorizontal();
   setupCounterObserver();
 }
 
@@ -97,11 +87,10 @@ function renderFamilyRoomCard(u) {
   return html;
 }
 
-// ===== 3. LIVE NOW CARD (Spec 0F) =====
+// ===== 3. LIVE NOW CARD (conditional) =====
 function renderLiveCardAsync() {
   var slot = document.getElementById('liveCardSlot');
   if (!slot) return;
-  // Check Firestore live stream status
   if (liveStreamData && liveStreamData.isLive) {
     slot.innerHTML = '<div class="live-card is-live" onclick="openLiveStream()">' +
       '<div class="live-card__icon"><svg viewBox="0 0 24 24" width="28" height="28" fill="#fff"><circle cx="12" cy="12" r="3"/><path d="M6.34 17.66A8 8 0 014 12a8 8 0 012.34-5.66l1.42 1.42A6 6 0 006 12a6 6 0 001.76 4.24zM17.66 6.34A8 8 0 0120 12a8 8 0 01-2.34 5.66l-1.42-1.42A6 6 0 0018 12a6 6 0 00-1.76-4.24z"/></svg></div>' +
@@ -111,7 +100,6 @@ function renderLiveCardAsync() {
       '<div class="live-card__action">Join Live \u203A</div>' +
       '</div></div>';
   } else {
-    // Check schedule for "STARTING SOON"
     var sched = getLiveStreamSchedule();
     if (sched) {
       var now = new Date();
@@ -125,7 +113,6 @@ function renderLiveCardAsync() {
           '<div class="live-card__action">Starts in ' + minutesUntil + ' min \u203A</div>' +
           '</div></div>';
       }
-      // else: don't show anything
     }
   }
 }
@@ -134,28 +121,49 @@ function openLiveStream() {
   showSubPage('live-stream', 'Live from the Chapel');
 }
 
-// ===== 4. QUICK HABITS ROW =====
-function renderQuickHabitsRow() {
-  var html = '<div class="section-title">' +
-    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>' +
-    ' ' + t('ui.todays_habits') + '</div>';
-  html += '<div class="habits-quick-row">';
-  var qh = habits || [];
-  qh.forEach(function(h, i) {
-    html += '<div class="habit-chip' + (h.done ? ' done' : '') + '" onclick="quickToggleHabit('+i+')">' +
-      '<div class="habit-chip__check">' +
-      '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor"/></svg></div>' +
-      '<span>' + h.name.split(' ').slice(0,2).join(' ') + '</span></div>';
-  });
-  html += '</div>';
+// ===== 4. HABITS RINGS (Whoop-style 3-ring summary) =====
+function renderHabitsRings() {
+  var prayerPct = getPrayerCategoryPct('prayer');
+  var famPct = getPrayerCategoryPct('family');
+  var wellPct = getPrayerCategoryPct('wellness');
   var doneH = habits.filter(function(h){return h.done}).length;
-  html += '<div class="habits-quick-meta">' +
-    '<span>' + doneH + '/' + habits.length + ' ' + t('ui.completed') + '</span>' +
-    '<button onclick="showSubPage(\'my-habits\',\'' + t('ui.my_habits') + '\')">' + t('ui.view_all') + ' \u203A</button></div>';
+  var totalH = habits.length;
+  var overallPct = totalH > 0 ? Math.round(doneH/totalH*100) : 0;
+  // Ring math: r=20 → circumference=125.66; r=16→100.53; r=12→75.40
+  var c1 = 125.66, c2 = 100.53, c3 = 75.40;
+
+  var html = '<div class="habits-rings-home" onclick="showScreen(\'habits\')">';
+  html += '<div class="hr-visual">';
+  // SVG with 3 concentric rings
+  html += '<svg class="hr-svg" viewBox="0 0 56 56">';
+  // Outer ring - Family (coral)
+  html += '<circle cx="28" cy="28" r="20" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="4.5"/>';
+  html += '<circle class="ring-anim" cx="28" cy="28" r="20" fill="none" stroke="var(--coral)" stroke-width="4.5" stroke-dasharray="' + Math.round(c1*famPct/100) + ' ' + c1 + '" stroke-linecap="round" transform="rotate(-90 28 28)"/>';
+  // Middle ring - Wellness (teal)
+  html += '<circle cx="28" cy="28" r="16" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="4.5"/>';
+  html += '<circle class="ring-anim" cx="28" cy="28" r="16" fill="none" stroke="var(--teal)" stroke-width="4.5" stroke-dasharray="' + Math.round(c2*wellPct/100) + ' ' + c2 + '" stroke-linecap="round" transform="rotate(-90 28 28)"/>';
+  // Inner ring - Prayer (navy)
+  html += '<circle cx="28" cy="28" r="12" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="4.5"/>';
+  html += '<circle class="ring-anim" cx="28" cy="28" r="12" fill="none" stroke="var(--color-primary)" stroke-width="4.5" stroke-dasharray="' + Math.round(c3*prayerPct/100) + ' ' + c3 + '" stroke-linecap="round" transform="rotate(-90 28 28)"/>';
+  html += '</svg>';
+  // Center percentage
+  html += '<div class="hr-center"><span class="hr-pct-num">' + overallPct + '</span><span class="hr-pct-sign">%</span></div>';
+  html += '</div>';
+  // Right side - legend + stats
+  html += '<div class="hr-details">';
+  html += '<div class="hr-title">Today\'s Progress</div>';
+  html += '<div class="hr-legend">' +
+    '<div class="hr-leg-item"><span class="hr-dot" style="background:var(--color-primary)"></span>Prayer <strong>' + prayerPct + '%</strong></div>' +
+    '<div class="hr-leg-item"><span class="hr-dot" style="background:var(--teal)"></span>Wellness <strong>' + wellPct + '%</strong></div>' +
+    '<div class="hr-leg-item"><span class="hr-dot" style="background:var(--coral)"></span>Family <strong>' + famPct + '%</strong></div>' +
+    '</div>';
+  html += '<div class="hr-meta">' + doneH + '/' + totalH + ' habits \u00B7 <span style="color:var(--color-accent);font-weight:600">View All \u203A</span></div>';
+  html += '</div>';
+  html += '</div>';
   return html;
 }
 
-// ===== 5. TODAY'S REFLECTION CARD (Spec 0C) =====
+// ===== 5. TODAY'S REFLECTION (async) =====
 function renderReflectionAsync() {
   var slot = document.getElementById('reflectionSlot');
   if (!slot) return;
@@ -163,7 +171,6 @@ function renderReflectionAsync() {
     if (r) {
       slot.innerHTML = renderReflectionCardFromData(r);
     } else {
-      // Fallback to Verse of the Day
       slot.innerHTML = renderFallbackVotd();
     }
   });
@@ -174,9 +181,7 @@ function renderReflectionCardFromData(r) {
   var scripture = r.scripture || {};
   var text = scripture.text || scripture.fullText || '';
   var ref = scripture.displayRef || scripture.reference || '';
-  var title = (r.reflection && r.reflection.title) || 'Today\'s Gospel';
-  // Step indicators
-  var html = '<div class="reflection-card" onclick="openDailyReflection()">' +
+  return '<div class="reflection-card" onclick="openDailyReflection()">' +
     '<div class="season-label">' + season + '</div>' +
     '<div class="reflection-card__header">' +
     '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15z"/></svg>' +
@@ -190,7 +195,6 @@ function renderReflectionCardFromData(r) {
     '</div>' +
     '<div class="reflection-card__cta">Open Today\'s Reflection \u203A</div>' +
     '</div>';
-  return html;
 }
 
 function renderFallbackVotd() {
@@ -208,12 +212,11 @@ function renderFallbackVotd() {
     '</div></div>';
 }
 
-// Full Daily Reflection sub-page
 function openDailyReflection() {
   showSubPage('daily-reflection', 'Today\'s Reflection');
 }
 
-// ===== 6. TODAY'S PRAYERS =====
+// ===== 6. PRIMARY PRAYER CARDS (top 3 only) =====
 function renderPrimaryPrayerCards() {
   var html = '<div class="section-title">' +
     '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>' +
@@ -233,138 +236,137 @@ function renderPrimaryPrayerCards() {
   return html;
 }
 
-function renderSecondaryPrayerGrid() {
-  var secondaryPrayers = [
-    {key:'stained_glass',name:'Adoration',page:'adoration'},
-    {key:'prayer_stock1',name:'Reflections',page:'reflections'},
-    {key:'church_interior',name:'Gospel',page:'gospel-today'},
-    {key:'prayer_stock3',name:'Night Prayer',page:'compline'}
-  ];
-  var html = '<div class="prayer-grid-secondary">';
-  secondaryPrayers.forEach(function(c) {
-    html += '<div class="prayer-card-sm" onclick="showSubPage(\''+c.page+'\',\''+c.name+'\')">' +
-      '<img src="'+(imgMap[c.key]||'')+'" alt="'+c.name+'" loading="lazy">' +
-      '<div class="prayer-card-sm__overlay"><h3>'+c.name+'</h3></div></div>';
-  });
-  html += '</div>';
-  return html;
-}
+// ===== 7. PRAYER WALL (horizontal compact cards) =====
+// Pool of all available prayers for cycling
+var _prayerWallPool = [];
+var _prayerWallShown = [];
 
-// ===== 7. GLOBAL PRAYER COUNTER (Spec 0H) =====
-function renderGlobalCounter() {
-  var total = globalPrayerCount || (worldAtPrayerCount + appPrayerCount) || 2738160;
-  return '<div class="global-counter" onclick="showSubPage(\'world-at-prayer\',\'A World at Prayer\')">' +
-    '<div class="global-counter__live-badge"><span class="gc-live-dot"></span> LIVE</div>' +
-    '<div class="counter-number" id="globalCounterNum" data-target="' + total + '">0</div>' +
-    '<div class="counter-label">prayers offered worldwide</div>' +
-    '<div class="counter-breakdown" id="counterBreakdown">' +
-      (worldAtPrayerCount > 0 ? worldAtPrayerCount.toLocaleString() + ' via World at Prayer' : '') +
-      (appPrayerCount > 0 ? ' + ' + appPrayerCount.toLocaleString() + ' via PRAYED app' : '') +
-    '</div>' +
-    '<div class="counter-subtitle gold-shimmer">' + t('ui.a_world_at_prayer') + '</div>' +
-    '</div>';
-}
-
-// ===== 8. SEASONAL BANNER =====
-function renderSeasonalBanner() {
-  var now = new Date();
-  var month = now.getMonth(); // 0-indexed
-  // Lent: roughly Feb-April (varies), October: Month of the Rosary
-  // Simple check: show Lent banner during Feb(1), Mar(2), Apr(3); Rosary banner during Oct(9)
-  if (month >= 1 && month <= 3) {
-    return '<div class="lent-banner" onclick="showSubPage(\'challenge\',\'Lent Prayer Challenge\')">' +
-      '<div class="lent-banner__icon"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="#fff"/></svg></div>' +
-      '<div class="lent-banner__text"><h3>' + t('ui.lent_challenge') + '</h3><p>Join families in 40 days of prayer together</p></div></div>';
-  } else if (month === 9) {
-    return '<div class="lent-banner" style="background:linear-gradient(135deg,#C68A2E,#A06E1A)" onclick="showSubPage(\'challenge\',\'Month of the Rosary\')">' +
-      '<div class="lent-banner__icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.5"><circle cx="12" cy="9" r="6"/><path d="M12 15v3"/><path d="M10.5 19.5h3L12 22l-1.5-2.5z"/></svg></div>' +
-      '<div class="lent-banner__text"><h3>Month of the Rosary</h3><p>October: Pray the Rosary daily with your family</p></div></div>';
-  }
-  return '';
-}
-
-// ===== 9. PRAYER WALL PREVIEW (3 recent intentions) =====
-function renderPrayerWallPreview() {
+function renderPrayerWallHorizontal() {
   var slot = document.getElementById('prayerWallSlot');
   if (!slot) return;
-  loadPrayerIntentions(3).then(function(items) {
+  loadPrayerIntentions(9).then(function(items) {
     if (items.length === 0) {
-      // Show seed data from circleWalls
-      slot.innerHTML = renderSeedPrayerWall();
-      return;
+      items = getSeedPrayerData();
     }
-    var html = '<div class="section-title">' +
-      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' +
-      ' Prayer Wall</div>';
-    // Chapel banner
-    html += renderChapelBanner();
-    html += '<div class="prayer-wall-list">';
-    items.forEach(function(item) {
-      html += renderPrayerWallItem(item);
-    });
-    html += '</div>';
-    html += '<button class="btn-sacred-outline" style="width:100%;margin:12px 16px" onclick="showSubPage(\'prayer-wall\',\'Prayer Wall\')">View All Intentions \u203A</button>';
-    slot.innerHTML = html;
+    _prayerWallPool = items.slice(3);
+    _prayerWallShown = items.slice(0, 3);
+    renderPrayerWallCards(slot);
   });
 }
 
-function renderSeedPrayerWall() {
-  var seeds = (circleWalls['daily-rosary'] || []).slice(0, 3);
-  if (seeds.length === 0) return '';
-  var html = '<div class="section-title">' +
-    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' +
-    ' Prayer Wall</div>';
-  html += renderChapelBanner();
-  html += '<div class="prayer-wall-list">';
-  seeds.forEach(function(s, i) {
-    html += '<div class="prayer-wall-item">' +
-      '<div class="pw-header">' +
-      '<div class="pw-av" style="background:' + s.color + '">' + s.initials + '</div>' +
-      '<div class="pw-meta-wrap"><div class="pw-name">' + s.name + ' <span class="flag">' + flagSVG(s.flag) + '</span></div>' +
-      '<div class="pw-meta">' + s.time + '</div></div></div>' +
-      '<div class="pw-text">' + escapeHtml(s.text) + '</div>' +
-      '<div class="pw-actions">' +
-      '<button class="pw-pray-btn" onclick="event.stopPropagation();prayForIntention(\'daily-rosary\',' + i + ',this)">' +
-      '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' +
-      '<span class="pw-count">' + s.count + '</span>' +
-      '<span class="pw-cta">PRAY WITH US</span></button>' +
-      '</div></div>';
+function getSeedPrayerData() {
+  var seeds = (circleWalls['daily-rosary'] || []).slice(0, 9);
+  return seeds.map(function(s, i) {
+    return {
+      id: 'seed-' + i,
+      data: {
+        authorName: s.name,
+        authorInitials: s.initials,
+        authorColor: s.color,
+        text: s.text,
+        prayerCount: s.count,
+        createdAt: null
+      }
+    };
+  });
+}
+
+function renderPrayerWallCards(slot) {
+  var html = '<div class="pw-h-section">';
+  html += '<div class="pw-h-header">' +
+    '<div class="section-title-inline"><svg viewBox="0 0 24 24" width="16" height="16" fill="var(--color-accent)"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> Prayer Wall</div>' +
+    '<button class="pw-h-see-all" onclick="showInAppBrowser(\'World at Prayer\',\'https://worldatprayer.org/\')">See All \u203A</button>' +
+    '</div>';
+  html += '<div class="pw-h-scroll" id="prayerWallScroll">';
+  _prayerWallShown.forEach(function(item, i) {
+    html += renderPWHCard(item, i);
   });
   html += '</div>';
-  return html;
+  // Chapel micro-banner
+  html += '<div class="pw-h-chapel">' +
+    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M12 2v3M10 4h4"/><path d="M6 10l6-5 6 5"/><rect x="6" y="10" width="12" height="12"/></svg>' +
+    ' <span>Your intentions are prayed for at the Father Peyton Center chapel</span></div>';
+  html += '</div>';
+  slot.innerHTML = html;
 }
 
-function renderChapelBanner() {
-  return '<div class="chapel-banner" style="margin:0 16px 12px">' +
-    '<div class="chapel-banner__icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.5"><path d="M12 2v3M10 4h4"/><path d="M6 10l6-5 6 5"/><rect x="6" y="10" width="12" height="12"/><path d="M10 22v-4a2 2 0 014 0v4"/></svg></div>' +
-    '<div class="chapel-banner__text">' +
-    '<strong>We bring your intention to our chapel.</strong>' +
-    '<span>Weekdays 11:30 AM ET \u2014 Rosary & Mass at the Father Peyton Center</span>' +
-    '</div></div>';
-}
-
-function renderPrayerWallItem(item) {
+function renderPWHCard(item, idx) {
   var d = item.data;
   var prayed = localStorage.getItem('prayed_intention_' + item.id);
-  return '<div class="prayer-wall-item">' +
-    '<div class="pw-header">' +
-    '<div class="pw-av" style="background:' + (d.authorColor || '#1B3A5C') + '">' + (d.authorInitials || '?') + '</div>' +
-    '<div class="pw-meta-wrap"><div class="pw-name">' + escapeHtml(d.authorName || 'Anonymous') + '</div>' +
-    '<div class="pw-meta">' + timeAgo(d.createdAt) + '</div></div></div>' +
-    '<div class="pw-text">' + escapeHtml(d.text) + '</div>' +
-    '<div class="pw-actions">' +
-    '<button class="pw-pray-btn' + (prayed ? ' prayed' : '') + '" onclick="event.stopPropagation();prayForIntentionGlobal(\'' + item.id + '\',this)">' +
-    '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' +
-    '<span class="pw-count">' + (d.prayerCount || 0) + '</span>' +
-    '<span class="pw-cta">PRAY WITH US</span></button>' +
+  var name = (d.authorName || 'Anonymous');
+  if (name.length > 14) name = name.split(' ')[0] + ' ' + (name.split(' ')[1] || '').charAt(0) + '.';
+  var textTrunc = (d.text || '').substring(0, 80) + ((d.text || '').length > 80 ? '...' : '');
+  return '<div class="pw-h-card' + (prayed ? ' prayed' : '') + '" id="pwCard' + idx + '">' +
+    '<div class="pw-h-top">' +
+    '<div class="pw-h-av" style="background:' + (d.authorColor || '#1B3A5C') + '">' + (d.authorInitials || '?') + '</div>' +
+    '<span class="pw-h-name">' + escapeHtml(name) + '</span></div>' +
+    '<div class="pw-h-text">' + escapeHtml(textTrunc) + '</div>' +
+    '<button class="pw-h-pray-btn' + (prayed ? ' prayed' : '') + '" onclick="event.stopPropagation();prayAndCycle(' + idx + ',\'' + item.id + '\',this)">' +
+    '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' +
+    ' <span class="pw-h-count">' + (d.prayerCount || 0) + '</span> Pray</button></div>';
+}
+
+function prayAndCycle(idx, intentionId, btn) {
+  // Increment prayer
+  if (intentionId.indexOf('seed-') === 0) {
+    prayForIntention('daily-rosary', parseInt(intentionId.replace('seed-', '')), btn);
+  } else {
+    prayForIntentionGlobal(intentionId, btn);
+  }
+  localStorage.setItem('prayed_intention_' + intentionId, '1');
+
+  // Animate card out
+  var card = document.getElementById('pwCard' + idx);
+  if (!card) return;
+  card.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+  card.style.opacity = '0';
+  card.style.transform = 'scale(0.85) translateY(-8px)';
+
+  setTimeout(function() {
+    // Replace with next from pool
+    if (_prayerWallPool.length > 0) {
+      var next = _prayerWallPool.shift();
+      _prayerWallShown[idx] = next;
+      card.outerHTML = renderPWHCard(next, idx);
+      // Animate in
+      var newCard = document.getElementById('pwCard' + idx);
+      if (newCard) {
+        newCard.style.opacity = '0';
+        newCard.style.transform = 'scale(0.9) translateY(8px)';
+        requestAnimationFrame(function() {
+          newCard.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+          newCard.style.opacity = '1';
+          newCard.style.transform = 'scale(1) translateY(0)';
+        });
+      }
+    } else {
+      // No more prayers — show thank you
+      card.outerHTML = '<div class="pw-h-card pw-h-thankyou" id="pwCard' + idx + '">' +
+        '<div class="pw-h-ty-icon">\u2764\uFE0F</div>' +
+        '<div class="pw-h-ty-text">Thank you for praying</div></div>';
+    }
+  }, 350);
+}
+
+// ===== 8. GLOBAL COUNTER (clean, premium, bottom) =====
+function renderGlobalCounterClean() {
+  var total = globalPrayerCount || (worldAtPrayerCount + appPrayerCount) || 2738160;
+  return '<div class="gc-clean" onclick="showInAppBrowser(\'World at Prayer\',\'https://worldatprayer.org/\')">' +
+    '<div class="gc-clean__inner">' +
+    '<div class="gc-clean__count" id="globalCounterNum" data-target="' + total + '">0</div>' +
+    '<div class="gc-clean__label">prayers offered worldwide</div>' +
+    '<div class="gc-clean__link">View on World at Prayer \u203A</div>' +
     '</div></div>';
 }
+
+// Keep old function name for setupCounterObserver compatibility
+function renderGlobalCounter() { return ''; }
 
 // Time ago helper
 function timeAgo(timestamp) {
   if (!timestamp) return '';
   var date;
-  if (timestamp.toDate) date = timestamp.toDate(); // Firestore Timestamp
+  if (timestamp.toDate) date = timestamp.toDate();
   else if (timestamp.seconds) date = new Date(timestamp.seconds * 1000);
   else date = new Date(timestamp);
   var now = new Date();
@@ -374,40 +376,6 @@ function timeAgo(timestamp) {
   if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
   if (diff < 604800) return Math.floor(diff / 86400) + ' days ago';
   return date.toLocaleDateString();
-}
-
-// ===== 10. CIRCLE ACTIVITY + PEYTON QUOTE + WORLD MAP =====
-function renderCircleActivity(limit) {
-  var html = '<div class="section-title">' +
-    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>' +
-    ' ' + t('ui.circle_activity') + '</div>';
-  html += '<div class="activity-feed">';
-  var items = (feedUsers || []).slice(0, limit || 3);
-  items.forEach(function(f){
-    html += '<div class="feed-item" onclick="showSubPage(\'circle-detail-daily-rosary\',\'Daily Rosary\')">' +
-      '<div class="av" style="background:'+f.color+'">'+f.initials+'</div><div class="fi-body">' +
-      '<div class="fi-name">'+f.name+' <span class="flag">'+flagSVG(f.flag)+'</span></div>' +
-      '<div class="fi-text">'+f.action+'</div><div class="fi-time">'+f.time+'</div></div></div>';
-  });
-  html += '</div>';
-  return html;
-}
-
-function renderPeytonQuote() {
-  var dayIndex = new Date().getDate() % peytonQuotes.length;
-  var quote = peytonQuotes[dayIndex];
-  return '<div class="quote-card" onclick="showSubPage(\'fr-peyton\',\'Fr. Patrick Peyton\')">' +
-    '<svg viewBox="0 0 24 24" width="20" height="20" fill="var(--color-accent)"><path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg>' +
-    '<blockquote class="crimson">\u201c' + quote + '\u201d</blockquote>' +
-    '<cite>\u2014 Fr. Patrick Peyton, C.S.C.</cite></div>';
-}
-
-function renderWorldMap() {
-  return '<div class="world-section" onclick="showSubPage(\'world-at-prayer\',\'A World at Prayer\')">' +
-    '<h3>' +
-    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>' +
-    ' ' + t('ui.a_world_at_prayer') + '</h3>' +
-    '<p>PRAYED families in ' + countryCount + ' ' + t('ui.countries_connected') + '</p></div>';
 }
 
 // ===== HELPER FUNCTIONS =====
