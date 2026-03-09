@@ -92,8 +92,9 @@ function initApp() {
     // Show the home screen
     showScreen('home');
 
-    // Fetch global prayer counter
+    // Fetch global prayer counter + live stream status
     if(typeof fetchGlobalPrayerCount === 'function') fetchGlobalPrayerCount();
+    if(typeof fetchLiveStreamStatus === 'function') fetchLiveStreamStatus();
 
     // Fetch weather and nearby churches in background
     if(navigator.geolocation) {
