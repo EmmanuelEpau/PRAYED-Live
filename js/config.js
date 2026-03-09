@@ -194,7 +194,7 @@ function animateCounter(element, target, duration) {
 
 // Set up IntersectionObserver for counter animation
 function setupCounterObserver() {
-  var counterEl = document.querySelector('.global-counter');
+  var counterEl = document.querySelector('.global-counter') || document.querySelector('.gc-clean');
   if (!counterEl) return;
   var numEl = document.getElementById('globalCounterNum');
   if (!numEl || numEl.getAttribute('data-animated')) return;

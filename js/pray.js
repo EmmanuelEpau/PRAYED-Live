@@ -22,7 +22,8 @@ function renderPray() {
   // --- Pray with Family button ---
   html += '<div style="padding:0 16px 16px">' +
     '<button onclick="openPrayerRoomUI()" style="width:100%;padding:14px;border:none;border-radius:var(--radius-md);background:var(--color-primary, #1B3A5C);color:#fff;font-size:15px;font-weight:600;font-family:var(--font-display);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">' +
-    '<span style="display:inline-flex;width:20px;height:20px">' + svgIcons.family + '</span> ' + t('ui.pray_with_family') + '</button></div>';
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="2.5"/><path d="M7.5 20c0-3 2-5.5 4.5-5.5s4.5 2.5 4.5 5.5"/><circle cx="5" cy="7" r="2"/><path d="M1.5 16c0-2.2 1.6-4 3.5-4s3.5 1.8 3.5 4"/><circle cx="19" cy="7" r="2"/><path d="M15.5 16c0-2.2 1.6-4 3.5-4s3.5 1.8 3.5 4"/></svg>' +
+    ' ' + t('ui.pray_with_family') + '</button></div>';
 
   // --- SECONDARY GRID (medium cards): Adoration, Reflections, Courses, Night Prayer ---
   html += '<div class="section-title" style="padding:0 16px 8px">Explore</div>';

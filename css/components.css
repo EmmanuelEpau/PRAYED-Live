@@ -3164,3 +3164,547 @@
 .mystery-continue-btn:active {
   transform: scale(0.95);
 }
+
+/* =====================================================
+   REDESIGNED COMPONENTS — Home Page v2
+   ===================================================== */
+
+/* === Habits Rings (Whoop-style, Home Page) === */
+.habits-rings-home {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 0 16px 16px;
+  padding: 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+.habits-rings-home:active {
+  transform: scale(0.98);
+}
+.hr-visual {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+}
+.hr-svg {
+  width: 100%;
+  height: 100%;
+}
+.hr-svg .ring-anim {
+  transition: stroke-dasharray 0.8s var(--ease-smooth);
+}
+.hr-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  line-height: 1;
+}
+.hr-pct-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+}
+.hr-pct-sign {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.hr-details {
+  flex: 1;
+  min-width: 0;
+}
+.hr-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+.hr-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.hr-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+.hr-leg-item strong {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.hr-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.hr-meta {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* === Prayer Wall Horizontal === */
+.pw-h-section {
+  margin: 0 16px 16px;
+}
+.pw-h-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-title-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: var(--font-display);
+}
+.pw-h-see-all {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent);
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.pw-h-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.pw-h-scroll::-webkit-scrollbar { display: none; }
+
+.pw-h-card {
+  flex: 0 0 calc(33.333% - 7px);
+  min-width: 150px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: 14px 12px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scroll-snap-align: start;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.pw-h-card.prayed {
+  opacity: 0.6;
+}
+.pw-h-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pw-h-av {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.pw-h-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pw-h-text {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+.pw-h-pray-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 6px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-spring);
+}
+.pw-h-pray-btn:active {
+  transform: scale(0.93);
+}
+.pw-h-pray-btn.prayed {
+  background: var(--color-success);
+  pointer-events: none;
+}
+.pw-h-count {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.pw-h-chapel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+.pw-h-chapel svg {
+  flex-shrink: 0;
+}
+
+/* Prayer Wall — Thank You Card */
+.pw-h-thankyou {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(13,148,136,0.08), rgba(13,148,136,0.02));
+  border: 1px dashed var(--color-success);
+}
+.pw-h-ty-icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+.pw-h-ty-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+/* === Global Counter V2 (Clean, Bottom) === */
+.gc-clean {
+  margin: 8px 16px 24px;
+  cursor: pointer;
+}
+.gc-clean__inner {
+  text-align: center;
+  padding: 24px 20px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(160deg, #0F2440 0%, #1B3A5C 50%, #0F2440 100%);
+  position: relative;
+  overflow: hidden;
+}
+.gc-clean__inner::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(198,138,46,0.12) 0%, transparent 60%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.gc-clean__count {
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 1;
+}
+.gc-clean__label {
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 4px;
+  position: relative;
+  z-index: 1;
+}
+.gc-clean__link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent-light);
+  margin-top: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+/* === Profile Dashboard (Whoop-style) === */
+.profile-dash {
+  padding: 0 16px;
+}
+.profile-dash__rings {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+.pd-ring-visual {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+.pd-ring-visual svg {
+  width: 100%;
+  height: 100%;
+}
+.pd-ring-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.pd-ring-pct {
+  font-size: 28px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--color-text);
+  line-height: 1;
+}
+.pd-ring-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pd-ring-legend {
+  flex: 1;
+}
+.pd-ring-legend h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--color-text);
+}
+.pd-leg-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+.pd-leg-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pd-leg-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+.pd-leg-val {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Metric Cards (Whoop-style rows) */
+.pd-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.pd-metric-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+.pd-metric-card:active {
+  transform: scale(0.98);
+}
+.pd-mc-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pd-mc-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.pd-mc-body {
+  flex: 1;
+}
+.pd-mc-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+.pd-mc-right {
+  text-align: right;
+}
+.pd-mc-val {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1;
+}
+.pd-mc-sub {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+.pd-mc-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.pd-mc-trend.up {
+  color: var(--color-success);
+  background: rgba(13,148,136,0.1);
+}
+.pd-mc-trend.down {
+  color: var(--color-error);
+  background: rgba(220,53,69,0.1);
+}
+.pd-mc-trend.neutral {
+  color: var(--color-text-muted);
+  background: rgba(0,0,0,0.04);
+}
+
+/* Weekly Chart */
+.pd-chart-card {
+  padding: 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+.pd-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.pd-chart-header h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.pd-chart-header span {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* Goals Section */
+.pd-goals {
+  margin-bottom: 16px;
+}
+.pd-goals h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pd-goal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 8px;
+}
+.pd-goal-ring {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  position: relative;
+}
+.pd-goal-ring svg {
+  width: 100%;
+  height: 100%;
+}
+.pd-goal-ring-pct {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--color-text);
+}
+.pd-goal-info {
+  flex: 1;
+}
+.pd-goal-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.pd-goal-progress {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+.pd-goal-bar {
+  height: 4px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.pd-goal-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s var(--ease-smooth);
+}
