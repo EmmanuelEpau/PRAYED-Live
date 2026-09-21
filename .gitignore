@@ -1,0 +1,5 @@
+# Local session tooling config. Machine-local, stays on disk, never committed.
+.claude/
+
+# macOS
+.DS_Store
