@@ -21,47 +21,86 @@ const mimeTypes = {
   '.ico': 'image/x-icon'
 };
 
-const server = http.createServer((req, res) => {
-  // Default to index.html for root
-  let urlPath = req.url.split('?')[0]; // strip query params
-  if (urlPath === '/') urlPath = '/index.html';
+function createRequestHandler(root) {
+  const rootPath = fs.realpathSync(root);
+  const insideRoot = (candidate) => {
+    const relative = path.relative(rootPath, candidate);
+    return relative !== '..' && !relative.startsWith('..' + path.sep) &&
+      !path.isAbsolute(relative) &&
+      !relative.split(path.sep).some(segment => segment.startsWith('.'));
+  };
 
-  const filePath = path.join(dir, decodeURIComponent(urlPath));
-  const ext = path.extname(filePath).toLowerCase();
-
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      // Try as directory with index.html
-      const indexPath = path.join(filePath, 'index.html');
-      fs.readFile(indexPath, (err2, data2) => {
-        if (err2) {
-          res.writeHead(404, { 'Content-Type': 'text/plain' });
-          res.end('Not found: ' + urlPath);
-          return;
-        }
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(data2);
-      });
+  return (req, res) => {
+    let urlPath;
+    try {
+      urlPath = decodeURIComponent(req.url.split('?')[0]);
+    } catch {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('Invalid request path');
+      return;
+    }
+    if (!urlPath.startsWith('/') || urlPath.includes('\0')) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('Invalid request path');
+      return;
+    }
+    if (urlPath.split('/').some(segment => segment.startsWith('.'))) {
+      res.writeHead(403, { 'Content-Type': 'text/plain' });
+      res.end('Path is not available');
+      return;
+    }
+    if (urlPath === '/') urlPath = '/index.html';
+    const requestedPath = path.resolve(rootPath, '.' + urlPath);
+    if (!insideRoot(requestedPath)) {
+      res.writeHead(403, { 'Content-Type': 'text/plain' });
+      res.end('Path is not available');
       return;
     }
 
-    const contentType = mimeTypes[ext] || 'application/octet-stream';
+    const readFile = (candidate, fallback) => {
+      fs.realpath(candidate, (pathError, canonicalPath) => {
+        if (pathError) {
+          res.writeHead(404, { 'Content-Type': 'text/plain' });
+          res.end('Not found');
+          return;
+        }
+        if (!insideRoot(canonicalPath)) {
+          res.writeHead(403, { 'Content-Type': 'text/plain' });
+          res.end('Path is not available');
+          return;
+        }
+        fs.readFile(canonicalPath, (readError, data) => {
+          if (readError) {
+            if (fallback) {
+              readFile(path.join(candidate, 'index.html'), false);
+              return;
+            }
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
+            res.end('Not found');
+            return;
+          }
+          const ext = path.extname(canonicalPath).toLowerCase();
+          const headers = { 'Content-Type': mimeTypes[ext] || 'application/octet-stream' };
+          headers['Cache-Control'] = ['.jpg', '.jpeg', '.png', '.webp', '.woff2', '.mp3'].includes(ext)
+            ? 'public, max-age=3600'
+            : 'no-cache';
+          res.writeHead(200, headers);
+          res.end(data);
+        });
+      });
+    };
+    readFile(requestedPath, true);
+  };
+}
 
-    // Cache static assets aggressively in dev
-    const headers = { 'Content-Type': contentType };
-    if (['.jpg', '.jpeg', '.png', '.webp', '.woff2', '.mp3'].includes(ext)) {
-      headers['Cache-Control'] = 'public, max-age=3600';
-    } else {
-      headers['Cache-Control'] = 'no-cache';
-    }
-
-    res.writeHead(200, headers);
-    res.end(data);
+if (require.main === module) {
+  const PORT = 8080;
+  const HOST = '127.0.0.1';
+  const server = http.createServer(createRequestHandler(dir));
+  server.listen(PORT, HOST, () => {
+    console.log(`PRAYED dev server running at http://${HOST}:${PORT}`);
+    console.log(`Serving files from: ${dir}`);
   });
-});
+}
 
-const PORT = 8080;
-server.listen(PORT, () => {
-  console.log(`PRAYED dev server running at http://localhost:${PORT}`);
-  console.log(`Serving files from: ${dir}`);
-});
+module.exports = { createRequestHandler };
