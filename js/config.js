@@ -410,6 +410,23 @@ function escapeHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+// Avatar colors accept only the hex colors and CSS custom properties used by the app.
+function safeAvatarColor(value, fallback) {
+  var color = typeof value === 'string' ? value.trim() : '';
+  var hex = '#(?:[a-f0-9]{3}|[a-f0-9]{4}|[a-f0-9]{6}|[a-f0-9]{8})';
+  if (new RegExp('^(?:' + hex + '|var\\(--[a-z][a-z0-9-]*(?:,\\s*' + hex + ')?\\))$', 'i').test(color)) {
+    return color;
+  }
+  return fallback || '#1B3A5C';
+}
+
+// Stored counts may be numbers or legacy numeric strings, but never HTML.
+function safePrayerCount(value) {
+  if (typeof value !== 'number' && (typeof value !== 'string' || !/^\d+$/.test(value.trim()))) return 0;
+  var count = Number(value);
+  return Number.isSafeInteger(count) && count >= 0 ? count : 0;
+}
+
 var parishes = [
   {name:"Basilica of the Sacred Heart",city:"South Bend, IN",lat:41.6637,lng:-86.2420},
   {name:"St. Mary's Cathedral",city:"San Francisco, CA",lat:37.7749,lng:-122.4194},

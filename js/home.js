@@ -41,12 +41,12 @@ function renderHome() {
 function renderHomeHeader(u) {
   return '<div class="app-header"><div class="header-left">' +
     '<img src="'+imgMap['hcfm_logo_blue']+'" alt="HCFM" style="width:48px;height:48px;object-fit:contain">' +
-    '<div class="greeting">' + (u.greeting||'Good Morning') + ', ' + (u.firstName||'Friend') +
+    '<div class="greeting">' + escapeHtml(u.greeting||'Good Morning') + ', ' + escapeHtml(u.firstName||'Friend') +
     '<small>' + t('ui.tagline') + '</small></div>' +
     '</div>' +
     '<div class="header-right"><button class="notif-btn" onclick="showSubPage(\'notifications\',\'Notifications\')">' +
     svgIcons.bell + '<div class="notif-badge">2</div></button>' +
-    '<div class="avatar" onclick="showScreen(\'profile\')">'+(u.initials||'FR')+'</div></div></div>';
+    '<div class="avatar" onclick="showScreen(\'profile\')">'+escapeHtml(u.initials||'FR')+'</div></div></div>';
 }
 
 // ===== 2. FAMILY PRAYER ROOM CARD =====
@@ -67,12 +67,12 @@ function renderFamilyRoomCard(u) {
     '</div>' +
     '<div class="family-room-card__members">';
   familyMembers.forEach(function(m) {
-    html += '<div class="member-avatar' + (m.online ? ' online' : '') + '" style="background:' + (m.color || 'var(--color-primary)') + '">' + m.initials + '</div>';
+    html += '<div class="member-avatar' + (m.online ? ' online' : '') + '" style="background:' + safeAvatarColor(m.color, 'var(--color-primary)') + '">' + escapeHtml(m.initials) + '</div>';
   });
   html += '</div>';
   if(onlineMembers.length > 0) {
     var onlineNames = onlineMembers.map(function(m) { return m.firstName; }).join(', ');
-    html += '<p class="family-room-card__status"><span class="live-dot"></span> ' + onlineNames + ' online</p>';
+    html += '<p class="family-room-card__status"><span class="live-dot"></span> ' + escapeHtml(onlineNames) + ' online</p>';
   } else {
     html += '<p class="family-room-card__status" style="color:rgba(255,255,255,0.5)">' + t('ui.no_one_online') + '</p>';
   }
@@ -298,12 +298,12 @@ function renderPWHCard(item, idx) {
   var textTrunc = (d.text || '').substring(0, 80) + ((d.text || '').length > 80 ? '...' : '');
   return '<div class="pw-h-card' + (prayed ? ' prayed' : '') + '" id="pwCard' + idx + '">' +
     '<div class="pw-h-top">' +
-    '<div class="pw-h-av" style="background:' + (d.authorColor || '#1B3A5C') + '">' + (d.authorInitials || '?') + '</div>' +
+    '<div class="pw-h-av" style="background:' + safeAvatarColor(d.authorColor) + '">' + escapeHtml(d.authorInitials || '?') + '</div>' +
     '<span class="pw-h-name">' + escapeHtml(name) + '</span></div>' +
     '<div class="pw-h-text">' + escapeHtml(textTrunc) + '</div>' +
-    '<button class="pw-h-pray-btn' + (prayed ? ' prayed' : '') + '" onclick="event.stopPropagation();prayAndCycle(' + idx + ',\'' + item.id + '\',this)">' +
+    '<button class="pw-h-pray-btn' + (prayed ? ' prayed' : '') + '" data-intention-id="' + escapeHtml(item.id) + '" onclick="event.stopPropagation();prayAndCycle(' + safePrayerCount(idx) + ',this.dataset.intentionId,this)">' +
     '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' +
-    ' <span class="pw-h-count">' + (d.prayerCount || 0) + '</span> Pray</button></div>';
+    ' <span class="pw-h-count">' + safePrayerCount(d.prayerCount) + '</span> Pray</button></div>';
 }
 
 function prayAndCycle(idx, intentionId, btn) {
