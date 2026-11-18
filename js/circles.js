@@ -561,22 +561,22 @@ function getSubPageContent(name) {
     try { localPosts = JSON.parse(localStorage.getItem(circleLocalKey)) || []; } catch(e) {}
     localPosts.forEach(function(w) {
       if(isUserBlocked(w.name)) return;
-      h += '<div class="prayer-wall-item"><div class="pw-header"><div class="pw-av" style="background:'+(w.color||'var(--primary-blue)')+'">'+escapeHtml(w.initials)+'</div>' +
+      h += '<div class="prayer-wall-item"><div class="pw-header"><div class="pw-av" style="background:'+safeAvatarColor(w.color, 'var(--primary-blue)')+'">'+escapeHtml(w.initials)+'</div>' +
         '<div class="pw-name">'+escapeHtml(w.name)+'</div><div class="pw-time">'+escapeHtml(w.time)+'</div></div>' +
         '<div class="pw-text">'+escapeHtml(w.text)+'</div>' +
-        '<div class="pw-pray-btn">' + svgIcons.heart + ' '+(w.count||1)+' praying</div></div>';
+        '<div class="pw-pray-btn">' + svgIcons.heart + ' '+safePrayerCount(w.count == null ? 1 : w.count)+' praying</div></div>';
     });
     // Feed (default/seed posts) - filter out blocked users
     wall.forEach(function(w, wi) {
       if(isUserBlocked(w.name)) return;
-      h += '<div class="prayer-wall-item"><div class="pw-header"><div class="pw-av" style="background:'+w.color+'">'+w.initials+'</div>' +
-        '<div class="pw-name">'+w.name+' '+flagSVG(w.flag)+'</div><div class="pw-time">'+w.time+'</div>' +
+      h += '<div class="prayer-wall-item"><div class="pw-header"><div class="pw-av" style="background:'+safeAvatarColor(w.color)+'">'+escapeHtml(w.initials)+'</div>' +
+        '<div class="pw-name">'+escapeHtml(w.name)+' '+flagSVG(w.flag)+'</div><div class="pw-time">'+escapeHtml(w.time)+'</div>' +
         '<button class="pw-report" onclick="event.stopPropagation();reportPost(\''+cid+'\','+wi+')" aria-label="Report post" title="Report">' +
         '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></button>' +
-        '<button class="pw-report" onclick="event.stopPropagation();blockUser(\''+escapeHtml(w.name)+'\')" aria-label="Block user" title="Block user" style="margin-left:4px">' +
+        '<button class="pw-report" data-user-name="'+escapeHtml(w.name)+'" onclick="event.stopPropagation();blockUser(this.dataset.userName)" aria-label="Block user" title="Block user" style="margin-left:4px">' +
         '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/></svg></button></div>' +
-        '<div class="pw-text">'+w.text+'</div>' +
-        '<button class="pray-for-btn" onclick="event.stopPropagation();prayForIntention(\''+cid+'\','+w.count+',this)">' + svgIcons.heart + ' <span class="pw-count">'+w.count+'</span> praying</button></div></div>';
+        '<div class="pw-text">'+escapeHtml(w.text)+'</div>' +
+        '<button class="pray-for-btn" onclick="event.stopPropagation();prayForIntention(\''+cid+'\','+safePrayerCount(w.count)+',this)">' + svgIcons.heart + ' <span class="pw-count">'+safePrayerCount(w.count)+'</span> praying</button></div></div>';
     });
     h += '</div>';
     return h;
@@ -1296,7 +1296,7 @@ function renderChatMsg(m, channelKey, docId) {
   var safeInitials = escapeHtml(m.initials);
   var safeTime = escapeHtml(m.time);
   var safeRole = m.role ? escapeHtml(m.role) : '';
-  var delBtn = (isMe && channelKey && docId) ? '<span class="cm-delete" onclick="deleteMessage(\''+channelKey+'\',\''+docId+'\',this)" title="Delete" style="cursor:pointer;opacity:0.4;font-size:11px;margin-left:6px">&#10005;</span>' : '';
+  var delBtn = (isMe && channelKey && docId) ? '<span class="cm-delete" data-channel-key="'+escapeHtml(channelKey)+'" data-message-id="'+escapeHtml(docId)+'" onclick="deleteMessage(this.dataset.channelKey,this.dataset.messageId,this)" title="Delete" style="cursor:pointer;opacity:0.4;font-size:11px;margin-left:6px">&#10005;</span>' : '';
   if (isMe) {
     return '<div class="chat-msg chat-msg-me">' +
       '<div class="cm-bubble cm-bubble-me">' +
@@ -1305,7 +1305,7 @@ function renderChatMsg(m, channelKey, docId) {
       '</div></div>';
   }
   return '<div class="chat-msg chat-msg-other">' +
-    '<div class="cm-av" style="background:'+(m.color||'var(--primary-blue)')+'">'+
+    '<div class="cm-av" style="background:'+safeAvatarColor(m.color, 'var(--primary-blue)')+'">'+
     safeInitials+'</div>' +
     '<div class="cm-bubble cm-bubble-other">' +
     '<div class="cm-name-bubble">'+safeName+(safeRole ? '<span class="cm-role-bubble">'+safeRole+'</span>' : '')+'</div>' +
